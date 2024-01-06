@@ -3,6 +3,7 @@ package prime.movers;
 import com.revrobotics.CANSparkMax;
 
 public class LazyCANSparkMax extends CANSparkMax {
+
     protected double mLastSpeed = Double.NaN;
 
     public LazyCANSparkMax(int deviceId, MotorType type) {
@@ -15,8 +16,7 @@ public class LazyCANSparkMax extends CANSparkMax {
 
     @Override
     public void set(double speed) {
-        if (speed == mLastSpeed)
-            return;
+        if (speed == mLastSpeed) return;
 
         mLastSpeed = speed;
         super.set(speed);
