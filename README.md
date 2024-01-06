@@ -1,9 +1,9 @@
 Requirements:
 
-- WPILib
-- CTRE Phoenix v5
-- CTRE Phoenix v6
-- RevLib
+- [WPILib](https://docs.wpilib.org/en/stable/docs/zero-to-robot/step-2/wpilib-setup.html)
+- [CTRE Phoenix v5](https://docs.ctr-electronics.com/)
+- [CTRE Phoenix v6](https://docs.ctr-electronics.com/)
+- [RevLib](https://docs.revrobotics.com/sparkmax/software-resources/spark-max-api-information#c++-and-java)
 - [PathPlannerLib](https://3015rangerrobotics.github.io/pathplannerlib/)
 
 VSCode requirements:
