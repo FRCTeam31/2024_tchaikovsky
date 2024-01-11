@@ -1,5 +1,10 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
+import com.ctre.phoenix.sensors.CANCoder;
+import com.ctre.phoenix.sensors.WPI_CANCoder;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -16,8 +21,9 @@ public class SwerveModule extends SubsystemBase {
 
   private int id;
   private double _lastOutput;
-  private WPI_TalonFX DriveMotor;
-  private WPI_CANCoder mEncoder;
+  private TalonFX DriveMotor;
+  private CANcoder mEncoder;
+
   private int mEncoderOffset;
   private SupplyCurrentLimitConfiguration mSupplyCurrentConfig = new SupplyCurrentLimitConfiguration(
     true,
