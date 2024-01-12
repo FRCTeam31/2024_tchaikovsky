@@ -1,10 +1,19 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
+import com.ctre.phoenix.motorcontrol.TalonFXInvertType;
+import com.ctre.phoenix.sensors.AbsoluteSensorRange;
 import com.ctre.phoenix.sensors.CANCoder;
 import com.ctre.phoenix.sensors.WPI_CANCoder;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -21,16 +30,18 @@ public class SwerveModule extends SubsystemBase {
 
   private int id;
   private double _lastOutput;
-  private TalonFX DriveMotor;
+  private TalonFX mSteeringMotor;
+  private TalonFX mDriveMotor;
   private CANcoder mEncoder;
 
   private int mEncoderOffset;
-  private SupplyCurrentLimitConfiguration mSupplyCurrentConfig = new SupplyCurrentLimitConfiguration(
-    true,
-    50,
-    80,
-    0.15
-  );
+  // private SupplyCurrentLimitConfiguration mSupplyCurrentConfig = new SupplyCurrentLimitConfiguration(
+  //   true,
+  //   50,
+  //   80,
+  //   0.15
+  // );
+
   private PIDController _steeringPidController;
 
   public SwerveModule(
@@ -44,7 +55,7 @@ public class SwerveModule extends SubsystemBase {
       new PIDController(
         DriveMap.kSteeringPidConstants.kP,
         DriveMap.kSteeringPidConstants.kI,
-        DriveMap.kSteeringPidConstants.kD_min,
+        DriveMap.kD_min,
         0.020
       );
     id = driveMotorId;
@@ -57,9 +68,9 @@ public class SwerveModule extends SubsystemBase {
     setupDriveMotor(driveMotorId, driveInverted);
 
     // Set up our encoder
-    mEncoder = new WPI_CANCoder(encoderId);
+    mEncoder = new CANcoder(encoderId);
     mEncoder.clearStickyFaults();
-    mEncoder.configFactoryDefault();
+    mEncoder.getConfigurator().apply(new CANcoderConfiguration());
     mEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Signed_PlusMinus180);
 
     // Create a PID controller to calculate steering motor output
@@ -68,19 +79,25 @@ public class SwerveModule extends SubsystemBase {
   }
 
   private void setupSteeringMotor(int steeringId) {
-    mSteeringMotor = new LazyWPITalonFX(steeringId);
-    mSteeringMotor.configFactoryDefault();
+    mSteeringMotor = new TalonFX(steeringId);
+
+    mSteeringMotor.getConfigurator().apply(new TalonFXConfiguration());
     mSteeringMotor.clearStickyFaults();
-    mSteeringMotor.setNeutralMode(NeutralMode.Brake);
-    mSteeringMotor.setInverted(TalonFXInvertType.CounterClockwise);
-    // mSteeringMotor.configStatorCurrentLimit(statorCurrentConfig);
-    mSteeringMotor.configSupplyCurrentLimit(mSupplyCurrentConfig);
+    mSteeringMotor.setNeutralMode(NeutralModeValue.Brake);
+    // Counter Clockwise Inversion
+    mSteeringMotor.setInverted(false);
+    CurrentLimitsConfigs mSteeringCurrentLimit = setSupplyCurrentLimit(
+      true,
+      50,
+      80,
+      0.15
+    );
+    mSteeringMotor.getConfigurator().apply(mSteeringCurrentLimit);
   }
 
   public void setupDriveMotor(int driveMotorId, boolean driveInverted) {
-    mDriveMotor = new LazyWPITalonFX(driveMotorId);
-
-    mDriveMotor.configFactoryDefault();
+    mDriveMotor = new TalonFX(driveMotorId);
+    mSteeringMotor.getConfigurator().apply(new TalonFXConfiguration());
     mDriveMotor.clearStickyFaults();
     TalonFXConfiguration driveMotorConfig = new TalonFXConfiguration();
     driveMotorConfig.slot0.kP = 0.15;
@@ -248,5 +265,20 @@ public class SwerveModule extends SubsystemBase {
     return Rotation2d.fromDegrees(
       getEncoderAbsolutePosition() - mEncoderOffset
     );
+  }
+
+  private CurrentLimitsConfigs setSupplyCurrentLimit(
+    boolean enable,
+    double currentLimit,
+    double thresholdLimit,
+    double thresholdTime
+  ) {
+    CurrentLimitsConfigs mSupplyCurrentConfig = new CurrentLimitsConfigs();
+    mSupplyCurrentConfig.withSupplyCurrentLimitEnable(enable);
+    mSupplyCurrentConfig.withSupplyCurrentLimit(currentLimit);
+    mSupplyCurrentConfig.withSupplyCurrentThreshold(thresholdLimit);
+    mSupplyCurrentConfig.withSupplyTimeThreshold(thresholdTime);
+
+    return mSupplyCurrentConfig;
   }
 }

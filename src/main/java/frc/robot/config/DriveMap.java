@@ -1,6 +1,6 @@
 package frc.robot.config;
 
-import com.pathplanner.lib.auto.PIDConstants;
+import com.pathplanner.lib.util.PIDConstants;
 import edu.wpi.first.math.geometry.Translation2d;
 import prime.utilities.CTREConverter;
 
@@ -49,9 +49,13 @@ public class DriveMap {
   public static final String kDrivePidConstantsName =
     "SwerveModule drive PID Constants";
   public static PIDConstants kDrivePidConstants = new PIDConstants(0, 0, 0);
+
   public static final String kSteeringPidConstantsName =
     "SwerveModule steering PID Constants";
+
   public static PIDConstants kSteeringPidConstants = new PIDConstants(0, 0, 0);
+  public static final double kD_min = 0;
+  // public Static;
   public static double kSteeringGearRatio = 0;
 
   // Pigeon
