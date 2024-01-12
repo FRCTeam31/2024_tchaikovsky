@@ -17,10 +17,14 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.DriveMap;
+import frc.robot.config.DrivetrainConfig;
+
 import java.util.function.DoubleSupplier;
 import org.ietf.jgss.GSSContext;
 
 public class Drivetrain extends SubsystemBase {
+
+  private DrivetrainConfig m_config;
 
   // Gyro and Kinematics
   public Pigeon2 Gyro;
@@ -49,17 +53,18 @@ public class Drivetrain extends SubsystemBase {
   // Snap to Gyro Angle PID
 
   public PIDController _snapToRotationController = new PIDController(
-    DriveMap.kSnapToGyroAngle_kP,
-    DriveMap.kSnapToGyroAngle_kI,
-    DriveMap.kSnapToGyroAngle_kD,
+    m_config.SnapToPidConstants.kP,
+    m_config.SnapToPidConstants.kI,
+    m_config.SnapToPidConstants.kD,
     0.02
   );
 
   public double _lastRotationRadians = 0;
 
-  public Drivetrain() {
+  public Drivetrain(DrivetrainConfig config) {
     setName("Drivetrain");
-    Gyro = new Pigeon2(DriveMap.kPigeonId, DriveMap.kCANivoreBusName);
+    m_config = config;
+    Gyro = new Pigeon2(config.PigeonId);
 
     // Create swerve modules and ODO
     createSwerveModulesAndOdometry();
@@ -181,7 +186,7 @@ public class Drivetrain extends SubsystemBase {
     );
     SwerveDriveKinematics.desaturateWheelSpeeds(
       swerveModuleStates,
-      DriveMap.kDriveMaxSpeedMetersPerSecond
+      m_config.MaxSpeedMetersPerSecond
     );
 
     drive(swerveModuleStates);
@@ -349,15 +354,14 @@ public class Drivetrain extends SubsystemBase {
 
   //#region Commands
 
-  public static Command defaultDriveCommand(
-    Drivetrain drivetrain,
+  public Command defaultDriveCommand(
     DoubleSupplier ySupplier,
     DoubleSupplier xSupplier,
     DoubleSupplier rotationSupplier,
     SwerveModule[] swerveModules,
     boolean fieldRelative
   ) {
-    return Commands.run(
+    return this.run(
       () -> {
         var strafeX = MathUtil.applyDeadband(xSupplier.getAsDouble(), 0.15);
         var forwardY = MathUtil.applyDeadband(ySupplier.getAsDouble(), 0.15);
@@ -366,72 +370,58 @@ public class Drivetrain extends SubsystemBase {
           0.1
         );
 
-        strafeX *= DriveMap.kDriveMaxSpeedMetersPerSecond;
-        forwardY *= DriveMap.kDriveMaxSpeedMetersPerSecond;
-        rotation *= DriveMap.kDriveMaxAngularSpeed;
+        strafeX *= m_config.MaxSpeedMetersPerSecond;
+        forwardY *= m_config.MaxSpeedMetersPerSecond;
+        rotation *= m_config.MaxAngularSpeedRadians;
 
-        drivetrain.driveFromCartesianSpeeds(
+        driveFromCartesianSpeeds(
           -strafeX,
           forwardY,
           rotation,
           fieldRelative
         );
-      },
-      drivetrain
+      }
     );
   }
 
-  public static Command resetGyroCommand(Drivetrain driveTrain) {
-    return Commands.runOnce(() -> driveTrain.resetGyro(), driveTrain);
+  public Command resetGyroCommand() {
+    return this.runOnce(() -> resetGyro());
   }
 
-  public static Command resetOdometry(Drivetrain driveTrain, Pose2d pose) {
-    return Commands.runOnce(() -> driveTrain.resetOdometry(pose), driveTrain);
+  public Command resetOdometryCommand(Pose2d pose) {
+    return this.runOnce(() -> resetOdometry(pose));
   }
 
-  public static Command toggleShifter(Drivetrain drive) {
-    return Commands.runOnce(() -> drive.toggleShifter());
+  public Command toggleShifterCommand() {
+    return this.runOnce(() -> toggleShifter());
   }
-
-  // public static Command homeSteeringForwardCommand(){
-  // retu
-  // }
-
-  public static Command SetWheelAnglesCommand(
-    Drivetrain drivetrain,
+  
+  public Command setWheelAnglesCommand(
     Rotation2d angle
   ) {
-    return Commands.runOnce(() -> drivetrain.setWheelAngles(angle));
+    return this.runOnce(() -> setWheelAngles(angle));
   }
 
-  public static Command enableSnapToGyroControl(Drivetrain drivetrain) {
-    return Commands.runOnce(
+  public Command enableSnapToGyroControlCommand() {
+    return this.runOnce(() -> enableSnapToGyroControl());
+  }
+
+  public Command toggleSnapToAngleCommand() {
+    return this.runOnce(
       () -> {
-        drivetrain.enableSnapToGyroControl();
-      },
-      drivetrain
+        toggleSnapToGyroControl();
+      }
     );
   }
 
-  public static Command toggleSnapToAngleCommand(Drivetrain drivetrain) {
-    return Commands.runOnce(
-      () -> {
-        drivetrain.toggleSnapToGyroControl();
-      },
-      drivetrain
-    );
-  }
-
-  public static Command driveWithSnapToAngleCommand(
-    Drivetrain drivetrain,
+  public Command driveWithSnapToAngleCommand(
     double angle
   ) {
-    return Commands.runOnce(
+    return this.runOnce(
       () -> {
-        drivetrain.enableSnapToGyroControl();
-        drivetrain._snapToRotationController.setSetpoint(angle);
-      },
-      drivetrain
+        enableSnapToGyroControl();
+        _snapToRotationController.setSetpoint(angle);
+      }
     );
   }
   //#endregion

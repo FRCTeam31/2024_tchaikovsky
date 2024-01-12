@@ -19,6 +19,12 @@ public class SwerveModuleConfig {
 
   public Translation2d ModuleLocation = new Translation2d();
 
+  public int DriveGearRatio = 0;
+  public int SteeringGearRatio = 0;
+  public double DriveWheelDiameterMeters = 0;
+  public double DriveWheelCircumferenceMeters = 
+    Math.PI * DriveWheelDiameterMeters;
+
   public SwerveModuleConfig(
     String moduleName,
     int driveMotorCanId,

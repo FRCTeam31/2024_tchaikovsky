@@ -31,11 +31,10 @@ import prime.utilities.CTREConverter;
 
 public class SwerveModule extends SubsystemBase {
 
-  private String m_moduleName;
   private TalonFX m_SteeringMotor;
   private TalonFX m_driveMotor;
   private CANcoder m_encoder;
-  private int m_encoderOffset;
+  private SwerveModuleConfig m_config;
 
   private PIDController m_steeringPidController;
 
@@ -47,8 +46,7 @@ public class SwerveModule extends SubsystemBase {
         moduleConfig.DrivePidConstants.kD,
         0.020
       );
-    m_moduleName = moduleConfig.ModuleName;
-    m_encoderOffset = moduleConfig.StartingOffset;
+    setName(moduleConfig.ModuleName);
 
     // Set up the steering motor
     setupSteeringMotor(moduleConfig.SteeringMotorCanId);
@@ -111,28 +109,28 @@ public class SwerveModule extends SubsystemBase {
   @Override
   public void periodic() {
     SmartDashboard.putNumber(
-      "Swerve/" + m_moduleName + "/Heading",
+      "Swerve/" + getName() + "/Heading",
       getOffsetAbsoluteRotation2d().getDegrees()
     );
     SmartDashboard.putNumber(
-      "Swerve/" + m_moduleName + "/Drive vel",
+      "Swerve/" + getName() + "/Drive vel",
       getVelocityMetersPerSecond()
     );
     // SmartDashboard.putNumber("Drive vel =>", mDriveMotor.getClosedLoopTarget(0));
     SmartDashboard.putNumber(
-      "Swerve/" + m_moduleName + "/Drive output V",
+      "Swerve/" + getName() + "/Drive output V",
       m_driveMotor.getMotorOutputVoltage()
     );
     SmartDashboard.putNumber(
-      "Swerve/" + m_moduleName + "/Drive output %",
+      "Swerve/" + getName() + "/Drive output %",
       m_driveMotor.getMotorOutputPercent()
     );
     SmartDashboard.putNumber(
-      "Swerve/" + m_moduleName + "/Steering output",
+      "Swerve/" + getName() + "/Steering output",
       m_SteeringMotor.get()
     );
     SmartDashboard.putNumber(
-      "Swerve/" + m_moduleName + "/PID error",
+      "Swerve/" + getName() + "/PID error",
       m_steeringPidController.getPositionError()
     );
   }
@@ -144,8 +142,8 @@ public class SwerveModule extends SubsystemBase {
     return new SwerveModulePosition(
       CTREConverter.falconToMeters(
         m_driveMotor.getPosition().getValueAsDouble(),
-        DriveMap.kDriveWheelCircumference,
-        DriveMap.kDriveGearRatio
+        m_config.DriveWheelCircumferenceMeters,
+        m_config.DriveGearRatio
       ),
       getOffsetAbsoluteRotation2d()
     );
@@ -179,8 +177,8 @@ public class SwerveModule extends SubsystemBase {
     m_driveMotor.set(
       CTREConverter.MPSToFalcon(
         speedMetersPerSecond,
-        DriveMap.kDriveWheelCircumference,
-        DriveMap.kDriveGearRatio
+        m_config.DriveWheelCircumferenceMeters,
+        m_config.DriveGearRatio
       )
     );
   }
