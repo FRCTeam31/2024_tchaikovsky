@@ -15,3 +15,8 @@ Setting up repo:
 1. Clone
 2. Run "npm i" in terminal to install prettier
 3. Profit??
+
+Subject Matter Experts (SME)
+Zach - Swerve Module
+James - Drivetrain
+Jace - Shuffleboard
