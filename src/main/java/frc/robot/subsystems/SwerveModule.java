@@ -13,6 +13,7 @@ import com.ctre.phoenix.sensors.CANCoder;
 import com.ctre.phoenix.sensors.WPI_CANCoder;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -33,16 +34,10 @@ import prime.utilities.CTREConverter;
 public class SwerveModule extends SubsystemBase {
 
   private String m_moduleName;
-  private WPI_TalonFX mSteeringMotor;
-  private TalonFX mm_driveMotor;
-  private WPI_CANCoder m_encoder;
+  private TalonFX m_SteeringMotor;
+  private TalonFX m_driveMotor;
+  private CANcoder m_encoder;
   private int m_encoderOffset;
-  // private SupplyCurrentLimitConfiguration m_supplyCurrentConfig = new SupplyCurrentLimitConfiguration(
-  //   true,
-  //   50,
-  //   80,
-  //   0.15
-  // );
 
   private PIDController m_steeringPidController;
 
@@ -64,10 +59,12 @@ public class SwerveModule extends SubsystemBase {
     setupDriveMotor(moduleConfig.DriveMotorCanId, moduleConfig.DriveInverted);
 
     // Set up our encoder
-    mEncoder = new CANcoder(encoderId);
-    mEncoder.clearStickyFaults();
-    mEncoder.getConfigurator().apply(new CANcoderConfiguration());
-    mEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Signed_PlusMinus180);
+    m_encoder = new CANcoder(DriveMap.encoderId);
+    m_encoder.clearStickyFaults();
+    m_encoder.getConfigurator().apply(new CANcoderConfiguration());
+    m_encoder.configAbsoluteSensorRange(
+      AbsoluteSensorRange.Signed_PlusMinus180
+    );
 
     // Create a PID controller to calculate steering motor output
     m_steeringPidController.enableContinuousInput(-180, 180);
@@ -75,42 +72,37 @@ public class SwerveModule extends SubsystemBase {
   }
 
   private void setupSteeringMotor(int steeringId) {
-    mSteeringMotor = new TalonFX(steeringId);
+    m_SteeringMotor = new TalonFX(steeringId);
 
-    mSteeringMotor.getConfigurator().apply(new TalonFXConfiguration());
-    mSteeringMotor.clearStickyFaults();
-    mSteeringMotor.setNeutralMode(NeutralModeValue.Brake);
+    m_SteeringMotor.getConfigurator().apply(new TalonFXConfiguration());
+    m_SteeringMotor.clearStickyFaults();
+    m_SteeringMotor.setNeutralMode(NeutralModeValue.Brake);
     // Counter Clockwise Inversion
-    mSteeringMotor.setInverted(false);
+    m_SteeringMotor.setInverted(false);
     CurrentLimitsConfigs mSteeringCurrentLimit = setSupplyCurrentLimit(
       true,
       50,
       80,
       0.15
     );
-    mSteeringMotor.getConfigurator().apply(mSteeringCurrentLimit);
+    m_SteeringMotor.getConfigurator().apply(mSteeringCurrentLimit);
   }
 
   public void setupDriveMotor(int driveMotorId, boolean driveInverted) {
-    mDriveMotor = new TalonFX(driveMotorId);
-    mSteeringMotor.getConfigurator().apply(new TalonFXConfiguration());
-    mDriveMotor.clearStickyFaults();
+    m_driveMotor = new TalonFX(driveMotorId);
+    m_SteeringMotor.getConfigurator().apply(new TalonFXConfiguration());
+    m_driveMotor.clearStickyFaults();
     TalonFXConfiguration driveMotorConfig = new TalonFXConfiguration();
-    driveMotorConfig.slot0.kP = 0.15;
-    driveMotorConfig.slot0.kF = 0.01;
+    driveMotorConfig.withSlot0(new Slot0Configs().withKP(0.15));
 
-    driveMotorConfig.slot0.allowableClosedloopError = 250;
-    mDriveMotor.configAllSettings(driveMotorConfig);
-    mDriveMotor.setNeutralMode(NeutralMode.Brake);
-    mDriveMotor.setInverted(
-      driveInverted
-        ? TalonFXInvertType.CounterClockwise
-        : TalonFXInvertType.Clockwise
-    );
-    mDriveMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor); // The integrated sensor in the
+    m_driveMotor.getConfigurator().apply(driveMotorConfig);
+    m_driveMotor.setNeutralMode(NeutralModeValue.Brake);
+    //Clockwise Inversion
+    m_driveMotor.setInverted(true);
+    m_driveMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor); // The integrated sensor in the
     // Falcon is the falcon's encoder
-    mDriveMotor.configClosedloopRamp(0.5);
-    mDriveMotor.configOpenloopRamp(0.5);
+    m_driveMotor.configClosedloopRamp(0.5);
+    m_driveMotor.configOpenloopRamp(0.5);
   }
 
   /**
@@ -137,7 +129,7 @@ public class SwerveModule extends SubsystemBase {
     );
     SmartDashboard.putNumber(
       "Swerve/" + m_moduleName + "/Steering output",
-      mSteeringMotor.get()
+      m_SteeringMotor.get()
     );
     SmartDashboard.putNumber(
       "Swerve/" + m_moduleName + "/PID error",
@@ -173,7 +165,7 @@ public class SwerveModule extends SubsystemBase {
       getMeasurement(),
       angle.getDegrees()
     );
-    mSteeringMotor.set(
+    m_SteeringMotor.set(
       ControlMode.PercentOutput,
       MathUtil.clamp(newOutput, -1, 1)
     );
@@ -229,7 +221,7 @@ public class SwerveModule extends SubsystemBase {
    */
   public void stopMotors() {
     mDriveMotor.stopMotor();
-    mSteeringMotor.stopMotor();
+    m_SteeringMotor.stopMotor();
   }
 
   /**

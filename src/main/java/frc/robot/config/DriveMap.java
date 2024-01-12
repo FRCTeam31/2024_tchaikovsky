@@ -115,4 +115,6 @@ public class DriveMap {
     kSteeringPidConstants,
     new Translation2d(-halfTrackWidth, -halfWheelBase)
   );
+
+  public static final int encoderId = 0;
 }
