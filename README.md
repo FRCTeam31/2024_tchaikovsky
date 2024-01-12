@@ -17,6 +17,6 @@ Setting up repo:
 3. Profit??
 
 Subject Matter Experts (SME)
-Zach - Swerve Module
-James - Drivetrain
-Jace - Shuffleboard
+- Jace - Shuffleboard
+- James - Drivetrain
+- Zach - Swerve Module
