@@ -1,10 +1,7 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
-import com.ctre.phoenix.motorcontrol.FeedbackDevice;
-import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.TalonFXInvertType;
@@ -135,10 +132,6 @@ public class SwerveModule extends SubsystemBase {
       "Swerve/" + m_moduleName + "/PID error",
       m_steeringPidController.getPositionError()
     );
-    SmartDashboard.putNumber(
-      "Swerve/" + m_moduleName + "/PID last output",
-      _lastOutput
-    );
   }
 
   /**
@@ -147,7 +140,7 @@ public class SwerveModule extends SubsystemBase {
   public SwerveModulePosition getPosition() {
     return new SwerveModulePosition(
       CTREConverter.falconToMeters(
-        mDriveMotor.getSelectedSensorPosition(),
+        m_driveMotor.getPosition().getValueAsDouble(),
         DriveMap.kDriveWheelCircumference,
         DriveMap.kDriveGearRatio
       ),
@@ -180,8 +173,7 @@ public class SwerveModule extends SubsystemBase {
   public void setDesiredSpeed(double speedMetersPerSecond, boolean inHighGear) {
     if (!inHighGear) speedMetersPerSecond *= DriveMap.kLowGearCoefficient;
 
-    mDriveMotor.set(
-      ControlMode.Velocity,
+    m_driveMotor.set(
       CTREConverter.MPSToFalcon(
         speedMetersPerSecond,
         DriveMap.kDriveWheelCircumference,
@@ -220,7 +212,7 @@ public class SwerveModule extends SubsystemBase {
    * Stops both of the module's motors
    */
   public void stopMotors() {
-    mDriveMotor.stopMotor();
+    m_driveMotor.stopMotor();
     m_SteeringMotor.stopMotor();
   }
 
@@ -229,7 +221,7 @@ public class SwerveModule extends SubsystemBase {
    */
   public double getVelocityMetersPerSecond() {
     return CTREConverter.falconToMPS(
-      mDriveMotor.getSelectedSensorVelocity(),
+      m_driveMotor.getVelocity().getValueAsDouble(),
       DriveMap.kDriveWheelCircumference,
       DriveMap.kDriveGearRatio
     );
@@ -239,7 +231,7 @@ public class SwerveModule extends SubsystemBase {
    * Gets the absolute position of the encoder in degrees
    */
   public double getEncoderAbsolutePosition() {
-    return m_encoder.getAbsolutePosition();
+    return m_encoder.getAbsolutePosition().getValueAsDouble();
   }
 
   /**
