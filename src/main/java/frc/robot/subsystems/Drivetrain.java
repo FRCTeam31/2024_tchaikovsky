@@ -1,7 +1,6 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.sensors.WPI_Pigeon2;
-import com.ctre.phoenix6.mechanisms.swerve.SwerveModule;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -27,10 +26,10 @@ public class Drivetrain extends SubsystemBase {
   public WPI_Pigeon2 Gyro;
   public SwerveDriveKinematics Kinematics = new SwerveDriveKinematics(
     // in CCW order from FL to FR
-    DriveMap.kFrontLeftLocation,
-    DriveMap.kRearLeftLocation,
-    DriveMap.kRearRightLocation,
-    DriveMap.kFrontRightLocation
+    DriveMap.FrontLeftSwerveModuleConfig.ModuleLocation,
+    DriveMap.RearLeftSwerveModuleConfig.ModuleLocation,
+    DriveMap.RearRightSwerveModuleConfig.ModuleLocation,
+    DriveMap.FrontRightSwerveModuleConfig.ModuleLocation
   );
   private boolean _inHighGear = true;
 
