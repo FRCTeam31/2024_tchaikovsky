@@ -1,7 +1,10 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.TalonFXInvertType;
@@ -24,48 +27,41 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.PIDSubsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.DriveMap;
+import frc.robot.config.SwerveModuleConfig;
 import prime.utilities.CTREConverter;
 
 public class SwerveModule extends SubsystemBase {
 
-  private int id;
-  private double _lastOutput;
-  private TalonFX mSteeringMotor;
-  private TalonFX mDriveMotor;
-  private CANcoder mEncoder;
-
-  private int mEncoderOffset;
-  // private SupplyCurrentLimitConfiguration mSupplyCurrentConfig = new SupplyCurrentLimitConfiguration(
+  private String m_moduleName;
+  private WPI_TalonFX mSteeringMotor;
+  private TalonFX mm_driveMotor;
+  private WPI_CANCoder m_encoder;
+  private int m_encoderOffset;
+  // private SupplyCurrentLimitConfiguration m_supplyCurrentConfig = new SupplyCurrentLimitConfiguration(
   //   true,
   //   50,
   //   80,
   //   0.15
   // );
 
-  private PIDController _steeringPidController;
+  private PIDController m_steeringPidController;
 
-  public SwerveModule(
-    int driveMotorId,
-    int steeringMotorId,
-    int encoderId,
-    int encoderAbsoluteOffset,
-    boolean driveInverted
-  ) {
-    _steeringPidController =
+  public SwerveModule(SwerveModuleConfig moduleConfig) {
+    m_steeringPidController =
       new PIDController(
-        DriveMap.kSteeringPidConstants.kP,
-        DriveMap.kSteeringPidConstants.kI,
-        DriveMap.kD_min,
+        moduleConfig.DrivePidConstants.kP,
+        moduleConfig.DrivePidConstants.kI,
+        moduleConfig.DrivePidConstants.kD,
         0.020
       );
-    id = driveMotorId;
-    mEncoderOffset = encoderAbsoluteOffset;
+    m_moduleName = moduleConfig.ModuleName;
+    m_encoderOffset = moduleConfig.StartingOffset;
 
     // Set up the steering motor
-    setupSteeringMotor(steeringMotorId);
+    setupSteeringMotor(moduleConfig.SteeringMotorCanId);
 
     // Set up the drive motor
-    setupDriveMotor(driveMotorId, driveInverted);
+    setupDriveMotor(moduleConfig.DriveMotorCanId, moduleConfig.DriveInverted);
 
     // Set up our encoder
     mEncoder = new CANcoder(encoderId);
@@ -74,8 +70,8 @@ public class SwerveModule extends SubsystemBase {
     mEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Signed_PlusMinus180);
 
     // Create a PID controller to calculate steering motor output
-    _steeringPidController.enableContinuousInput(-180, 180);
-    _steeringPidController.setTolerance(1);
+    m_steeringPidController.enableContinuousInput(-180, 180);
+    m_steeringPidController.setTolerance(1);
   }
 
   private void setupSteeringMotor(int steeringId) {
@@ -123,31 +119,34 @@ public class SwerveModule extends SubsystemBase {
   @Override
   public void periodic() {
     SmartDashboard.putNumber(
-      "Swerve/" + id + "/Heading",
+      "Swerve/" + m_moduleName + "/Heading",
       getOffsetAbsoluteRotation2d().getDegrees()
     );
     SmartDashboard.putNumber(
-      "Swerve/" + id + "/Drive vel",
+      "Swerve/" + m_moduleName + "/Drive vel",
       getVelocityMetersPerSecond()
     );
     // SmartDashboard.putNumber("Drive vel =>", mDriveMotor.getClosedLoopTarget(0));
     SmartDashboard.putNumber(
-      "Swerve/" + id + "/Drive output V",
+      "Swerve/" + m_moduleName + "/Drive output V",
       mDriveMotor.getMotorOutputVoltage()
     );
     SmartDashboard.putNumber(
-      "Swerve/" + id + "/Drive output %",
+      "Swerve/" + m_moduleName + "/Drive output %",
       mDriveMotor.getMotorOutputPercent()
     );
     SmartDashboard.putNumber(
-      "Swerve/" + id + "/Steering output",
+      "Swerve/" + m_moduleName + "/Steering output",
       mSteeringMotor.get()
     );
     SmartDashboard.putNumber(
-      "Swerve/" + id + "/PID error",
-      _steeringPidController.getPositionError()
+      "Swerve/" + m_moduleName + "/PID error",
+      m_steeringPidController.getPositionError()
     );
-    SmartDashboard.putNumber("Swerve/" + id + "/PID last output", _lastOutput);
+    SmartDashboard.putNumber(
+      "Swerve/" + m_moduleName + "/PID last output",
+      _lastOutput
+    );
   }
 
   /**
@@ -170,7 +169,7 @@ public class SwerveModule extends SubsystemBase {
    * @param angle the new angle for the module to steer to
    */
   public void setDesiredAngle(Rotation2d angle) {
-    var newOutput = _steeringPidController.calculate(
+    var newOutput = m_steeringPidController.calculate(
       getMeasurement(),
       angle.getDegrees()
     );
@@ -222,7 +221,7 @@ public class SwerveModule extends SubsystemBase {
    * @param newPosition the new position of the encoder
    */
   public void setEncoderPosition(double newPosition) {
-    mEncoder.setPosition(newPosition);
+    m_encoder.setPosition(newPosition);
   }
 
   /**
@@ -248,7 +247,7 @@ public class SwerveModule extends SubsystemBase {
    * Gets the absolute position of the encoder in degrees
    */
   public double getEncoderAbsolutePosition() {
-    return mEncoder.getAbsolutePosition();
+    return m_encoder.getAbsolutePosition();
   }
 
   /**
@@ -263,7 +262,7 @@ public class SwerveModule extends SubsystemBase {
    */
   private Rotation2d getOffsetAbsoluteRotation2d() {
     return Rotation2d.fromDegrees(
-      getEncoderAbsolutePosition() - mEncoderOffset
+      getEncoderAbsolutePosition() - m_encoderOffset
     );
   }
 

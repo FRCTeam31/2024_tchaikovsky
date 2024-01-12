@@ -2,8 +2,6 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.sensors.WPI_Pigeon2;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModule;
-import com.pathplanner.lib.PathPlannerTrajectory;
-import com.pathplanner.lib.commands.PPSwerveControllerCommand;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -80,44 +78,16 @@ public class Drivetrain extends SubsystemBase {
    * Creates the swerve modules and starts odometry
    */
   private void createSwerveModulesAndOdometry() {
-    mFrontLeftModule =
-      new SwerveModule(
-        DriveMap.kFrontLeftDrivingMotorId,
-        DriveMap.kFrontLeftSteeringMotorId,
-        DriveMap.kFrontLeftEncoderId,
-        DriveMap.kFrontLeftEncoderOffset,
-        DriveMap.kFrontLeftInverted
-      );
+    mFrontLeftModule = new SwerveModule(DriveMap.FrontLeftSwerveModuleConfig);
     mFrontLeftModule.register();
 
-    mFrontRightModule =
-      new SwerveModule(
-        DriveMap.kFrontRightDrivingMotorId,
-        DriveMap.kFrontRightSteeringMotorId,
-        DriveMap.kFrontRightEncoderId,
-        DriveMap.kFrontRightEncoderOffset,
-        DriveMap.kFrontRightInverted
-      );
+    mFrontRightModule = new SwerveModule(DriveMap.FrontRightSwerveModuleConfig);
     mFrontRightModule.register();
 
-    mRearLeftModule =
-      new SwerveModule(
-        DriveMap.kRearLeftDrivingMotorId,
-        DriveMap.kRearLeftSteeringMotorId,
-        DriveMap.kRearLeftEncoderId,
-        DriveMap.kRearLeftEncoderOffset,
-        DriveMap.kRearLeftInverted
-      );
+    mRearLeftModule = new SwerveModule(DriveMap.RearLeftSwerveModuleConfig);
     mRearLeftModule.register();
 
-    mRearRightModule =
-      new SwerveModule(
-        DriveMap.kRearRightDrivingMotorId,
-        DriveMap.kRearRightSteeringMotorId,
-        DriveMap.kRearRightEncoderId,
-        DriveMap.kRearRightEncoderOffset,
-        DriveMap.kRearRightInverted
-      );
+    mRearRightModule = new SwerveModule(DriveMap.RearRightSwerveModuleConfig);
     mRearRightModule.register();
 
     mOdometry =
@@ -125,10 +95,10 @@ public class Drivetrain extends SubsystemBase {
         Kinematics,
         Gyro.getRotation2d(),
         new SwerveModulePosition[] { // in CCW order from FL to FR
-          mFrontLeftModule.getPosition(),
-          mRearLeftModule.getPosition(),
-          mRearRightModule.getPosition(),
-          mFrontRightModule.getPosition(),
+          mFrontLeftModule.getPosition(false),
+          mRearLeftModule.getPosition(false),
+          mRearRightModule.getPosition(false),
+          mFrontRightModule.getPosition(false),
         },
         new Pose2d(0, 0, Rotation2d.fromDegrees(0))
       );
@@ -422,34 +392,6 @@ public class Drivetrain extends SubsystemBase {
 
   public static Command toggleShifter(Drivetrain drive) {
     return Commands.runOnce(() -> drive.toggleShifter());
-  }
-
-  public static Command followTrajectoryWithEventsCommand(
-    Drivetrain drivetrain,
-    PathPlannerTrajectory trajectory,
-    boolean isFirstPath,
-    PIDController translationXController,
-    PIDController translationYController,
-    PIDController rotationController
-  ) {
-    return new SequentialCommandGroup(
-      Commands.runOnce(() -> {
-        if (isFirstPath) {
-          drivetrain.resetOdometry(trajectory.getInitialHolonomicPose());
-        }
-      }),
-      new PPSwerveControllerCommand(
-        trajectory,
-        drivetrain::getPose, // Pose supplier
-        translationXController, // X controller. Tune these values for your robot. Leaving them 0
-        // will only use feedforwards.
-        translationYController, // Y controller (usually the same values as X controller)
-        rotationController, // Rotation controller. Tune these values for your robot. Leaving
-        // them 0 will only use feedforwards.
-        drivetrain::drive,
-        drivetrain
-      )
-    );
   }
 
   // public static Command homeSteeringForwardCommand(){
