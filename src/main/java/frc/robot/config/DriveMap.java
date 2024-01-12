@@ -38,8 +38,10 @@ public class DriveMap {
     false,
     kDrivePidConstants,
     kSteeringPidConstants,
-    new Translation2d(-DrivetrainConfig.TrackWidthMeters / 2, 
-      DrivetrainConfig.WheelBaseMeters / 2)
+    new Translation2d(
+      -DrivetrainConfig.TrackWidthMeters / 2,
+      DrivetrainConfig.WheelBaseMeters / 2
+    )
   );
 
   public static final SwerveModuleConfig FrontRightSwerveModuleConfig = new SwerveModuleConfig(
@@ -51,8 +53,10 @@ public class DriveMap {
     false,
     kDrivePidConstants,
     kSteeringPidConstants,
-    new Translation2d(DrivetrainConfig.TrackWidthMeters / 2, 
-      DrivetrainConfig.WheelBaseMeters / 2)
+    new Translation2d(
+      DrivetrainConfig.TrackWidthMeters / 2,
+      DrivetrainConfig.WheelBaseMeters / 2
+    )
   );
 
   public static final SwerveModuleConfig RearRightSwerveModuleConfig = new SwerveModuleConfig(
@@ -64,8 +68,10 @@ public class DriveMap {
     false,
     kDrivePidConstants,
     kSteeringPidConstants,
-    new Translation2d(DrivetrainConfig.TrackWidthMeters / 2, 
-      -DrivetrainConfig.WheelBaseMeters / 2)
+    new Translation2d(
+      DrivetrainConfig.TrackWidthMeters / 2,
+      -DrivetrainConfig.WheelBaseMeters / 2
+    )
   );
 
   public static final SwerveModuleConfig RearLeftSwerveModuleConfig = new SwerveModuleConfig(
@@ -77,9 +83,12 @@ public class DriveMap {
     false,
     kDrivePidConstants,
     kSteeringPidConstants,
-    new Translation2d(-DrivetrainConfig.TrackWidthMeters / 2, 
-      -DrivetrainConfig.WheelBaseMeters / 2)
+    new Translation2d(
+      -DrivetrainConfig.TrackWidthMeters / 2,
+      -DrivetrainConfig.WheelBaseMeters / 2
+    )
   );
 
   public static final int encoderId = 0;
+  public static final double kLowGearCoefficient = 0.3;
 }

@@ -9,8 +9,10 @@ import com.ctre.phoenix.sensors.AbsoluteSensorRange;
 import com.ctre.phoenix.sensors.CANCoder;
 import com.ctre.phoenix.sensors.WPI_CANCoder;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.DifferentialSensorsConfigs;
+import com.ctre.phoenix6.configs.OpenLoopRampsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -99,8 +101,25 @@ public class SwerveModule extends SubsystemBase {
     // Falcon is the falcon's encoder
 
     // m_driveMotor.getConfigurator().apply(new TalonFXConfiguration().withDifferentialSensors(new DifferentialSensorsConfigs().withDifferentialTalonFXSensorID(driveMotorId)));
-    m_driveMotor.configClosedloopRamp(0.5);
-    m_driveMotor.configOpenloopRamp(0.5);
+
+    // Remember to ask mason about this
+
+    m_driveMotor
+      .getConfigurator()
+      .apply(
+        new TalonFXConfiguration()
+          .withOpenLoopRamps(
+            new OpenLoopRampsConfigs().withTorqueOpenLoopRampPeriod(0.5)
+          )
+      );
+    m_driveMotor
+      .getConfigurator()
+      .apply(
+        new TalonFXConfiguration()
+          .withClosedLoopRamps(
+            new ClosedLoopRampsConfigs().withTorqueClosedLoopRampPeriod(0.5)
+          )
+      );
   }
 
   /**
@@ -119,11 +138,11 @@ public class SwerveModule extends SubsystemBase {
     // SmartDashboard.putNumber("Drive vel =>", mDriveMotor.getClosedLoopTarget(0));
     SmartDashboard.putNumber(
       "Swerve/" + getName() + "/Drive output V",
-      m_driveMotor.getMotorOutputVoltage()
+      m_driveMotor.getMotorVoltage().getValueAsDouble()
     );
     SmartDashboard.putNumber(
-      "Swerve/" + getName() + "/Drive output %",
-      m_driveMotor.getMotorOutputPercent()
+      "Swerve/" + getName() + "/Drive output",
+      m_driveMotor.get()
     );
     SmartDashboard.putNumber(
       "Swerve/" + getName() + "/Steering output",
@@ -159,10 +178,7 @@ public class SwerveModule extends SubsystemBase {
       getMeasurement(),
       angle.getDegrees()
     );
-    m_SteeringMotor.set(
-      ControlMode.PercentOutput,
-      MathUtil.clamp(newOutput, -1, 1)
-    );
+    m_SteeringMotor.set(MathUtil.clamp(newOutput, -1, 1));
   }
 
   /**
