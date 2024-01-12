@@ -80,44 +80,16 @@ public class Drivetrain extends SubsystemBase {
    * Creates the swerve modules and starts odometry
    */
   private void createSwerveModulesAndOdometry() {
-    mFrontLeftModule =
-      new SwerveModule(
-        DriveMap.kFrontLeftDrivingMotorId,
-        DriveMap.kFrontLeftSteeringMotorId,
-        DriveMap.kFrontLeftEncoderId,
-        DriveMap.kFrontLeftEncoderOffset,
-        DriveMap.kFrontLeftInverted
-      );
+    mFrontLeftModule = new SwerveModule(DriveMap.FrontLeftSwerveModuleConfig);
     mFrontLeftModule.register();
 
-    mFrontRightModule =
-      new SwerveModule(
-        DriveMap.kFrontRightDrivingMotorId,
-        DriveMap.kFrontRightSteeringMotorId,
-        DriveMap.kFrontRightEncoderId,
-        DriveMap.kFrontRightEncoderOffset,
-        DriveMap.kFrontRightInverted
-      );
+    mFrontRightModule = new SwerveModule(DriveMap.FrontRightSwerveModuleConfig);
     mFrontRightModule.register();
 
-    mRearLeftModule =
-      new SwerveModule(
-        DriveMap.kRearLeftDrivingMotorId,
-        DriveMap.kRearLeftSteeringMotorId,
-        DriveMap.kRearLeftEncoderId,
-        DriveMap.kRearLeftEncoderOffset,
-        DriveMap.kRearLeftInverted
-      );
+    mRearLeftModule = new SwerveModule(DriveMap.RearLeftSwerveModuleConfig);
     mRearLeftModule.register();
 
-    mRearRightModule =
-      new SwerveModule(
-        DriveMap.kRearRightDrivingMotorId,
-        DriveMap.kRearRightSteeringMotorId,
-        DriveMap.kRearRightEncoderId,
-        DriveMap.kRearRightEncoderOffset,
-        DriveMap.kRearRightInverted
-      );
+    mRearRightModule = new SwerveModule(DriveMap.RearRightSwerveModuleConfig);
     mRearRightModule.register();
 
     mOdometry =
