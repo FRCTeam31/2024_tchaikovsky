@@ -13,6 +13,7 @@ import com.ctre.phoenix.sensors.CANCoder;
 import com.ctre.phoenix.sensors.WPI_CANCoder;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.DifferentialSensorsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -101,6 +102,8 @@ public class SwerveModule extends SubsystemBase {
     m_driveMotor.setInverted(true);
     m_driveMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor); // The integrated sensor in the
     // Falcon is the falcon's encoder
+
+    // m_driveMotor.getConfigurator().apply(new TalonFXConfiguration().withDifferentialSensors(new DifferentialSensorsConfigs().withDifferentialTalonFXSensorID(driveMotorId)));
     m_driveMotor.configClosedloopRamp(0.5);
     m_driveMotor.configOpenloopRamp(0.5);
   }
@@ -121,11 +124,11 @@ public class SwerveModule extends SubsystemBase {
     // SmartDashboard.putNumber("Drive vel =>", mDriveMotor.getClosedLoopTarget(0));
     SmartDashboard.putNumber(
       "Swerve/" + m_moduleName + "/Drive output V",
-      mDriveMotor.getMotorOutputVoltage()
+      m_driveMotor.getMotorOutputVoltage()
     );
     SmartDashboard.putNumber(
       "Swerve/" + m_moduleName + "/Drive output %",
-      mDriveMotor.getMotorOutputPercent()
+      m_driveMotor.getMotorOutputPercent()
     );
     SmartDashboard.putNumber(
       "Swerve/" + m_moduleName + "/Steering output",
