@@ -6,7 +6,6 @@ import prime.utilities.CTREConverter;
 
 public class DriveMap {
 
-  // Physical Measurements
   // Physical measurements
   public static final double kRobotTrackWidthMeters = 0;
   public static final double kRobotWheelBaseMeters = 0;
@@ -25,22 +24,6 @@ public class DriveMap {
   // middle of the robot
   static final double halfWheelBase = DriveMap.kRobotWheelBaseMeters / 2;
   static final double halfTrackWidth = DriveMap.kRobotTrackWidthMeters / 2;
-  public static final Translation2d kFrontLeftLocation = new Translation2d(
-    -halfTrackWidth,
-    halfWheelBase
-  );
-  public static final Translation2d kFrontRightLocation = new Translation2d(
-    halfTrackWidth,
-    halfWheelBase
-  );
-  public static final Translation2d kRearLeftLocation = new Translation2d(
-    -halfTrackWidth,
-    -halfWheelBase
-  );
-  public static final Translation2d kRearRightLocation = new Translation2d(
-    halfTrackWidth,
-    -halfWheelBase
-  );
 
   // Measured SysId values
   public static final double driveKs = 0;
@@ -57,34 +40,6 @@ public class DriveMap {
   // Pigeon
   public static final int kPigeonId = 0;
   public static final String kCANivoreBusName = "Team31CANivore";
-
-  // FR
-  public static int kFrontRightSteeringMotorId = 0;
-  public static int kFrontRightDrivingMotorId = 0;
-  public static int kFrontRightEncoderId = 0;
-  public static short kFrontRightEncoderOffset = 0;
-  public static boolean kFrontRightInverted = false;
-
-  // FL
-  public static int kFrontLeftSteeringMotorId = 0;
-  public static int kFrontLeftDrivingMotorId = 0;
-  public static int kFrontLeftEncoderId = 0;
-  public static short kFrontLeftEncoderOffset = 0;
-  public static boolean kFrontLeftInverted = false;
-
-  // RR
-  public static int kRearRightSteeringMotorId = 0;
-  public static int kRearRightDrivingMotorId = 0;
-  public static int kRearRightEncoderId = 0;
-  public static short kRearRightEncoderOffset = 0;
-  public static boolean kRearRightInverted = true;
-
-  // RL
-  public static int kRearLeftSteeringMotorId = 0;
-  public static int kRearLeftDrivingMotorId = 0;
-  public static int kRearLeftEncoderId = 0;
-  public static short kRearLeftEncoderOffset = 0;
-  public static boolean kRearLeftInverted = false;
 
   // Gear ratios
   public static byte driveMotorOutputTeeth = 0;
@@ -108,4 +63,52 @@ public class DriveMap {
   public static final double kSnapToGyroAngle_kP = 0;
   public static final double kSnapToGyroAngle_kI = 0;
   public static final double kSnapToGyroAngle_kD = 0;
+
+  public static final SwerveModuleConfig FrontLeftSwerveModuleConfig = new SwerveModuleConfig(
+    "Front-Left",
+    0,
+    0,
+    0,
+    0,
+    false,
+    kDrivePidConstants,
+    kSteeringPidConstants,
+    new Translation2d(-halfTrackWidth, halfWheelBase)
+  );
+
+  public static final SwerveModuleConfig FrontRightSwerveModuleConfig = new SwerveModuleConfig(
+    "Front-Right",
+    0,
+    0,
+    0,
+    0,
+    false,
+    kDrivePidConstants,
+    kSteeringPidConstants,
+    new Translation2d(halfTrackWidth, halfWheelBase)
+  );
+
+  public static final SwerveModuleConfig RearRightSwerveModuleConfig = new SwerveModuleConfig(
+    "Rear-Right",
+    0,
+    0,
+    0,
+    0,
+    false,
+    kDrivePidConstants,
+    kSteeringPidConstants,
+    new Translation2d(halfTrackWidth, -halfWheelBase)
+  );
+
+  public static final SwerveModuleConfig RearLeftSwerveModuleConfig = new SwerveModuleConfig(
+    "Rear-Left",
+    0,
+    0,
+    0,
+    0,
+    false,
+    kDrivePidConstants,
+    kSteeringPidConstants,
+    new Translation2d(-halfTrackWidth, -halfWheelBase)
+  );
 }
