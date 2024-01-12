@@ -1,13 +1,22 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.TalonFXInvertType;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.ctre.phoenix.sensors.AbsoluteSensorRange;
+import com.ctre.phoenix.sensors.CANCoder;
 import com.ctre.phoenix.sensors.WPI_CANCoder;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -24,15 +33,17 @@ import prime.utilities.CTREConverter;
 public class SwerveModule extends SubsystemBase {
 
   private String m_moduleName;
-  private WPI_TalonFX m_driveMotor;
+  private WPI_TalonFX mSteeringMotor;
+  private TalonFX mm_driveMotor;
   private WPI_CANCoder m_encoder;
   private int m_encoderOffset;
-  private SupplyCurrentLimitConfiguration m_supplyCurrentConfig = new SupplyCurrentLimitConfiguration(
-    true,
-    50,
-    80,
-    0.15
-  );
+  // private SupplyCurrentLimitConfiguration m_supplyCurrentConfig = new SupplyCurrentLimitConfiguration(
+  //   true,
+  //   50,
+  //   80,
+  //   0.15
+  // );
+
   private PIDController m_steeringPidController;
 
   public SwerveModule(SwerveModuleConfig moduleConfig) {
@@ -53,12 +64,10 @@ public class SwerveModule extends SubsystemBase {
     setupDriveMotor(moduleConfig.DriveMotorCanId, moduleConfig.DriveInverted);
 
     // Set up our encoder
-    m_encoder = new WPI_CANCoder(moduleConfig.CANCoderCanId);
-    m_encoder.clearStickyFaults();
-    m_encoder.configFactoryDefault();
-    m_encoder.configAbsoluteSensorRange(
-      AbsoluteSensorRange.Signed_PlusMinus180
-    );
+    mEncoder = new CANcoder(encoderId);
+    mEncoder.clearStickyFaults();
+    mEncoder.getConfigurator().apply(new CANcoderConfiguration());
+    mEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Signed_PlusMinus180);
 
     // Create a PID controller to calculate steering motor output
     m_steeringPidController.enableContinuousInput(-180, 180);
@@ -66,19 +75,25 @@ public class SwerveModule extends SubsystemBase {
   }
 
   private void setupSteeringMotor(int steeringId) {
-    mSteeringMotor = new LazyWPITalonFX(steeringId);
-    mSteeringMotor.configFactoryDefault();
+    mSteeringMotor = new TalonFX(steeringId);
+
+    mSteeringMotor.getConfigurator().apply(new TalonFXConfiguration());
     mSteeringMotor.clearStickyFaults();
-    mSteeringMotor.setNeutralMode(NeutralMode.Brake);
-    mSteeringMotor.setInverted(TalonFXInvertType.CounterClockwise);
-    // mSteeringMotor.configStatorCurrentLimit(statorCurrentConfig);
-    mSteeringMotor.configSupplyCurrentLimit(m_supplyCurrentConfig);
+    mSteeringMotor.setNeutralMode(NeutralModeValue.Brake);
+    // Counter Clockwise Inversion
+    mSteeringMotor.setInverted(false);
+    CurrentLimitsConfigs mSteeringCurrentLimit = setSupplyCurrentLimit(
+      true,
+      50,
+      80,
+      0.15
+    );
+    mSteeringMotor.getConfigurator().apply(mSteeringCurrentLimit);
   }
 
   public void setupDriveMotor(int driveMotorId, boolean driveInverted) {
-    mDriveMotor = new LazyWPITalonFX(driveMotorId);
-
-    mDriveMotor.configFactoryDefault();
+    mDriveMotor = new TalonFX(driveMotorId);
+    mSteeringMotor.getConfigurator().apply(new TalonFXConfiguration());
     mDriveMotor.clearStickyFaults();
     TalonFXConfiguration driveMotorConfig = new TalonFXConfiguration();
     driveMotorConfig.slot0.kP = 0.15;
@@ -249,5 +264,20 @@ public class SwerveModule extends SubsystemBase {
     return Rotation2d.fromDegrees(
       getEncoderAbsolutePosition() - m_encoderOffset
     );
+  }
+
+  private CurrentLimitsConfigs setSupplyCurrentLimit(
+    boolean enable,
+    double currentLimit,
+    double thresholdLimit,
+    double thresholdTime
+  ) {
+    CurrentLimitsConfigs mSupplyCurrentConfig = new CurrentLimitsConfigs();
+    mSupplyCurrentConfig.withSupplyCurrentLimitEnable(enable);
+    mSupplyCurrentConfig.withSupplyCurrentLimit(currentLimit);
+    mSupplyCurrentConfig.withSupplyCurrentThreshold(thresholdLimit);
+    mSupplyCurrentConfig.withSupplyTimeThreshold(thresholdTime);
+
+    return mSupplyCurrentConfig;
   }
 }
