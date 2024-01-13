@@ -12,11 +12,13 @@ import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.DifferentialSensorsConfigs;
+import com.ctre.phoenix6.configs.MagnetSensorConfigs;
 import com.ctre.phoenix6.configs.OpenLoopRampsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -60,13 +62,25 @@ public class SwerveModule extends SubsystemBase {
     m_encoder = new CANcoder(DriveMap.encoderId);
     m_encoder.clearStickyFaults();
     m_encoder.getConfigurator().apply(new CANcoderConfiguration());
-    m_encoder.configAbsoluteSensorRange(
-      AbsoluteSensorRange.Signed_PlusMinus180
-    );
+
+    // AbsoluteSensorRangeValue
+
+    m_encoder
+      .getConfigurator()
+      .apply(
+        new CANcoderConfiguration()
+          .withMagnetSensor(
+            new MagnetSensorConfigs()
+              .withAbsoluteSensorRange(
+                AbsoluteSensorRangeValue.Signed_PlusMinusHalf
+              )
+          )
+      );
 
     // Create a PID controller to calculate steering motor output
     m_steeringPidController.enableContinuousInput(-180, 180);
     m_steeringPidController.setTolerance(1);
+    m_config = moduleConfig;
   }
 
   private void setupSteeringMotor(int steeringId) {
@@ -97,8 +111,18 @@ public class SwerveModule extends SubsystemBase {
     m_driveMotor.setNeutralMode(NeutralModeValue.Brake);
     //Clockwise Inversion
     m_driveMotor.setInverted(true);
-    m_driveMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor); // The integrated sensor in the
+    // m_driveMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor); // The integrated sensor in the
     // Falcon is the falcon's encoder
+
+    m_driveMotor
+      .getConfigurator()
+      .apply(
+        new TalonFXConfiguration()
+          .withDifferentialSensors(
+            new DifferentialSensorsConfigs()
+              .withDifferentialTalonFXSensorID(driveMotorId)
+          )
+      );
 
     // m_driveMotor.getConfigurator().apply(new TalonFXConfiguration().withDifferentialSensors(new DifferentialSensorsConfigs().withDifferentialTalonFXSensorID(driveMotorId)));
 
@@ -239,8 +263,8 @@ public class SwerveModule extends SubsystemBase {
   public double getVelocityMetersPerSecond() {
     return CTREConverter.falconToMPS(
       m_driveMotor.getVelocity().getValueAsDouble(),
-      DriveMap.kDriveWheelCircumference,
-      DriveMap.kDriveGearRatio
+      m_config.DriveWheelCircumferenceMeters,
+      m_config.DriveGearRatio
     );
   }
 
@@ -263,7 +287,7 @@ public class SwerveModule extends SubsystemBase {
    */
   private Rotation2d getOffsetAbsoluteRotation2d() {
     return Rotation2d.fromDegrees(
-      getEncoderAbsolutePosition() - m_encoderOffset
+      getEncoderAbsolutePosition() - m_config.StartingOffset
     );
   }
 
