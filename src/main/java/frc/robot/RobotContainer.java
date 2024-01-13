@@ -33,6 +33,16 @@ public class RobotContainer {
 
   private void configureBindings() {
     DriverController = new CommandJoystick(ControlsMap.DRIVER_PORT);
+
+    Drivetrain.setDefaultCommand(
+      Drivetrain.defaultDriveCommand(
+        () -> DriverController.getRawAxis(ControlsMap.RIGHT_STICK_Y),
+        () -> DriverController.getRawAxis(ControlsMap.RIGHT_STICK_X),
+        () -> DriverController.getRawAxis(ControlsMap.LEFT_STICK_X),
+        null,
+        false
+      )
+    );
   }
 
   public Command getAutonomousCommand() {
