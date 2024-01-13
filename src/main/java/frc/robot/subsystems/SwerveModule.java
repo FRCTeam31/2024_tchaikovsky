@@ -52,21 +52,22 @@ public class SwerveModule extends SubsystemBase {
 
     // Set up our encoder
     m_encoder = new CANcoder(DriveMap.encoderId);
+    CANcoderConfiguration canCoderConfig = new CANcoderConfiguration();
+
     m_encoder.clearStickyFaults();
-    m_encoder.getConfigurator().apply(new CANcoderConfiguration());
+    m_encoder.getConfigurator().apply(canCoderConfig);
 
     // AbsoluteSensorRangeValue
 
     m_encoder
       .getConfigurator()
       .apply(
-        new CANcoderConfiguration()
-          .withMagnetSensor(
-            new MagnetSensorConfigs()
-              .withAbsoluteSensorRange(
-                AbsoluteSensorRangeValue.Signed_PlusMinusHalf
-              )
-          )
+        canCoderConfig.withMagnetSensor(
+          new MagnetSensorConfigs()
+            .withAbsoluteSensorRange(
+              AbsoluteSensorRangeValue.Signed_PlusMinusHalf
+            )
+        )
       );
 
     // Create a PID controller to calculate steering motor output
