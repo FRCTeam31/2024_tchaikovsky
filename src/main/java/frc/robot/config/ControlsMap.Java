@@ -32,7 +32,7 @@ public class ControlsMap {
   public static final int right = 270;
   public static final int left = 90;
 
-  // deadbands
+  // Deadbands
   public static final double AXIS_DEADBAND = 0.1;
   public static final double ShoulderSpeedControlThreshold = 0.2;
 }

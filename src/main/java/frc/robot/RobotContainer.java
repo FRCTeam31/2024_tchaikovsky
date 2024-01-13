@@ -32,8 +32,7 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    DriverController = new CommandJoystick(ControlsMap.DRIVER_PORT);
-
+    DriverController = new CommandJoystick(ControlsMap.DRIVER_PORT)
     Drivetrain.setDefaultCommand(
       Drivetrain.defaultDriveCommand(
         () -> DriverController.getRawAxis(ControlsMap.RIGHT_STICK_Y),
