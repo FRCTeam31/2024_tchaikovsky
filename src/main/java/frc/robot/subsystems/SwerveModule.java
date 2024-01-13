@@ -27,7 +27,6 @@ import prime.utilities.CTREConverter;
 
 public class SwerveModule extends SubsystemBase {
 
-  // private TalonFX m_SteeringMotor;
   private CANSparkMax m_SteeringMotor;
   private TalonFX m_driveMotor;
   private CANcoder m_encoder;
@@ -90,48 +89,22 @@ public class SwerveModule extends SubsystemBase {
 
   public void setupDriveMotor(int driveMotorId, boolean driveInverted) {
     m_driveMotor = new TalonFX(driveMotorId);
-    m_driveMotor.getConfigurator().apply(new TalonFXConfiguration());
     m_driveMotor.clearStickyFaults();
     TalonFXConfiguration driveMotorConfig = new TalonFXConfiguration();
+    driveMotorConfig.withClosedLoopRamps(
+      new ClosedLoopRampsConfigs().withTorqueClosedLoopRampPeriod(0.5)
+    );
+    // m_driveMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor); // The integrated sensor in the
+    driveMotorConfig.withDifferentialSensors(
+      new DifferentialSensorsConfigs()
+        .withDifferentialTalonFXSensorID(driveMotorId)
+    );
     driveMotorConfig.withSlot0(new Slot0Configs().withKP(0.15));
 
     m_driveMotor.getConfigurator().apply(driveMotorConfig);
     m_driveMotor.setNeutralMode(NeutralModeValue.Brake);
     //Clockwise Inversion
     m_driveMotor.setInverted(true);
-    // m_driveMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor); // The integrated sensor in the
-    // Falcon is the falcon's encoder
-
-    m_driveMotor
-      .getConfigurator()
-      .apply(
-        new TalonFXConfiguration()
-          .withDifferentialSensors(
-            new DifferentialSensorsConfigs()
-              .withDifferentialTalonFXSensorID(driveMotorId)
-          )
-      );
-
-    // m_driveMotor.getConfigurator().apply(new TalonFXConfiguration().withDifferentialSensors(new DifferentialSensorsConfigs().withDifferentialTalonFXSensorID(driveMotorId)));
-
-    // Remember to ask mason about this
-
-    m_driveMotor
-      .getConfigurator()
-      .apply(
-        new TalonFXConfiguration()
-          .withOpenLoopRamps(
-            new OpenLoopRampsConfigs().withTorqueOpenLoopRampPeriod(0.5)
-          )
-      );
-    m_driveMotor
-      .getConfigurator()
-      .apply(
-        new TalonFXConfiguration()
-          .withClosedLoopRamps(
-            new ClosedLoopRampsConfigs().withTorqueClosedLoopRampPeriod(0.5)
-          )
-      );
   }
 
   /**
