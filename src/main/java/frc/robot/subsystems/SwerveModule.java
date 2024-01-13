@@ -12,6 +12,8 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -25,7 +27,8 @@ import prime.utilities.CTREConverter;
 
 public class SwerveModule extends SubsystemBase {
 
-  private TalonFX m_SteeringMotor;
+  // private TalonFX m_SteeringMotor;
+  private CANSparkMax m_SteeringMotor;
   private TalonFX m_driveMotor;
   private CANcoder m_encoder;
   private SwerveModuleConfig m_config;
@@ -74,25 +77,20 @@ public class SwerveModule extends SubsystemBase {
   }
 
   private void setupSteeringMotor(int steeringId) {
-    m_SteeringMotor = new TalonFX(steeringId);
+    m_SteeringMotor = new CANSparkMax(steeringId, MotorType.kBrushless);
 
-    m_SteeringMotor.getConfigurator().apply(new TalonFXConfiguration());
-    m_SteeringMotor.clearStickyFaults();
-    m_SteeringMotor.setNeutralMode(NeutralModeValue.Brake);
+    m_SteeringMotor.restoreFactoryDefaults();
+    m_SteeringMotor.setSmartCurrentLimit(100, 80);
+    m_SteeringMotor.clearFaults();
+    //Need to set to neutral mode
+    // m_SteeringMotor.setNeutralMode(NeutralModeValue.Brake);
     // Counter Clockwise Inversion
     m_SteeringMotor.setInverted(false);
-    CurrentLimitsConfigs mSteeringCurrentLimit = setSupplyCurrentLimit(
-      true,
-      50,
-      80,
-      0.15
-    );
-    m_SteeringMotor.getConfigurator().apply(mSteeringCurrentLimit);
   }
 
   public void setupDriveMotor(int driveMotorId, boolean driveInverted) {
     m_driveMotor = new TalonFX(driveMotorId);
-    m_SteeringMotor.getConfigurator().apply(new TalonFXConfiguration());
+    m_driveMotor.getConfigurator().apply(new TalonFXConfiguration());
     m_driveMotor.clearStickyFaults();
     TalonFXConfiguration driveMotorConfig = new TalonFXConfiguration();
     driveMotorConfig.withSlot0(new Slot0Configs().withKP(0.15));
