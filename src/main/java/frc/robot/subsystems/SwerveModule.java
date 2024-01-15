@@ -175,11 +175,8 @@ public class SwerveModule extends SubsystemBase {
    * Sets the desired speed of the module in closed-loop velocity mode
    *
    * @param speedMetersPerSecond The desired speed in meters per second
-   * @param inHighGear           The desired high/low speed to use
    */
-  public void setDesiredSpeed(double speedMetersPerSecond, boolean inHighGear) {
-    if (!inHighGear) speedMetersPerSecond *= DriveMap.kLowGearCoefficient;
-
+  public void setDesiredSpeed(double speedMetersPerSecond) {
     m_driveMotor.set(
       CTREConverter.MPSToFalcon(
         speedMetersPerSecond,
@@ -196,13 +193,12 @@ public class SwerveModule extends SubsystemBase {
    *                     period
    */
   public void setDesiredState(
-    SwerveModuleState desiredState,
-    boolean inHighGear
+    SwerveModuleState desiredState
   ) {
     // Optimize the state to avoid turning wheels further than 90 degrees
     var encoderRotation = getOffsetAbsoluteRotation2d();
     desiredState = SwerveModuleState.optimize(desiredState, encoderRotation);
-    setDesiredSpeed(desiredState.speedMetersPerSecond, inHighGear);
+    setDesiredSpeed(desiredState.speedMetersPerSecond);
     setDesiredAngle(desiredState.angle);
   }
 

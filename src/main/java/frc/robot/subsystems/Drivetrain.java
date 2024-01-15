@@ -136,6 +136,12 @@ public class Drivetrain extends SubsystemBase {
   ) {
     ChassisSpeeds desiredChassisSpeeds;
 
+    if (!_inHighGear) {
+      strafeXMetersPerSecond *= m_config.LowGearScalar;
+      forwardMetersPerSecond *= m_config.LowGearScalar;
+      rotationRadiansPerSecond *= m_config.LowGearScalar;
+    }
+
     if (fieldRelative) {
       desiredChassisSpeeds =
         ChassisSpeeds.fromFieldRelativeSpeeds(
@@ -195,10 +201,10 @@ public class Drivetrain extends SubsystemBase {
    *                           to FR
    */
   public void drive(SwerveModuleState[] swerveModuleStates) {
-    mFrontLeftModule.setDesiredState(swerveModuleStates[0], _inHighGear);
-    mRearLeftModule.setDesiredState(swerveModuleStates[1], _inHighGear);
-    mRearRightModule.setDesiredState(swerveModuleStates[2], _inHighGear);
-    mFrontRightModule.setDesiredState(swerveModuleStates[3], _inHighGear);
+    mFrontLeftModule.setDesiredState(swerveModuleStates[0]);
+    mRearLeftModule.setDesiredState(swerveModuleStates[1]);
+    mRearRightModule.setDesiredState(swerveModuleStates[2]);
+    mFrontRightModule.setDesiredState(swerveModuleStates[3]);
   }
 
   /**
@@ -218,7 +224,7 @@ public class Drivetrain extends SubsystemBase {
     mSwerveModulePositions[3] = mFrontRightModule.getPosition();
 
     mOdometry.resetPosition(
-      Gyro.getRotation2d().plus(Rotation2d.fromDegrees(-90)),
+      Gyro.getRotation2d(),
       mSwerveModulePositions,
       pose
     );
@@ -263,28 +269,6 @@ public class Drivetrain extends SubsystemBase {
     mRearLeftModule.setDesiredAngle(angle);
     mRearRightModule.setDesiredAngle(angle);
     mFrontRightModule.setDesiredAngle(angle);
-  }
-
-  // /**
-  //  * Sets the modules to a open-loop speed
-  //  *
-  //  * @param speedMetersPerSeconds
-  //  */
-  // public void setWheelSpeeds(double speedMetersPerSecond) {
-  //   mFrontLeftModule.setDesiredSpeedOpenLoop(speedMetersPerSecond);
-  //   mRearLeftModule.setDesiredSpeedOpenLoop(speedMetersPerSecond);
-  //   mRearRightModule.setDesiredSpeedOpenLoop(speedMetersPerSecond);
-  //   mFrontRightModule.setDesiredSpeedOpenLoop(speedMetersPerSecond);
-  // }
-
-  /**
-   * Sets the modules to a closed-loop velocity in MPS
-   */
-  public void setWheelVelocities(double speedMetersPerSecond) {
-    mFrontLeftModule.setDesiredSpeed(speedMetersPerSecond, _inHighGear);
-    mRearLeftModule.setDesiredSpeed(speedMetersPerSecond, _inHighGear);
-    mRearRightModule.setDesiredSpeed(speedMetersPerSecond, _inHighGear);
-    mFrontRightModule.setDesiredSpeed(speedMetersPerSecond, _inHighGear);
   }
 
   /**
@@ -354,7 +338,6 @@ public class Drivetrain extends SubsystemBase {
     DoubleSupplier ySupplier,
     DoubleSupplier xSupplier,
     DoubleSupplier rotationSupplier,
-    SwerveModule[] swerveModules,
     boolean fieldRelative
   ) {
     return this.run(() -> {

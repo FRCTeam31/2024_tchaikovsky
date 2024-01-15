@@ -9,9 +9,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
-import frc.robot.config.ControlsMap;
 import frc.robot.config.DriveMap;
 import frc.robot.subsystems.Drivetrain;
+import prime.config.Controls;
 
 public class RobotContainer {
 
@@ -32,13 +32,12 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    DriverController = new CommandJoystick(ControlsMap.DRIVER_PORT)
+    DriverController = new CommandJoystick(Controls.DRIVER_PORT);
     Drivetrain.setDefaultCommand(
       Drivetrain.defaultDriveCommand(
-        () -> DriverController.getRawAxis(ControlsMap.RIGHT_STICK_Y),
-        () -> DriverController.getRawAxis(ControlsMap.RIGHT_STICK_X),
-        () -> DriverController.getRawAxis(ControlsMap.LEFT_STICK_X),
-        null,
+        () -> DriverController.getRawAxis(Controls.RIGHT_STICK_Y),
+        () -> DriverController.getRawAxis(Controls.RIGHT_STICK_X),
+        () -> DriverController.getRawAxis(Controls.LEFT_STICK_X),
         false
       )
     );
