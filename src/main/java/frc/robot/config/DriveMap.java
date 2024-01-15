@@ -80,6 +80,4 @@ public class DriveMap {
     new Translation2d(-DrivetrainConfig.TrackWidthMeters / 2, 
       -DrivetrainConfig.WheelBaseMeters / 2)
   );
-
-  public static final int encoderId = 0;
 }

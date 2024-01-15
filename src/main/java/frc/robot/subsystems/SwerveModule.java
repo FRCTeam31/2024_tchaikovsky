@@ -36,26 +36,30 @@ public class SwerveModule extends SubsystemBase {
   private CANcoder m_encoder;
   private SwerveModuleConfig m_config;
 
+  
   private PIDController m_steeringPidController;
 
   public SwerveModule(SwerveModuleConfig moduleConfig) {
+    setName(m_config.ModuleName);
+    m_config = moduleConfig;
+
+    // TODO: Get rid of this in favor of CANSparkMax closed-loop control
     m_steeringPidController =
       new PIDController(
-        moduleConfig.DrivePidConstants.kP,
-        moduleConfig.DrivePidConstants.kI,
-        moduleConfig.DrivePidConstants.kD,
+        m_config.DrivePidConstants.kP,
+        m_config.DrivePidConstants.kI,
+        m_config.DrivePidConstants.kD,
         0.020
       );
-    setName(moduleConfig.ModuleName);
 
     // Set up the steering motor
-    setupSteeringMotor(moduleConfig.SteeringMotorCanId);
+    setupSteeringMotor(m_config.SteeringMotorCanId);
 
     // Set up the drive motor
-    setupDriveMotor(moduleConfig.DriveMotorCanId, moduleConfig.DriveInverted);
+    setupDriveMotor(m_config.DriveMotorCanId, m_config.DriveInverted);
 
     // Set up our encoder
-    m_encoder = new CANcoder(DriveMap.encoderId);
+    m_encoder = new CANcoder(m_config.CANCoderCanId);
     m_encoder.clearStickyFaults();
     m_encoder.getConfigurator().apply(new CANcoderConfiguration());
     m_encoder.configAbsoluteSensorRange(
@@ -68,6 +72,7 @@ public class SwerveModule extends SubsystemBase {
   }
 
   private void setupSteeringMotor(int steeringId) {
+    // TODO: Change this to a CANSparkMax with closed-loop control configured
     m_SteeringMotor = new TalonFX(steeringId);
 
     m_SteeringMotor.getConfigurator().apply(new TalonFXConfiguration());
@@ -104,7 +109,7 @@ public class SwerveModule extends SubsystemBase {
   }
 
   /**
-   * Reports pertinent data to the dashboard
+   * Reports data to the dashboard
    */
   @Override
   public void periodic() {
@@ -155,6 +160,7 @@ public class SwerveModule extends SubsystemBase {
    * @param angle the new angle for the module to steer to
    */
   public void setDesiredAngle(Rotation2d angle) {
+    // TODO: Rewrite this to use CANSparkMax closed-loop position control
     var newOutput = m_steeringPidController.calculate(
       getMeasurement(),
       angle.getDegrees()
@@ -223,8 +229,8 @@ public class SwerveModule extends SubsystemBase {
   public double getVelocityMetersPerSecond() {
     return CTREConverter.falconToMPS(
       m_driveMotor.getVelocity().getValueAsDouble(),
-      DriveMap.kDriveWheelCircumference,
-      DriveMap.kDriveGearRatio
+      m_config.DriveWheelCircumferenceMeters,
+      m_config.DriveGearRatio
     );
   }
 
@@ -247,7 +253,7 @@ public class SwerveModule extends SubsystemBase {
    */
   private Rotation2d getOffsetAbsoluteRotation2d() {
     return Rotation2d.fromDegrees(
-      getEncoderAbsolutePosition() - m_encoderOffset
+      getEncoderAbsolutePosition() - m_config.StartingOffset
     );
   }
 
