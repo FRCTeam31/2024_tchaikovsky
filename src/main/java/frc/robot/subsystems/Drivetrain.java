@@ -13,14 +13,10 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.DriveMap;
 import frc.robot.config.DrivetrainConfig;
-
 import java.util.function.DoubleSupplier;
-import org.ietf.jgss.GSSContext;
 
 public class Drivetrain extends SubsystemBase {
 
@@ -99,10 +95,10 @@ public class Drivetrain extends SubsystemBase {
         Kinematics,
         Gyro.getRotation2d(),
         new SwerveModulePosition[] { // in CCW order from FL to FR
-          mFrontLeftModule.getPosition(false),
-          mRearLeftModule.getPosition(false),
-          mRearRightModule.getPosition(false),
-          mFrontRightModule.getPosition(false),
+          mFrontLeftModule.getPosition(),
+          mRearLeftModule.getPosition(),
+          mRearRightModule.getPosition(),
+          mFrontRightModule.getPosition(),
         },
         new Pose2d(0, 0, Rotation2d.fromDegrees(0))
       );
@@ -269,17 +265,17 @@ public class Drivetrain extends SubsystemBase {
     mFrontRightModule.setDesiredAngle(angle);
   }
 
-  /**
-   * Sets the modules to a open-loop speed
-   *
-   * @param speedMetersPerSecond
-   */
-  public void setWheelSpeeds(double speedMetersPerSecond) {
-    mFrontLeftModule.setDesiredSpeedOpenLoop(speedMetersPerSecond);
-    mRearLeftModule.setDesiredSpeedOpenLoop(speedMetersPerSecond);
-    mRearRightModule.setDesiredSpeedOpenLoop(speedMetersPerSecond);
-    mFrontRightModule.setDesiredSpeedOpenLoop(speedMetersPerSecond);
-  }
+  // /**
+  //  * Sets the modules to a open-loop speed
+  //  *
+  //  * @param speedMetersPerSeconds
+  //  */
+  // public void setWheelSpeeds(double speedMetersPerSecond) {
+  //   mFrontLeftModule.setDesiredSpeedOpenLoop(speedMetersPerSecond);
+  //   mRearLeftModule.setDesiredSpeedOpenLoop(speedMetersPerSecond);
+  //   mRearRightModule.setDesiredSpeedOpenLoop(speedMetersPerSecond);
+  //   mFrontRightModule.setDesiredSpeedOpenLoop(speedMetersPerSecond);
+  // }
 
   /**
    * Sets the modules to a closed-loop velocity in MPS
@@ -361,8 +357,7 @@ public class Drivetrain extends SubsystemBase {
     SwerveModule[] swerveModules,
     boolean fieldRelative
   ) {
-    return this.run(
-      () -> {
+    return this.run(() -> {
         var strafeX = MathUtil.applyDeadband(xSupplier.getAsDouble(), 0.15);
         var forwardY = MathUtil.applyDeadband(ySupplier.getAsDouble(), 0.15);
         var rotation = MathUtil.applyDeadband(
@@ -374,14 +369,8 @@ public class Drivetrain extends SubsystemBase {
         forwardY *= m_config.MaxSpeedMetersPerSecond;
         rotation *= m_config.MaxAngularSpeedRadians;
 
-        driveFromCartesianSpeeds(
-          -strafeX,
-          forwardY,
-          rotation,
-          fieldRelative
-        );
-      }
-    );
+        driveFromCartesianSpeeds(-strafeX, forwardY, rotation, fieldRelative);
+      });
   }
 
   public Command resetGyroCommand() {
@@ -395,10 +384,8 @@ public class Drivetrain extends SubsystemBase {
   public Command toggleShifterCommand() {
     return this.runOnce(() -> toggleShifter());
   }
-  
-  public Command setWheelAnglesCommand(
-    Rotation2d angle
-  ) {
+
+  public Command setWheelAnglesCommand(Rotation2d angle) {
     return this.runOnce(() -> setWheelAngles(angle));
   }
 
@@ -407,22 +394,16 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public Command toggleSnapToAngleCommand() {
-    return this.runOnce(
-      () -> {
+    return this.runOnce(() -> {
         toggleSnapToGyroControl();
-      }
-    );
+      });
   }
 
-  public Command driveWithSnapToAngleCommand(
-    double angle
-  ) {
-    return this.runOnce(
-      () -> {
+  public Command driveWithSnapToAngleCommand(double angle) {
+    return this.runOnce(() -> {
         enableSnapToGyroControl();
         _snapToRotationController.setSetpoint(angle);
-      }
-    );
+      });
   }
   //#endregion
 }
