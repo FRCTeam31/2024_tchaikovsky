@@ -6,9 +6,9 @@ import edu.wpi.first.math.geometry.Translation2d;
 public class DriveMap {
 
   public static final DrivetrainConfig DrivetrainConfig = new DrivetrainConfig(
-    0,
-    0,
-    0,
+    0.55,
+    0.55,
+    0.284,
     1,
     5,
     2,
