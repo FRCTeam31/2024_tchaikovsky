@@ -14,17 +14,17 @@ public class DriveMap {
     2,
     Math.PI,
     0.3,
-    new PIDConstants(0, 0, 0)
+    new PIDConstants(0.0, 0, 0)
   );
 
   public static final PIDConstants kDrivePidConstants = new PIDConstants(
+    0.1,
     0,
-    0,
-    0
+    1
   );
 
   public static final PIDConstants kSteeringPidConstants = new PIDConstants(
-    0,
+    0.1,
     0,
     0
   );
