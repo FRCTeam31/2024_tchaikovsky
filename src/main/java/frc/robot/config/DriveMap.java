@@ -9,11 +9,11 @@ public class DriveMap {
     0,
     0,
     0,
-    0,
-    0,
-    0,
-    0,
-    0,
+    1,
+    5,
+    2,
+    Math.PI,
+    0.3,
     new PIDConstants(0, 0, 0)
   );
 
@@ -31,9 +31,9 @@ public class DriveMap {
 
   public static final SwerveModuleConfig FrontLeftSwerveModuleConfig = new SwerveModuleConfig(
     "Front-Left",
-    0,
-    0,
-    0,
+    2,
+    3,
+    4,
     0,
     false,
     kDrivePidConstants,
@@ -46,9 +46,9 @@ public class DriveMap {
 
   public static final SwerveModuleConfig FrontRightSwerveModuleConfig = new SwerveModuleConfig(
     "Front-Right",
-    0,
-    0,
-    0,
+    5,
+    6,
+    7,
     0,
     false,
     kDrivePidConstants,
@@ -61,9 +61,9 @@ public class DriveMap {
 
   public static final SwerveModuleConfig RearRightSwerveModuleConfig = new SwerveModuleConfig(
     "Rear-Right",
-    0,
-    0,
-    0,
+    8,
+    9,
+    10,
     0,
     false,
     kDrivePidConstants,
@@ -76,9 +76,9 @@ public class DriveMap {
 
   public static final SwerveModuleConfig RearLeftSwerveModuleConfig = new SwerveModuleConfig(
     "Rear-Left",
-    0,
-    0,
-    0,
+    11,
+    12,
+    13,
     0,
     false,
     kDrivePidConstants,

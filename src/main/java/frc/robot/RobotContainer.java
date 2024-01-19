@@ -41,6 +41,19 @@ public class RobotContainer {
         false
       )
     );
+
+    DriverController
+      .pov(Controls.up)
+      .onTrue(Drivetrain.driveWithSnapToAngleCommand(Math.toRadians(0)));
+    DriverController
+      .pov(Controls.right)
+      .onTrue(Drivetrain.driveWithSnapToAngleCommand(Math.toRadians(90)));
+    DriverController
+      .pov(Controls.down)
+      .onTrue(Drivetrain.driveWithSnapToAngleCommand(Math.toRadians(180)));
+    DriverController
+      .pov(Controls.left)
+      .onTrue(Drivetrain.driveWithSnapToAngleCommand(Math.toRadians(-90)));
   }
 
   public Command getAutonomousCommand() {
