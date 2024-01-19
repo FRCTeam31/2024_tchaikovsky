@@ -6,35 +6,35 @@ import edu.wpi.first.math.geometry.Translation2d;
 public class DriveMap {
 
   public static final DrivetrainConfig DrivetrainConfig = new DrivetrainConfig(
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    new PIDConstants(0, 0, 0)
+    0.55,
+    0.55,
+    0.284,
+    1,
+    5,
+    2,
+    Math.PI,
+    0.3,
+    new PIDConstants(0.0, 0, 0)
   );
 
   public static final PIDConstants kDrivePidConstants = new PIDConstants(
+    0.1,
     0,
-    0,
-    0
+    1
   );
 
   public static final PIDConstants kSteeringPidConstants = new PIDConstants(
-    0,
+    0.1,
     0,
     0
   );
 
   public static final SwerveModuleConfig FrontLeftSwerveModuleConfig = new SwerveModuleConfig(
     "Front-Left",
-    0,
-    0,
-    0,
-    0,
+    2,
+    3,
+    4,
+    0.16,
     false,
     kDrivePidConstants,
     kSteeringPidConstants,
@@ -46,10 +46,10 @@ public class DriveMap {
 
   public static final SwerveModuleConfig FrontRightSwerveModuleConfig = new SwerveModuleConfig(
     "Front-Right",
-    0,
-    0,
-    0,
-    0,
+    5,
+    6,
+    7,
+    0.356,
     false,
     kDrivePidConstants,
     kSteeringPidConstants,
@@ -61,10 +61,10 @@ public class DriveMap {
 
   public static final SwerveModuleConfig RearRightSwerveModuleConfig = new SwerveModuleConfig(
     "Rear-Right",
-    0,
-    0,
-    0,
-    0,
+    8,
+    9,
+    10,
+    0.356,
     false,
     kDrivePidConstants,
     kSteeringPidConstants,
@@ -76,10 +76,10 @@ public class DriveMap {
 
   public static final SwerveModuleConfig RearLeftSwerveModuleConfig = new SwerveModuleConfig(
     "Rear-Left",
-    0,
-    0,
-    0,
-    0,
+    11,
+    12,
+    13,
+    0.16,
     false,
     kDrivePidConstants,
     kSteeringPidConstants,
@@ -88,7 +88,4 @@ public class DriveMap {
       -DrivetrainConfig.WheelBaseMeters / 2
     )
   );
-
-  public static final int encoderId = 0;
-  public static final double kLowGearCoefficient = 0.3;
 }
