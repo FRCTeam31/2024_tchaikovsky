@@ -25,7 +25,7 @@ public class SwerveModuleConfig {
   public int DriveGearRatio = 0;
   public int SteeringGearRatio = 0;
   public double DriveWheelDiameterMeters = 0;
-  public double DriveWheelCircumferenceMeters = 
+  public double DriveWheelCircumferenceMeters =
     Math.PI * DriveWheelDiameterMeters;
 
   public Slot0Configs DriveSlot0Configuration = new Slot0Configs()
@@ -54,5 +54,13 @@ public class SwerveModuleConfig {
     Translation2d location
   ) {
     ModuleName = moduleName;
+    DriveMotorCanId = driveMotorCanId;
+    SteeringMotorCanId = steeringMotorCanId;
+    CANCoderCanId = canCoderCanId;
+    StartingOffset = startingOffset;
+    DriveInverted = driveInverted;
+    DrivePidConstants = drivePid;
+    SteeringPidConstants = steerPid;
+    ModuleLocation = location;
   }
 }
