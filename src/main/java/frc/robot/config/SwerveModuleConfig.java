@@ -14,7 +14,7 @@ public class SwerveModuleConfig {
   public int SteeringMotorCanId = 0;
   public int CANCoderCanId = 0;
 
-  public int StartingOffset = 0;
+  public double StartingOffset = 0;
   public boolean DriveInverted = false;
 
   public PIDConstants DrivePidConstants = new PIDConstants(0);
@@ -47,7 +47,7 @@ public class SwerveModuleConfig {
     int driveMotorCanId,
     int steeringMotorCanId,
     int canCoderCanId,
-    int startingOffset,
+    double startingOffset,
     boolean driveInverted,
     PIDConstants drivePid,
     PIDConstants steerPid,
