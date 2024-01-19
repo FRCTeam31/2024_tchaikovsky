@@ -63,7 +63,7 @@ public class Drivetrain extends SubsystemBase {
     mField = new Field2d();
     SmartDashboard.putData(getName() + "/Field", mField);
 
-  $  _snapToRotationController = new PIDController(0, 0, 0);
+    _snapToRotationController = new PIDController(0, 0, 0);
 
     // Configure snap-to PID
     _snapToRotationController.enableContinuousInput(-Math.PI, Math.PI);
