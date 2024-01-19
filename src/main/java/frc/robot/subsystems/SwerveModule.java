@@ -25,12 +25,12 @@ public class SwerveModule extends SubsystemBase {
   private TalonFX m_driveMotor;
   private CANcoder m_encoder;
   private SwerveModuleConfig m_config;
-  
+
   private PIDController m_steeringPidController;
 
   public SwerveModule(SwerveModuleConfig moduleConfig) {
-    setName(m_config.ModuleName);
     m_config = moduleConfig;
+    setName(m_config.ModuleName);
 
     // Set up the steering motor
     setupSteeringMotor();
@@ -43,7 +43,8 @@ public class SwerveModule extends SubsystemBase {
   }
 
   private void setupSteeringMotor() {
-    m_SteeringMotor = new CANSparkMax(m_config.SteeringMotorCanId, MotorType.kBrushless);
+    m_SteeringMotor =
+      new CANSparkMax(m_config.SteeringMotorCanId, MotorType.kBrushless);
     m_SteeringMotor.restoreFactoryDefaults();
 
     m_SteeringMotor.setSmartCurrentLimit(100, 80);
@@ -69,7 +70,8 @@ public class SwerveModule extends SubsystemBase {
     m_driveMotor.getConfigurator().apply(new TalonFXConfiguration());
 
     TalonFXConfiguration driveMotorConfig = new TalonFXConfiguration();
-    driveMotorConfig.ClosedLoopRamps = m_config.DriveClosedLoopRampConfiguration;
+    driveMotorConfig.ClosedLoopRamps =
+      m_config.DriveClosedLoopRampConfiguration;
     driveMotorConfig.Slot0 = m_config.DriveSlot0Configuration;
     driveMotorConfig.CurrentLimits = m_config.DriveCurrentLimitConfiguration;
 
@@ -87,12 +89,13 @@ public class SwerveModule extends SubsystemBase {
     m_encoder
       .getConfigurator()
       .apply(
-        new CANcoderConfiguration().withMagnetSensor(
-          new MagnetSensorConfigs()
-            .withAbsoluteSensorRange(
-              AbsoluteSensorRangeValue.Signed_PlusMinusHalf
-            )
-        )
+        new CANcoderConfiguration()
+          .withMagnetSensor(
+            new MagnetSensorConfigs()
+              .withAbsoluteSensorRange(
+                AbsoluteSensorRangeValue.Signed_PlusMinusHalf
+              )
+          )
       );
   }
 
@@ -178,9 +181,7 @@ public class SwerveModule extends SubsystemBase {
    * @param desiredState The state of the module that we'd like to be at in this
    *                     period
    */
-  public void setDesiredState(
-    SwerveModuleState desiredState
-  ) {
+  public void setDesiredState(SwerveModuleState desiredState) {
     // Optimize the state to avoid turning wheels further than 90 degrees
     var encoderRotation = getAbsoluteRotation2dWithOffset();
     desiredState = SwerveModuleState.optimize(desiredState, encoderRotation);
