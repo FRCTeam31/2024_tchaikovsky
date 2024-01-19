@@ -34,6 +34,7 @@ public class Drivetrain extends SubsystemBase {
   private boolean _inHighGear = true;
 
   public double _lastSnapToCalculatedPIDOutput;
+  public PIDController _snapToRotationController;
 
   // Swerve Modules, in CCW order from FL to FR
   SwerveModule mFrontLeftModule, mRearLeftModule, mRearRightModule, mFrontRightModule;
@@ -48,13 +49,6 @@ public class Drivetrain extends SubsystemBase {
 
   // Snap to Gyro Angle PID
 
-  public PIDController _snapToRotationController = new PIDController(
-    m_config.SnapToPidConstants.kP,
-    m_config.SnapToPidConstants.kI,
-    m_config.SnapToPidConstants.kD,
-    0.02
-  );
-
   public double _lastRotationRadians = 0;
 
   public Drivetrain(DrivetrainConfig config) {
@@ -68,6 +62,8 @@ public class Drivetrain extends SubsystemBase {
     // Configure field
     mField = new Field2d();
     SmartDashboard.putData(getName() + "/Field", mField);
+
+  $  _snapToRotationController = new PIDController(0, 0, 0);
 
     // Configure snap-to PID
     _snapToRotationController.enableContinuousInput(-Math.PI, Math.PI);
@@ -223,11 +219,7 @@ public class Drivetrain extends SubsystemBase {
     mSwerveModulePositions[2] = mRearRightModule.getPosition();
     mSwerveModulePositions[3] = mFrontRightModule.getPosition();
 
-    mOdometry.resetPosition(
-      Gyro.getRotation2d(),
-      mSwerveModulePositions,
-      pose
-    );
+    mOdometry.resetPosition(Gyro.getRotation2d(), mSwerveModulePositions, pose);
   }
 
   /**
