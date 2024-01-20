@@ -1,11 +1,7 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
-import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
-import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.DifferentialSensorsConfigs;
 import com.ctre.phoenix6.configs.MagnetSensorConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -33,87 +29,84 @@ public class SwerveModule extends SubsystemBase {
   private PIDController m_steeringPidController;
 
   public SwerveModule(SwerveModuleConfig moduleConfig) {
-    m_steeringPidController =
-      new PIDController(
-        moduleConfig.DrivePidConstants.kP,
-        moduleConfig.DrivePidConstants.kI,
-        moduleConfig.DrivePidConstants.kD,
-        0.020
-      );
-    setName(moduleConfig.ModuleName);
+    m_config = moduleConfig;
+    setName(m_config.ModuleName);
 
     // Set up the steering motor
-    setupSteeringMotor(moduleConfig.SteeringMotorCanId);
+    setupSteeringMotor();
 
     // Set up the drive motor
-    setupDriveMotor(moduleConfig.DriveMotorCanId, moduleConfig.DriveInverted);
+    setupDriveMotor();
 
     // Set up our encoder
-    m_encoder = new CANcoder(m_config.CANCoderCanId);
-    CANcoderConfiguration canCoderConfig = new CANcoderConfiguration();
-
-    m_encoder.clearStickyFaults();
-    m_encoder.getConfigurator().apply(canCoderConfig);
-
-    // AbsoluteSensorRangeValue
-
-    m_encoder
-      .getConfigurator()
-      .apply(
-        canCoderConfig.withMagnetSensor(
-          new MagnetSensorConfigs()
-            .withAbsoluteSensorRange(
-              AbsoluteSensorRangeValue.Signed_PlusMinusHalf
-            )
-        )
-      );
-
-    // Create a PID controller to calculate steering motor output
-    m_steeringPidController.enableContinuousInput(-180, 180);
-    m_steeringPidController.setTolerance(1);
-    m_config = moduleConfig;
+    setupCanCoder();
   }
 
-  private void setupSteeringMotor(int steeringId) {
-    m_SteeringMotor = new CANSparkMax(steeringId, MotorType.kBrushless);
-
+  private void setupSteeringMotor() {
+    m_SteeringMotor =
+      new CANSparkMax(m_config.SteeringMotorCanId, MotorType.kBrushless);
     m_SteeringMotor.restoreFactoryDefaults();
+
     m_SteeringMotor.setSmartCurrentLimit(100, 80);
     m_SteeringMotor.clearFaults();
-    //Need to set to neutral mode
-    // m_SteeringMotor.setNeutralMode(NeutralModeValue.Brake);
-    // Counter Clockwise Inversion
-    m_SteeringMotor.setInverted(false);
+    m_SteeringMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+    m_SteeringMotor.setInverted(false); // CCW inversion
+
+    // Create a PID controller to calculate steering motor output
+    m_steeringPidController =
+      new PIDController(
+        m_config.DrivePidConstants.kP,
+        m_config.DrivePidConstants.kI,
+        m_config.DrivePidConstants.kD,
+        0.020
+      );
+    m_steeringPidController.enableContinuousInput(-180, 180);
+    m_steeringPidController.setTolerance(1);
   }
 
-  public void setupDriveMotor(int driveMotorId, boolean driveInverted) {
-    m_driveMotor = new TalonFX(driveMotorId);
+  public void setupDriveMotor() {
+    m_driveMotor = new TalonFX(m_config.DriveMotorCanId);
     m_driveMotor.clearStickyFaults();
+    m_driveMotor.getConfigurator().apply(new TalonFXConfiguration());
+
     TalonFXConfiguration driveMotorConfig = new TalonFXConfiguration();
-    driveMotorConfig.withClosedLoopRamps(
-      new ClosedLoopRampsConfigs().withTorqueClosedLoopRampPeriod(0.5)
-    );
-    // m_driveMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor); // The integrated sensor in the
-    driveMotorConfig.withDifferentialSensors(
-      new DifferentialSensorsConfigs()
-        .withDifferentialTalonFXSensorID(driveMotorId)
-    );
-    driveMotorConfig.withSlot0(new Slot0Configs().withKP(0.15));
+    driveMotorConfig.ClosedLoopRamps =
+      m_config.DriveClosedLoopRampConfiguration;
+    driveMotorConfig.Slot0 = m_config.DriveSlot0Configuration;
+    driveMotorConfig.CurrentLimits = m_config.DriveCurrentLimitConfiguration;
 
     m_driveMotor.getConfigurator().apply(driveMotorConfig);
     m_driveMotor.setNeutralMode(NeutralModeValue.Brake);
-    //Clockwise Inversion
-    m_driveMotor.setInverted(true);
+    m_driveMotor.setInverted(m_config.DriveInverted); // Clockwise Inversion
+  }
+
+  public void setupCanCoder() {
+    m_encoder = new CANcoder(m_config.CANCoderCanId);
+    m_encoder.clearStickyFaults();
+    m_encoder.getConfigurator().apply(new CANcoderConfiguration());
+
+    // AbsoluteSensorRangeValue
+    m_encoder
+      .getConfigurator()
+      .apply(
+        new CANcoderConfiguration()
+          .withMagnetSensor(
+            new MagnetSensorConfigs()
+              .withAbsoluteSensorRange(
+                AbsoluteSensorRangeValue.Signed_PlusMinusHalf
+              )
+          )
+      );
   }
 
   /**
-   * Reports pertinent data to the dashboard
+   * Reports data to the dashboard
    */
   @Override
   public void periodic() {
     SmartDashboard.putNumber(
       "Swerve/" + getName() + "/Heading",
-      getOffsetAbsoluteRotation2d().getDegrees()
+      getAbsoluteRotation2dWithOffset().getDegrees()
     );
     SmartDashboard.putNumber(
       "Swerve/" + getName() + "/Drive vel",
@@ -143,12 +136,12 @@ public class SwerveModule extends SubsystemBase {
    */
   public SwerveModulePosition getPosition() {
     return new SwerveModulePosition(
-      CTREConverter.falconToMeters(
+      CTREConverter.rotationsToMeters(
         m_driveMotor.getPosition().getValueAsDouble(),
         m_config.DriveWheelCircumferenceMeters,
         m_config.DriveGearRatio
       ),
-      getOffsetAbsoluteRotation2d()
+      getAbsoluteRotation2dWithOffset()
     );
   }
 
@@ -158,6 +151,7 @@ public class SwerveModule extends SubsystemBase {
    * @param angle the new angle for the module to steer to
    */
   public void setDesiredAngle(Rotation2d angle) {
+    // TODO: Rewrite this to use CANSparkMax closed-loop position control
     var newOutput = m_steeringPidController.calculate(
       getMeasurement(),
       angle.getDegrees()
@@ -169,11 +163,11 @@ public class SwerveModule extends SubsystemBase {
    * Sets the desired speed of the module in closed-loop velocity mode
    *
    * @param speedMetersPerSecond The desired speed in meters per second
-   * @param inHighGear           The desired high/low speed to use
    */
-  public void setDesiredSpeed(double speedMetersPerSecond, boolean inHighGear) {
+  public void setDesiredSpeed(double speedMetersPerSecond) {
+    // TODO: Rewrite this to use velocity API in units of rotations per second
     m_driveMotor.set(
-      CTREConverter.MPSToFalcon(
+      CTREConverter.MPSToFalconTicks(
         speedMetersPerSecond,
         m_config.DriveWheelCircumferenceMeters,
         m_config.DriveGearRatio
@@ -187,14 +181,11 @@ public class SwerveModule extends SubsystemBase {
    * @param desiredState The state of the module that we'd like to be at in this
    *                     period
    */
-  public void setDesiredState(
-    SwerveModuleState desiredState,
-    boolean inHighGear
-  ) {
+  public void setDesiredState(SwerveModuleState desiredState) {
     // Optimize the state to avoid turning wheels further than 90 degrees
-    var encoderRotation = getOffsetAbsoluteRotation2d();
+    var encoderRotation = getAbsoluteRotation2dWithOffset();
     desiredState = SwerveModuleState.optimize(desiredState, encoderRotation);
-    setDesiredSpeed(desiredState.speedMetersPerSecond, inHighGear);
+    setDesiredSpeed(desiredState.speedMetersPerSecond);
     setDesiredAngle(desiredState.angle);
   }
 
@@ -219,7 +210,7 @@ public class SwerveModule extends SubsystemBase {
    * Gets the velocity of the drive motor in meters per second
    */
   public double getVelocityMetersPerSecond() {
-    return CTREConverter.falconToMPS(
+    return CTREConverter.rotationsToMeters(
       m_driveMotor.getVelocity().getValueAsDouble(),
       m_config.DriveWheelCircumferenceMeters,
       m_config.DriveGearRatio
@@ -229,7 +220,7 @@ public class SwerveModule extends SubsystemBase {
   /**
    * Gets the absolute position of the encoder in degrees
    */
-  public double getEncoderAbsolutePosition() {
+  public double getEncoderAbsoluteRotations() {
     return m_encoder.getAbsolutePosition().getValueAsDouble();
   }
 
@@ -237,30 +228,15 @@ public class SwerveModule extends SubsystemBase {
    * Gets the PIDSubsystem measurement term (absolute degrees)
    */
   protected double getMeasurement() {
-    return getOffsetAbsoluteRotation2d().getDegrees();
+    return getAbsoluteRotation2dWithOffset().getDegrees();
   }
 
   /**
    * Gets the absolute Rotation2d describing the heading of the module
    */
-  private Rotation2d getOffsetAbsoluteRotation2d() {
-    return Rotation2d.fromDegrees(
-      getEncoderAbsolutePosition() - m_config.StartingOffset
+  private Rotation2d getAbsoluteRotation2dWithOffset() {
+    return Rotation2d.fromRotations(
+      getEncoderAbsoluteRotations() - (1 / m_config.StartingOffset)
     );
-  }
-
-  private CurrentLimitsConfigs setSupplyCurrentLimit(
-    boolean enable,
-    double currentLimit,
-    double thresholdLimit,
-    double thresholdTime
-  ) {
-    CurrentLimitsConfigs mSupplyCurrentConfig = new CurrentLimitsConfigs();
-    mSupplyCurrentConfig.withSupplyCurrentLimitEnable(enable);
-    mSupplyCurrentConfig.withSupplyCurrentLimit(currentLimit);
-    mSupplyCurrentConfig.withSupplyCurrentThreshold(thresholdLimit);
-    mSupplyCurrentConfig.withSupplyTimeThreshold(thresholdTime);
-
-    return mSupplyCurrentConfig;
   }
 }

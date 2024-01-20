@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.config.DrivetrainConfig;
 import frc.robot.config.RobotConfig;
 import java.util.function.DoubleSupplier;
 
@@ -47,7 +46,6 @@ public class Drivetrain extends SubsystemBase {
   Field2d mField;
 
   // Snap to Gyro Angle PID
-
   public PIDController _snapToRotationController = new PIDController(
     m_config.Drivetrain.SnapToPidConstants.kP,
     m_config.Drivetrain.SnapToPidConstants.kI,
@@ -68,6 +66,8 @@ public class Drivetrain extends SubsystemBase {
     // Configure field
     mField = new Field2d();
     SmartDashboard.putData(getName() + "/Field", mField);
+
+    _snapToRotationController = new PIDController(0, 0, 0);
 
     // Configure snap-to PID
     _snapToRotationController.enableContinuousInput(-Math.PI, Math.PI);
@@ -136,6 +136,12 @@ public class Drivetrain extends SubsystemBase {
   ) {
     ChassisSpeeds desiredChassisSpeeds;
 
+    if (!_inHighGear) {
+      strafeXMetersPerSecond *= m_config.Drivetrain.LowGearScalar;
+      forwardMetersPerSecond *= m_config.Drivetrain.LowGearScalar;
+      rotationRadiansPerSecond *= m_config.Drivetrain.LowGearScalar;
+    }
+
     if (fieldRelative) {
       desiredChassisSpeeds =
         ChassisSpeeds.fromFieldRelativeSpeeds(
@@ -195,10 +201,10 @@ public class Drivetrain extends SubsystemBase {
    *                           to FR
    */
   public void drive(SwerveModuleState[] swerveModuleStates) {
-    mFrontLeftModule.setDesiredState(swerveModuleStates[0], _inHighGear);
-    mRearLeftModule.setDesiredState(swerveModuleStates[1], _inHighGear);
-    mRearRightModule.setDesiredState(swerveModuleStates[2], _inHighGear);
-    mFrontRightModule.setDesiredState(swerveModuleStates[3], _inHighGear);
+    mFrontLeftModule.setDesiredState(swerveModuleStates[0]);
+    mRearLeftModule.setDesiredState(swerveModuleStates[1]);
+    mRearRightModule.setDesiredState(swerveModuleStates[2]);
+    mFrontRightModule.setDesiredState(swerveModuleStates[3]);
   }
 
   /**
@@ -217,11 +223,7 @@ public class Drivetrain extends SubsystemBase {
     mSwerveModulePositions[2] = mRearRightModule.getPosition();
     mSwerveModulePositions[3] = mFrontRightModule.getPosition();
 
-    mOdometry.resetPosition(
-      Gyro.getRotation2d().plus(Rotation2d.fromDegrees(-90)),
-      mSwerveModulePositions,
-      pose
-    );
+    mOdometry.resetPosition(Gyro.getRotation2d(), mSwerveModulePositions, pose);
   }
 
   /**
@@ -263,28 +265,6 @@ public class Drivetrain extends SubsystemBase {
     mRearLeftModule.setDesiredAngle(angle);
     mRearRightModule.setDesiredAngle(angle);
     mFrontRightModule.setDesiredAngle(angle);
-  }
-
-  // /**
-  //  * Sets the modules to a open-loop speed
-  //  *
-  //  * @param speedMetersPerSeconds
-  //  */
-  // public void setWheelSpeeds(double speedMetersPerSecond) {
-  //   mFrontLeftModule.setDesiredSpeedOpenLoop(speedMetersPerSecond);
-  //   mRearLeftModule.setDesiredSpeedOpenLoop(speedMetersPerSecond);
-  //   mRearRightModule.setDesiredSpeedOpenLoop(speedMetersPerSecond);
-  //   mFrontRightModule.setDesiredSpeedOpenLoop(speedMetersPerSecond);
-  // }
-
-  /**
-   * Sets the modules to a closed-loop velocity in MPS
-   */
-  public void setWheelVelocities(double speedMetersPerSecond) {
-    mFrontLeftModule.setDesiredSpeed(speedMetersPerSecond, _inHighGear);
-    mRearLeftModule.setDesiredSpeed(speedMetersPerSecond, _inHighGear);
-    mRearRightModule.setDesiredSpeed(speedMetersPerSecond, _inHighGear);
-    mFrontRightModule.setDesiredSpeed(speedMetersPerSecond, _inHighGear);
   }
 
   /**
