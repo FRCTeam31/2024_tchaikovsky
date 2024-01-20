@@ -50,7 +50,7 @@ public class SwerveModule extends SubsystemBase {
     m_SteeringMotor.setSmartCurrentLimit(100, 80);
     m_SteeringMotor.clearFaults();
     m_SteeringMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
-    m_SteeringMotor.setInverted(false); // CCW inversion
+    m_SteeringMotor.setInverted(m_config.SteerInverted); // CCW inversion
 
     // Create a PID controller to calculate steering motor output
     m_steeringPidController =
