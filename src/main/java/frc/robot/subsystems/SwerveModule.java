@@ -25,7 +25,6 @@ public class SwerveModule extends SubsystemBase {
   private TalonFX m_driveMotor;
   private CANcoder m_encoder;
   private SwerveModuleConfig m_config;
-
   private PIDController m_steeringPidController;
 
   public SwerveModule(SwerveModuleConfig moduleConfig) {
