@@ -5,7 +5,6 @@ import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.DifferentialSensorsConfigs;
 import com.ctre.phoenix6.configs.MagnetSensorConfigs;
-import com.ctre.phoenix6.configs.OpenLoopRampsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -21,7 +20,6 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.config.DriveMap;
 import frc.robot.config.SwerveModuleConfig;
 import prime.utilities.CTREConverter;
 
@@ -51,7 +49,7 @@ public class SwerveModule extends SubsystemBase {
     setupDriveMotor(moduleConfig.DriveMotorCanId, moduleConfig.DriveInverted);
 
     // Set up our encoder
-    m_encoder = new CANcoder(DriveMap.encoderId);
+    m_encoder = new CANcoder(m_config.CANCoderCanId);
     CANcoderConfiguration canCoderConfig = new CANcoderConfiguration();
 
     m_encoder.clearStickyFaults();
@@ -174,8 +172,6 @@ public class SwerveModule extends SubsystemBase {
    * @param inHighGear           The desired high/low speed to use
    */
   public void setDesiredSpeed(double speedMetersPerSecond, boolean inHighGear) {
-    if (!inHighGear) speedMetersPerSecond *= DriveMap.kLowGearCoefficient;
-
     m_driveMotor.set(
       CTREConverter.MPSToFalcon(
         speedMetersPerSecond,

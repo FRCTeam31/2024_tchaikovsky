@@ -14,22 +14,22 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.config.DriveMap;
 import frc.robot.config.DrivetrainConfig;
+import frc.robot.config.RobotConfig;
 import java.util.function.DoubleSupplier;
 
 public class Drivetrain extends SubsystemBase {
 
-  private DrivetrainConfig m_config;
+  private RobotConfig m_config;
 
   // Gyro and Kinematics
   public Pigeon2 Gyro;
   public SwerveDriveKinematics Kinematics = new SwerveDriveKinematics(
     // in CCW order from FL to FR
-    DriveMap.FrontLeftSwerveModuleConfig.ModuleLocation,
-    DriveMap.RearLeftSwerveModuleConfig.ModuleLocation,
-    DriveMap.RearRightSwerveModuleConfig.ModuleLocation,
-    DriveMap.FrontRightSwerveModuleConfig.ModuleLocation
+    m_config.FrontLeftSwerveModuleConfig.ModuleLocation,
+    m_config.RearLeftSwerveModuleConfig.ModuleLocation,
+    m_config.RearRightSwerveModuleConfig.ModuleLocation,
+    m_config.FrontRightSwerveModuleConfig.ModuleLocation
   );
   private boolean _inHighGear = true;
 
@@ -49,18 +49,18 @@ public class Drivetrain extends SubsystemBase {
   // Snap to Gyro Angle PID
 
   public PIDController _snapToRotationController = new PIDController(
-    m_config.SnapToPidConstants.kP,
-    m_config.SnapToPidConstants.kI,
-    m_config.SnapToPidConstants.kD,
+    m_config.Drivetrain.SnapToPidConstants.kP,
+    m_config.Drivetrain.SnapToPidConstants.kI,
+    m_config.Drivetrain.SnapToPidConstants.kD,
     0.02
   );
 
   public double _lastRotationRadians = 0;
 
-  public Drivetrain(DrivetrainConfig config) {
+  public Drivetrain(RobotConfig config) {
     setName("Drivetrain");
     m_config = config;
-    Gyro = new Pigeon2(config.PigeonId);
+    Gyro = new Pigeon2(config.Drivetrain.PigeonId);
 
     // Create swerve modules and ODO
     createSwerveModulesAndOdometry();
@@ -78,16 +78,16 @@ public class Drivetrain extends SubsystemBase {
    * Creates the swerve modules and starts odometry
    */
   private void createSwerveModulesAndOdometry() {
-    mFrontLeftModule = new SwerveModule(DriveMap.FrontLeftSwerveModuleConfig);
+    mFrontLeftModule = new SwerveModule(m_config.FrontLeftSwerveModuleConfig);
     mFrontLeftModule.register();
 
-    mFrontRightModule = new SwerveModule(DriveMap.FrontRightSwerveModuleConfig);
+    mFrontRightModule = new SwerveModule(m_config.FrontRightSwerveModuleConfig);
     mFrontRightModule.register();
 
-    mRearLeftModule = new SwerveModule(DriveMap.RearLeftSwerveModuleConfig);
+    mRearLeftModule = new SwerveModule(m_config.RearLeftSwerveModuleConfig);
     mRearLeftModule.register();
 
-    mRearRightModule = new SwerveModule(DriveMap.RearRightSwerveModuleConfig);
+    mRearRightModule = new SwerveModule(m_config.RearRightSwerveModuleConfig);
     mRearRightModule.register();
 
     mOdometry =
@@ -182,7 +182,7 @@ public class Drivetrain extends SubsystemBase {
     );
     SwerveDriveKinematics.desaturateWheelSpeeds(
       swerveModuleStates,
-      m_config.MaxSpeedMetersPerSecond
+      m_config.Drivetrain.MaxSpeedMetersPerSecond
     );
 
     drive(swerveModuleStates);
@@ -354,7 +354,6 @@ public class Drivetrain extends SubsystemBase {
     DoubleSupplier ySupplier,
     DoubleSupplier xSupplier,
     DoubleSupplier rotationSupplier,
-    SwerveModule[] swerveModules,
     boolean fieldRelative
   ) {
     return this.run(() -> {
@@ -365,9 +364,9 @@ public class Drivetrain extends SubsystemBase {
           0.1
         );
 
-        strafeX *= m_config.MaxSpeedMetersPerSecond;
-        forwardY *= m_config.MaxSpeedMetersPerSecond;
-        rotation *= m_config.MaxAngularSpeedRadians;
+        strafeX *= m_config.Drivetrain.MaxSpeedMetersPerSecond;
+        forwardY *= m_config.Drivetrain.MaxSpeedMetersPerSecond;
+        rotation *= m_config.Drivetrain.MaxAngularSpeedRadians;
 
         driveFromCartesianSpeeds(-strafeX, forwardY, rotation, fieldRelative);
       });
