@@ -1,0 +1,68 @@
+{
+    "drivetrain": {
+        "trackWidthMeters": 0,
+        "wheelBaseMeters": 0,
+        "wheelBaseCircumferenceMeters": 0,
+        "pigeonId": 0,
+        "maxSpeedMetersPerSecond": 0,
+        "maxAccelerationMetersPerSecondSquared": 0,
+        "maxAngularSpeedRadians": 0,
+        "lowGearScalar": 0.5,
+        "StartInHighGear": false,
+        "drivePid": [0.1, 0, 0],
+        "steeringPid": [0.1, 0, 0],
+        "snapToPid": [0, 0, 0]
+    },
+    "frontLeftSwerveModule": {
+        "moduleName": "Front-Left",
+        "driveMotorCanId": 0,
+        "steeringMotorCanId": 0,
+        "canCoderCanId": 0,
+        "startingOffset": 0,
+        "driveInverted": false,
+        "moduleLocationXMeters": 0,
+        "moduleLocationYMeters": 0,
+        "driveGearRatio": 0,
+        "steeringGearRatio": 0,
+        "driveWheelDiameterMeters": 0
+    },
+    "frontRightSwerveModule": {
+        "moduleName": "Front-Right",
+        "driveMotorCanId": 0,
+        "steeringMotorCanId": 0,
+        "canCoderCanId": 0,
+        "startingOffset": 0,
+        "driveInverted": false,
+        "moduleLocationXMeters": 0,
+        "moduleLocationYMeters": 0,
+        "driveGearRatio": 0,
+        "steeringGearRatio": 0,
+        "driveWheelDiameterMeters": 0
+    },
+    "rearRightSwerveModule": {
+        "moduleName": "Rear-Right",
+        "driveMotorCanId": 0,
+        "steeringMotorCanId": 0,
+        "canCoderCanId": 0,
+        "startingOffset": 0,
+        "driveInverted": false,
+        "moduleLocationXMeters": 0,
+        "moduleLocationYMeters": 0,
+        "driveGearRatio": 0,
+        "steeringGearRatio": 0,
+        "driveWheelDiameterMeters": 0
+    },
+    "rearLeftSwerveModule": {
+        "moduleName": "Rear-Left",
+        "driveMotorCanId": 0,
+        "steeringMotorCanId": 0,
+        "canCoderCanId": 0,
+        "startingOffset": 0,
+        "driveInverted": false,
+        "moduleLocationXMeters": 0,
+        "moduleLocationYMeters": 0,
+        "driveGearRatio": 0,
+        "steeringGearRatio": 0,
+        "driveWheelDiameterMeters": 0
+    }
+}

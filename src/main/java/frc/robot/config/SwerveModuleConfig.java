@@ -2,8 +2,6 @@ package frc.robot.config;
 
 import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.pathplanner.lib.util.PIDConstants;
 import edu.wpi.first.math.geometry.Translation2d;
 
 public class SwerveModuleConfig {
@@ -17,10 +15,8 @@ public class SwerveModuleConfig {
   public double StartingOffset = 0;
   public boolean DriveInverted = false;
 
-  public PIDConstants DrivePidConstants = new PIDConstants(0);
-  public PIDConstants SteeringPidConstants = new PIDConstants(0);
-
-  public Translation2d ModuleLocation = new Translation2d();
+  public double ModuleLocationXMeters = 0;
+  public double ModuleLocationYMeters = 0;
 
   public int DriveGearRatio = 0;
   public int SteeringGearRatio = 0;
@@ -28,10 +24,6 @@ public class SwerveModuleConfig {
   public double DriveWheelCircumferenceMeters =
     Math.PI * DriveWheelDiameterMeters;
 
-  public Slot0Configs DriveSlot0Configuration = new Slot0Configs()
-    .withKP(0.15)
-    .withKI(0)
-    .withKD(0);
   public ClosedLoopRampsConfigs DriveClosedLoopRampConfiguration = new ClosedLoopRampsConfigs()
     .withTorqueClosedLoopRampPeriod(0.5)
     .withVoltageClosedLoopRampPeriod(0.5)
@@ -49,8 +41,6 @@ public class SwerveModuleConfig {
     int canCoderCanId,
     double startingOffset,
     boolean driveInverted,
-    PIDConstants drivePid,
-    PIDConstants steerPid,
     Translation2d location
   ) {
     ModuleName = moduleName;
@@ -59,8 +49,11 @@ public class SwerveModuleConfig {
     CANCoderCanId = canCoderCanId;
     StartingOffset = startingOffset;
     DriveInverted = driveInverted;
-    DrivePidConstants = drivePid;
-    SteeringPidConstants = steerPid;
-    ModuleLocation = location;
+    ModuleLocationXMeters = location.getX();
+    ModuleLocationYMeters = location.getY();
+  }
+
+  public Translation2d getModuleLocation() {
+    return new Translation2d(ModuleLocationXMeters, ModuleLocationYMeters);
   }
 }

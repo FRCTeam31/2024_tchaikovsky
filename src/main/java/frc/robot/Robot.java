@@ -8,16 +8,21 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.config.RobotConfig;
+import prime.config.PrimeConfigurator;
 
 public class Robot extends TimedRobot {
 
   private Command m_autonomousCommand;
   private RobotContainer m_robotContainer;
+  private static final String configFileName = "swerve_test_bot.json";
 
   @Override
   public void robotInit() {
-    // TODO: Add configuration binding from JSON file in /deploy
-    m_robotContainer = new RobotContainer(new RobotConfig());
+    var config = PrimeConfigurator.mapConfigFromJsonFile(
+      RobotConfig.class,
+      configFileName
+    );
+    m_robotContainer = new RobotContainer(config);
   }
 
   @Override
