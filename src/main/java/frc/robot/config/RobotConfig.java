@@ -8,7 +8,7 @@ public class RobotConfig {
   public DrivetrainConfig Drivetrain = new DrivetrainConfig(
     0.55,
     0.55,
-    0.284,
+    Math.PI * 0.7778174593052,
     1,
     5,
     2,
@@ -19,16 +19,16 @@ public class RobotConfig {
 
   public PIDConstants kDrivePidConstants = new PIDConstants(0.1, 0, 0);
 
-  public PIDConstants kSteeringPidConstants = new PIDConstants(0.01, 0, 0);
+  public PIDConstants kSteeringPidConstants = new PIDConstants(2, 0, 0);
 
   public SwerveModuleConfig FrontLeftSwerveModuleConfig = new SwerveModuleConfig(
     "Front-Left",
     2,
     3,
     4,
-    0.16,
+    0.164551,
     false,
-    false,
+    true,
     kDrivePidConstants,
     kSteeringPidConstants,
     new Translation2d(
@@ -42,9 +42,9 @@ public class RobotConfig {
     5,
     6,
     7,
-    0.356,
+    0.350098,
     false,
-    false,
+    true,
     kDrivePidConstants,
     kSteeringPidConstants,
     new Translation2d(
@@ -58,9 +58,9 @@ public class RobotConfig {
     8,
     9,
     10,
-    0.356,
+    0.717773,
     false,
-    false,
+    true,
     kDrivePidConstants,
     kSteeringPidConstants,
     new Translation2d(
@@ -74,9 +74,9 @@ public class RobotConfig {
     11,
     12,
     13,
-    0.16,
+    0.181152,
     false,
-    false,
+    true,
     kDrivePidConstants,
     kSteeringPidConstants,
     new Translation2d(
