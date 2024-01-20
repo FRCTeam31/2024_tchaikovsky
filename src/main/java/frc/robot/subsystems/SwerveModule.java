@@ -206,6 +206,18 @@ public class SwerveModule extends SubsystemBase {
    *                     period
    */
   public void setDesiredState(SwerveModuleState desiredState) {
+    // TODO: Optimize the state to avoid turning wheels further than 90 degrees
+    // var encoderRotation = getEncoderHeadingRotation2d();
+    // desiredState = SwerveModuleState.optimize(desiredState, encoderRotation);
+    // SmartDashboard.putNumber(
+    //   "Swerve/" + getName() + "/Optimized Angle",
+    //   desiredState.angle.getDegrees()
+    // );
+    // SmartDashboard.putNumber(
+    //   "Swerve/" + getName() + "/Optimized Speed",
+    //   desiredState.speedMetersPerSecond
+    // );
+
     SmartDashboard.putNumber(
       "Swerve/" + getName() + "/Desired Angle",
       desiredState.angle.getDegrees()
