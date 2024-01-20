@@ -59,7 +59,7 @@ public class SwerveModule extends SubsystemBase {
     m_SteeringMotor.setSmartCurrentLimit(100, 80);
     m_SteeringMotor.clearFaults();
     m_SteeringMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
-    m_SteeringMotor.setInverted(false); // CCW inversion
+    m_SteeringMotor.setInverted(m_config.SteerInverted); // CCW inversion
 
     // Create a PID controller to calculate steering motor output
     m_steeringPidController = new PIDController(pid[0], pid[1], pid[2], 0.020);
@@ -118,7 +118,6 @@ public class SwerveModule extends SubsystemBase {
       "Module/" + getName() + "/VelocityMPS",
       getVelocityMetersPerSecond()
     );
-    // SmartDashboard.putNumber("Drive vel =>", mDriveMotor.getClosedLoopTarget(0));
     SmartDashboard.putNumber(
       "Module/" + getName() + "/DriveVolts",
       m_driveMotor.getMotorVoltage().getValueAsDouble()
@@ -133,7 +132,7 @@ public class SwerveModule extends SubsystemBase {
       m_steeringPidController.getSetpoint()
     );
     SmartDashboard.putNumber(
-      "Module/" + getName() + "/Heading error",
+      "Module/" + getName() + "/HeadingError",
       m_steeringPidController.getPositionError()
     );
     SmartDashboard.putNumber(

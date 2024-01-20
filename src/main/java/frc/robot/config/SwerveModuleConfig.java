@@ -14,6 +14,7 @@ public class SwerveModuleConfig {
 
   public double StartingOffset = 0;
   public boolean DriveInverted = false;
+  public boolean SteerInverted = false;
 
   public double ModuleLocationXMeters = 0;
   public double ModuleLocationYMeters = 0;
