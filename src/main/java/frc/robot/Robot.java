@@ -12,27 +12,18 @@ import org.littletonrobotics.junction.LoggedRobot;
 public class Robot extends LoggedRobot {
 
   private Command m_autonomousCommand;
-
   private RobotContainer m_robotContainer;
 
   @Override
   public void robotInit() {
-    m_robotContainer = new RobotContainer();
+    // TODO: Add configuration binding from JSON file in /deploy
+    m_robotContainer = new RobotContainer(new RobotConfig());
   }
 
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
   }
-
-  @Override
-  public void disabledInit() {}
-
-  @Override
-  public void disabledPeriodic() {}
-
-  @Override
-  public void disabledExit() {}
 
   @Override
   public void autonomousInit() {
@@ -44,12 +35,6 @@ public class Robot extends LoggedRobot {
   }
 
   @Override
-  public void autonomousPeriodic() {}
-
-  @Override
-  public void autonomousExit() {}
-
-  @Override
   public void teleopInit() {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
@@ -57,19 +42,7 @@ public class Robot extends LoggedRobot {
   }
 
   @Override
-  public void teleopPeriodic() {}
-
-  @Override
-  public void teleopExit() {}
-
-  @Override
   public void testInit() {
     CommandScheduler.getInstance().cancelAll();
   }
-
-  @Override
-  public void testPeriodic() {}
-
-  @Override
-  public void testExit() {}
 }

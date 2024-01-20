@@ -14,98 +14,100 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.config.DriveMap;
-import frc.robot.config.DrivetrainConfig;
+import frc.robot.config.RobotConfig;
 import java.util.function.DoubleSupplier;
 
 public class Drivetrain extends SubsystemBase {
 
-  private DrivetrainConfig m_config;
+  private RobotConfig m_config;
 
   // Gyro and Kinematics
-  public Pigeon2 Gyro;
-  public SwerveDriveKinematics Kinematics = new SwerveDriveKinematics(
-    // in CCW order from FL to FR
-    DriveMap.FrontLeftSwerveModuleConfig.ModuleLocation,
-    DriveMap.RearLeftSwerveModuleConfig.ModuleLocation,
-    DriveMap.RearRightSwerveModuleConfig.ModuleLocation,
-    DriveMap.FrontRightSwerveModuleConfig.ModuleLocation
-  );
-  private boolean _inHighGear = true;
-
-  public double _lastSnapToCalculatedPIDOutput;
-  public PIDController _snapToRotationController;
+  public Pigeon2 m_gyro;
+  public SwerveDriveKinematics m_kinematics;
+  private boolean m_inHighGear = true;
 
   // Swerve Modules, in CCW order from FL to FR
-  SwerveModule mFrontLeftModule, mRearLeftModule, mRearRightModule, mFrontRightModule;
-  public SwerveModule[] mSwerveModules;
-  public SwerveModulePosition[] mSwerveModulePositions = new SwerveModulePosition[4];
-
-  public boolean snapToGyroEnabled = false;
+  SwerveModule m_frontLeftModule, m_rearLeftModule, m_rearRightModule, m_frontRightModule;
+  public SwerveModule[] m_swerveModules;
+  public SwerveModulePosition[] m_swerveModulePositions = new SwerveModulePosition[4];
 
   // Odometry
-  SwerveDriveOdometry mOdometry;
-  Field2d mField;
+  SwerveDriveOdometry m_odometry;
+  Field2d m_field;
 
   // Snap to Gyro Angle PID
+  public double m_lastSnapToCalculatedPIDOutput;
+  public boolean m_snapToGyroEnabled = false;
+  public double m_lastRotationRadians = 0;
+  public PIDController m_snapToRotationController;
 
-  public double _lastRotationRadians = 0;
-
-  public Drivetrain(DrivetrainConfig config) {
+  /**
+   * Creates a new Drivetrain.
+   */
+  public Drivetrain(RobotConfig config) {
     setName("Drivetrain");
     m_config = config;
-    Gyro = new Pigeon2(config.PigeonId);
+    m_gyro = new Pigeon2(config.Drivetrain.PigeonId);
+    m_kinematics =
+      new SwerveDriveKinematics(
+        // in CCW order from FL to FR
+        m_config.FrontLeftSwerveModuleConfig.ModuleLocation,
+        m_config.RearLeftSwerveModuleConfig.ModuleLocation,
+        m_config.RearRightSwerveModuleConfig.ModuleLocation,
+        m_config.FrontRightSwerveModuleConfig.ModuleLocation
+      );
 
     // Create swerve modules and ODO
     createSwerveModulesAndOdometry();
 
     // Configure field
-    mField = new Field2d();
-    SmartDashboard.putData(getName() + "/Field", mField);
-
-    _snapToRotationController = new PIDController(0, 0, 0);
+    m_field = new Field2d();
+    SmartDashboard.putData(getName() + "/Field", m_field);
 
     // Configure snap-to PID
-    _snapToRotationController.enableContinuousInput(-Math.PI, Math.PI);
-    _snapToRotationController.setSetpoint(0);
+    m_snapToRotationController =
+      new PIDController(
+        m_config.Drivetrain.SnapToPidConstants.kP,
+        m_config.Drivetrain.SnapToPidConstants.kI,
+        m_config.Drivetrain.SnapToPidConstants.kD,
+        0.02
+      );
+    m_snapToRotationController.enableContinuousInput(-Math.PI, Math.PI);
+    m_snapToRotationController.setSetpoint(0);
+
+    m_inHighGear = m_config.Drivetrain.StartInHighGear;
   }
 
   /**
    * Creates the swerve modules and starts odometry
    */
   private void createSwerveModulesAndOdometry() {
-    mFrontLeftModule = new SwerveModule(DriveMap.FrontLeftSwerveModuleConfig);
-    mFrontLeftModule.register();
+    m_frontLeftModule = new SwerveModule(m_config.FrontLeftSwerveModuleConfig);
+    m_frontRightModule =
+      new SwerveModule(m_config.FrontRightSwerveModuleConfig);
+    m_rearLeftModule = new SwerveModule(m_config.RearLeftSwerveModuleConfig);
+    m_rearRightModule = new SwerveModule(m_config.RearRightSwerveModuleConfig);
 
-    mFrontRightModule = new SwerveModule(DriveMap.FrontRightSwerveModuleConfig);
-    mFrontRightModule.register();
-
-    mRearLeftModule = new SwerveModule(DriveMap.RearLeftSwerveModuleConfig);
-    mRearLeftModule.register();
-
-    mRearRightModule = new SwerveModule(DriveMap.RearRightSwerveModuleConfig);
-    mRearRightModule.register();
-
-    mOdometry =
+    m_odometry =
       new SwerveDriveOdometry(
-        Kinematics,
-        Gyro.getRotation2d(),
+        m_kinematics,
+        m_gyro.getRotation2d(),
         new SwerveModulePosition[] { // in CCW order from FL to FR
-          mFrontLeftModule.getPosition(),
-          mRearLeftModule.getPosition(),
-          mRearRightModule.getPosition(),
-          mFrontRightModule.getPosition(),
+          m_frontLeftModule.getPosition(),
+          m_rearLeftModule.getPosition(),
+          m_rearRightModule.getPosition(),
+          m_frontRightModule.getPosition(),
         },
         new Pose2d(0, 0, Rotation2d.fromDegrees(0))
       );
 
     // in CCW order from FL to FR
-    mSwerveModules =
+    m_swerveModules =
       new SwerveModule[] {
-        mFrontLeftModule,
-        mRearLeftModule,
-        mRearRightModule,
-        mFrontLeftModule,
+        m_frontLeftModule,
+        m_rearLeftModule,
+        m_rearRightModule,
+        m_frontLeftModule,
       };
   }
 
@@ -113,7 +115,7 @@ public class Drivetrain extends SubsystemBase {
    * Resets the gyro
    */
   public void resetGyro() {
-    Gyro.reset();
+    m_gyro.reset();
   }
 
   /**
@@ -130,12 +132,15 @@ public class Drivetrain extends SubsystemBase {
     double rotationRadiansPerSecond,
     boolean fieldRelative
   ) {
+    // Invert Y axis
+    // forwardMetersPerSecond *= -1;
+
     ChassisSpeeds desiredChassisSpeeds;
 
-    if (!_inHighGear) {
-      strafeXMetersPerSecond *= m_config.LowGearScalar;
-      forwardMetersPerSecond *= m_config.LowGearScalar;
-      rotationRadiansPerSecond *= m_config.LowGearScalar;
+    if (!m_inHighGear) {
+      strafeXMetersPerSecond *= m_config.Drivetrain.LowGearScalar;
+      forwardMetersPerSecond *= m_config.Drivetrain.LowGearScalar;
+      rotationRadiansPerSecond *= m_config.Drivetrain.LowGearScalar;
     }
 
     if (fieldRelative) {
@@ -144,7 +149,7 @@ public class Drivetrain extends SubsystemBase {
           strafeXMetersPerSecond,
           forwardMetersPerSecond,
           rotationRadiansPerSecond,
-          Gyro.getRotation2d()
+          m_gyro.getRotation2d()
         );
     } else {
       desiredChassisSpeeds =
@@ -159,16 +164,16 @@ public class Drivetrain extends SubsystemBase {
     // _snapToRotationController.calculate(Gyro.getRotation2d().getRadians(),
     // desiredChassisSpeeds.omegaRadiansPerSecond);
 
-    if (snapToGyroEnabled) {
-      _lastSnapToCalculatedPIDOutput =
-        _snapToRotationController.calculate(
-          MathUtil.angleModulus(Gyro.getRotation2d().getRadians())
-        );
-      desiredChassisSpeeds.omegaRadiansPerSecond =
-        -1 * _lastSnapToCalculatedPIDOutput;
-    }
+    // if (m_snapToGyroEnabled) {
+    //   m_lastSnapToCalculatedPIDOutput =
+    //     m_snapToRotationController.calculate(
+    //       MathUtil.angleModulus(m_gyro.getRotation2d().getRadians())
+    //     );
+    //   desiredChassisSpeeds.omegaRadiansPerSecond =
+    //     -1 * m_lastSnapToCalculatedPIDOutput;
+    // }
 
-    _lastRotationRadians = desiredChassisSpeeds.omegaRadiansPerSecond;
+    m_lastRotationRadians = desiredChassisSpeeds.omegaRadiansPerSecond;
 
     drive(desiredChassisSpeeds);
   }
@@ -179,12 +184,25 @@ public class Drivetrain extends SubsystemBase {
    * @param desiredChassisSpeeds
    */
   public void drive(ChassisSpeeds desiredChassisSpeeds) {
-    var swerveModuleStates = Kinematics.toSwerveModuleStates(
+    SmartDashboard.putNumber(
+      "Drive/DesiredSpeedX",
+      desiredChassisSpeeds.vxMetersPerSecond
+    );
+    SmartDashboard.putNumber(
+      "Drive/DesiredSpeedY",
+      desiredChassisSpeeds.vyMetersPerSecond
+    );
+    SmartDashboard.putNumber(
+      "Drive/DesiredSpeedRotation",
+      desiredChassisSpeeds.omegaRadiansPerSecond
+    );
+
+    var swerveModuleStates = m_kinematics.toSwerveModuleStates(
       desiredChassisSpeeds
     );
     SwerveDriveKinematics.desaturateWheelSpeeds(
       swerveModuleStates,
-      m_config.MaxSpeedMetersPerSecond
+      m_config.Drivetrain.MaxSpeedMetersPerSecond
     );
 
     drive(swerveModuleStates);
@@ -197,70 +215,74 @@ public class Drivetrain extends SubsystemBase {
    *                           to FR
    */
   public void drive(SwerveModuleState[] swerveModuleStates) {
-    mFrontLeftModule.setDesiredState(swerveModuleStates[0]);
-    mRearLeftModule.setDesiredState(swerveModuleStates[1]);
-    mRearRightModule.setDesiredState(swerveModuleStates[2]);
-    mFrontRightModule.setDesiredState(swerveModuleStates[3]);
+    m_frontLeftModule.setDesiredState(swerveModuleStates[0]);
+    m_rearLeftModule.setDesiredState(swerveModuleStates[1]);
+    m_rearRightModule.setDesiredState(swerveModuleStates[2]);
+    m_frontRightModule.setDesiredState(swerveModuleStates[3]);
   }
 
   /**
    * Gets the current pose of the drivetrain from odometry
    */
   public Pose2d getPose() {
-    return mOdometry.getPoseMeters();
+    return m_odometry.getPoseMeters();
   }
 
   /**
    * Resets the position of odometry to the current position, minus 90
    */
   public void resetOdometry(Pose2d pose) {
-    mSwerveModulePositions[0] = mFrontLeftModule.getPosition();
-    mSwerveModulePositions[1] = mRearLeftModule.getPosition();
-    mSwerveModulePositions[2] = mRearRightModule.getPosition();
-    mSwerveModulePositions[3] = mFrontRightModule.getPosition();
+    m_swerveModulePositions[0] = m_frontLeftModule.getPosition();
+    m_swerveModulePositions[1] = m_rearLeftModule.getPosition();
+    m_swerveModulePositions[2] = m_rearRightModule.getPosition();
+    m_swerveModulePositions[3] = m_frontRightModule.getPosition();
 
-    mOdometry.resetPosition(Gyro.getRotation2d(), mSwerveModulePositions, pose);
+    m_odometry.resetPosition(
+      m_gyro.getRotation2d(),
+      m_swerveModulePositions,
+      pose
+    );
   }
 
   /**
    * Gets the direction the robot is facing in degrees, CCW+
    */
   public double getHeading() {
-    return Gyro.getRotation2d().getDegrees();
+    return m_gyro.getRotation2d().getDegrees();
   }
 
   /**
    * Sets the virtual gearbox shifter
    */
   public void setShift(boolean inHighGear) {
-    _inHighGear = inHighGear;
+    m_inHighGear = inHighGear;
   }
 
   /**
    * Toggles the virtual gearbox shifter
    */
   public void toggleShifter() {
-    _inHighGear = !_inHighGear;
+    m_inHighGear = !m_inHighGear;
   }
 
   /**
    * Stops all drivetrain motors
    */
   public void stopMotors() {
-    mFrontLeftModule.stopMotors();
-    mRearLeftModule.stopMotors();
-    mRearRightModule.stopMotors();
-    mFrontRightModule.stopMotors();
+    m_frontLeftModule.stopMotors();
+    m_rearLeftModule.stopMotors();
+    m_rearRightModule.stopMotors();
+    m_frontRightModule.stopMotors();
   }
 
   /**
    * Sets the modules all to a single heading
    */
   public void setWheelAngles(Rotation2d angle) {
-    mFrontLeftModule.setDesiredAngle(angle);
-    mRearLeftModule.setDesiredAngle(angle);
-    mRearRightModule.setDesiredAngle(angle);
-    mFrontRightModule.setDesiredAngle(angle);
+    m_frontLeftModule.setDesiredAngle(angle);
+    m_rearLeftModule.setDesiredAngle(angle);
+    m_rearRightModule.setDesiredAngle(angle);
+    m_frontRightModule.setDesiredAngle(angle);
   }
 
   /**
@@ -270,24 +292,24 @@ public class Drivetrain extends SubsystemBase {
    */
   public SwerveModulePosition[] getModulePositions() {
     return new SwerveModulePosition[] {
-      mFrontLeftModule.getPosition(),
-      mRearLeftModule.getPosition(),
-      mRearRightModule.getPosition(),
-      mFrontRightModule.getPosition(),
+      m_frontLeftModule.getPosition(),
+      m_rearLeftModule.getPosition(),
+      m_rearRightModule.getPosition(),
+      m_frontRightModule.getPosition(),
     };
   }
 
   public void enableSnapToGyroControl() {
-    snapToGyroEnabled = true;
+    m_snapToGyroEnabled = true;
   }
 
   public void disableSnapToGyroControl() {
-    snapToGyroEnabled = false;
+    m_snapToGyroEnabled = false;
   }
 
   public void toggleSnapToGyroControl() {
-    snapToGyroEnabled = !snapToGyroEnabled;
-    _snapToRotationController.setSetpoint(0);
+    m_snapToGyroEnabled = !m_snapToGyroEnabled;
+    m_snapToRotationController.setSetpoint(0);
   }
 
   /**
@@ -296,36 +318,40 @@ public class Drivetrain extends SubsystemBase {
   @Override
   public void periodic() {
     // Update odometry
-    var gyroAngle = Gyro.getRotation2d();
-    var robotPose = mOdometry.update(gyroAngle, getModulePositions());
-    mField.setRobotPose(robotPose);
+    var gyroAngle = m_gyro.getRotation2d();
+    SmartDashboard.putNumber("Drive/GyroHeading", m_gyro.getAngle() % 360);
+    var robotPose = m_odometry.update(gyroAngle, getModulePositions());
+    m_field.setRobotPose(robotPose);
 
-    SmartDashboard.putNumber(
-      "Drive/SnapTo/PID error",
-      Math.toDegrees(_snapToRotationController.getPositionError())
-    );
-    SmartDashboard.putNumber(
-      "Drive/SnapTo/PID last output",
-      _lastSnapToCalculatedPIDOutput
-    );
-    SmartDashboard.putNumber(
-      "Drive/SnapTo/Rotation Radians",
-      _lastRotationRadians
-    );
-    SmartDashboard.putNumber(
-      "Drive/SnapTo/ setpoint",
-      Math.toDegrees(_snapToRotationController.getSetpoint())
-    );
-    SmartDashboard.putBoolean("Drive/SnapTo/ enabled?", snapToGyroEnabled);
-    SmartDashboard.putNumber(
-      "Drive/SnapTo/Current GYro angle",
-      Math.toDegrees(MathUtil.angleModulus(Gyro.getRotation2d().getRadians()))
-    );
-    SmartDashboard.putBoolean("Drive/ in high gear?", _inHighGear);
+    // SmartDashboard.putNumber(
+    //   "Drive/SnapTo/PID error",
+    //   Math.toDegrees(m_snapToRotationController.getPositionError())
+    // );
+    // SmartDashboard.putNumber(
+    //   "Drive/SnapTo/PID last output",
+    //   m_lastSnapToCalculatedPIDOutput
+    // );
+    // SmartDashboard.putNumber(
+    //   "Drive/SnapTo/Rotation Radians",
+    //   m_lastRotationRadians
+    // );
+    // SmartDashboard.putNumber(
+    //   "Drive/SnapTo/ setpoint",
+    //   Math.toDegrees(m_snapToRotationController.getSetpoint())
+    // );
+    // SmartDashboard.putBoolean("Drive/SnapTo/ enabled?", m_snapToGyroEnabled);
+    // SmartDashboard.putNumber(
+    //   "Drive/SnapTo/Current GYro angle",
+    //   Math.toDegrees(MathUtil.angleModulus(m_gyro.getRotation2d().getRadians()))
+    // );
+    SmartDashboard.putBoolean("Drive/ in high gear?", m_inHighGear);
   }
 
   //#region Commands
 
+  /**
+   * Creates a command that drives the robot using the default controls
+   */
   public Command defaultDriveCommand(
     DoubleSupplier ySupplier,
     DoubleSupplier xSupplier,
@@ -340,44 +366,65 @@ public class Drivetrain extends SubsystemBase {
           0.1
         );
 
-        strafeX *= m_config.MaxSpeedMetersPerSecond;
-        forwardY *= m_config.MaxSpeedMetersPerSecond;
-        rotation *= m_config.MaxAngularSpeedRadians;
+        strafeX *= m_config.Drivetrain.MaxSpeedMetersPerSecond;
+        forwardY *= m_config.Drivetrain.MaxSpeedMetersPerSecond;
+        rotation *= m_config.Drivetrain.MaxAngularSpeedRadians;
 
         driveFromCartesianSpeeds(-strafeX, forwardY, rotation, fieldRelative);
       });
   }
 
+  /**
+   * Creates a command that resets the gyro
+   */
   public Command resetGyroCommand() {
     return this.runOnce(() -> resetGyro());
   }
 
+  /**
+   * Creates a command that resets the odometry
+   */
   public Command resetOdometryCommand(Pose2d pose) {
     return this.runOnce(() -> resetOdometry(pose));
   }
 
+  /**
+   * Creates a command that toggles the shifter
+   */
   public Command toggleShifterCommand() {
     return this.runOnce(() -> toggleShifter());
   }
 
+  /**
+   * Creates a command that sets the wheel angles to a single angle
+   */
   public Command setWheelAnglesCommand(Rotation2d angle) {
     return this.runOnce(() -> setWheelAngles(angle));
   }
 
+  /**
+   * Creates a command that enables snap to gyro control
+   */
   public Command enableSnapToGyroControlCommand() {
     return this.runOnce(() -> enableSnapToGyroControl());
   }
 
+  /**
+   * Creates a command that toggles snap to gyro control
+   */
   public Command toggleSnapToAngleCommand() {
     return this.runOnce(() -> {
         toggleSnapToGyroControl();
       });
   }
 
+  /**
+   * Creates a command that drives with snap to gyro control
+   */
   public Command driveWithSnapToAngleCommand(double angle) {
     return this.runOnce(() -> {
         enableSnapToGyroControl();
-        _snapToRotationController.setSetpoint(angle);
+        m_snapToRotationController.setSetpoint(angle);
       });
   }
   //#endregion

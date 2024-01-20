@@ -16,22 +16,23 @@ public class SwerveModuleConfig {
 
   public double StartingOffset = 0;
   public boolean DriveInverted = false;
+  public boolean SteerInverted = false;
 
   public PIDConstants DrivePidConstants = new PIDConstants(0);
   public PIDConstants SteeringPidConstants = new PIDConstants(0);
 
   public Translation2d ModuleLocation = new Translation2d();
 
-  public int DriveGearRatio = 0;
-  public int SteeringGearRatio = 0;
-  public double DriveWheelDiameterMeters = 0;
+  public double DriveGearRatio = 6.75;
+  public double DriveWheelDiameterMeters = 0.102;
   public double DriveWheelCircumferenceMeters =
     Math.PI * DriveWheelDiameterMeters;
 
   public Slot0Configs DriveSlot0Configuration = new Slot0Configs()
     .withKP(0.15)
     .withKI(0)
-    .withKD(0);
+    .withKD(0)
+    .withKV(0.15);
   public ClosedLoopRampsConfigs DriveClosedLoopRampConfiguration = new ClosedLoopRampsConfigs()
     .withTorqueClosedLoopRampPeriod(0.5)
     .withVoltageClosedLoopRampPeriod(0.5)
@@ -49,6 +50,7 @@ public class SwerveModuleConfig {
     int canCoderCanId,
     double startingOffset,
     boolean driveInverted,
+    boolean steerInverted,
     PIDConstants drivePid,
     PIDConstants steerPid,
     Translation2d location
@@ -59,6 +61,7 @@ public class SwerveModuleConfig {
     CANCoderCanId = canCoderCanId;
     StartingOffset = startingOffset;
     DriveInverted = driveInverted;
+    SteerInverted = steerInverted;
     DrivePidConstants = drivePid;
     SteeringPidConstants = steerPid;
     ModuleLocation = location;
