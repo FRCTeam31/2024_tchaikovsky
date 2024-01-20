@@ -2,6 +2,7 @@ package frc.robot.config;
 
 import com.pathplanner.lib.util.PIDConstants;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 
 public class RobotConfig {
 
@@ -10,10 +11,11 @@ public class RobotConfig {
     0.55,
     Math.PI * 0.7778174593052,
     1,
-    5,
-    2,
+    Units.feetToMeters(10),
+    Units.feetToMeters(5),
     Math.PI,
     0.3,
+    false,
     new PIDConstants(0, 0, 0)
   );
 
@@ -27,7 +29,7 @@ public class RobotConfig {
     3,
     4,
     0.164551,
-    false,
+    true,
     true,
     kDrivePidConstants,
     kSteeringPidConstants,
@@ -75,7 +77,7 @@ public class RobotConfig {
     12,
     13,
     0.181152,
-    false,
+    true,
     true,
     kDrivePidConstants,
     kSteeringPidConstants,

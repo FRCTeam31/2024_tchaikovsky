@@ -3,6 +3,8 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.MagnetSensorConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.VelocityDutyCycle;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
@@ -26,6 +28,18 @@ public class SwerveModule extends SubsystemBase {
   private CANcoder m_encoder;
   private SwerveModuleConfig m_config;
   private PIDController m_steeringPidController;
+
+  /* Start at velocity 0, enable FOC, no feed forward, use slot 0 */
+  private final VelocityVoltage m_voltageVelocity = new VelocityVoltage(
+    0,
+    0,
+    true,
+    0,
+    0,
+    false,
+    false,
+    false
+  );
 
   public SwerveModule(SwerveModuleConfig moduleConfig) {
     m_config = moduleConfig;
@@ -69,10 +83,12 @@ public class SwerveModule extends SubsystemBase {
     m_driveMotor.getConfigurator().apply(new TalonFXConfiguration());
 
     TalonFXConfiguration driveMotorConfig = new TalonFXConfiguration();
-    driveMotorConfig.ClosedLoopRamps =
-      m_config.DriveClosedLoopRampConfiguration;
+    // driveMotorConfig.ClosedLoopRamps =
+    //   m_config.DriveClosedLoopRampConfiguration;
     driveMotorConfig.Slot0 = m_config.DriveSlot0Configuration;
-    driveMotorConfig.CurrentLimits = m_config.DriveCurrentLimitConfiguration;
+    // driveMotorConfig.CurrentLimits = m_config.DriveCurrentLimitConfiguration;
+    driveMotorConfig.Voltage.PeakForwardVoltage = 12;
+    driveMotorConfig.Voltage.PeakReverseVoltage = -12;
 
     m_driveMotor.getConfigurator().apply(driveMotorConfig);
     m_driveMotor.setNeutralMode(NeutralModeValue.Brake);
@@ -157,6 +173,7 @@ public class SwerveModule extends SubsystemBase {
    * @param angle the new angle for the module to steer to
    */
   public void setDesiredAngle(Rotation2d angle) {
+    // TODO: figure out why this is necessary
     angle = angle.rotateBy(Rotation2d.fromDegrees(-90));
 
     var setpoint = angle.getRotations() % 1;
@@ -174,14 +191,11 @@ public class SwerveModule extends SubsystemBase {
    *
    * @param speedMetersPerSecond The desired speed in meters per second
    */
-  public void setDesiredSpeed(double speedMetersPerSecond) {
-    // TODO: Rewrite this to use velocity API in units of rotations per second
-    m_driveMotor.set(
-      CTREConverter.MPSToFalconTicks(
-        speedMetersPerSecond,
-        m_config.DriveWheelCircumferenceMeters,
-        m_config.DriveGearRatio
-      )
+  public void setDesiredSpeed(double speedRotationsPerSecond) {
+    m_driveMotor.setControl(
+      m_voltageVelocity
+        .withVelocity(speedRotationsPerSecond)
+        .withAcceleration(speedRotationsPerSecond)
     );
   }
 
@@ -201,18 +215,14 @@ public class SwerveModule extends SubsystemBase {
       desiredState.speedMetersPerSecond
     );
 
-    // TODO: Optimize the state to avoid turning wheels further than 90 degrees
-    // var encoderRotation = getEncoderHeadingRotation2d();
-    // desiredState = SwerveModuleState.optimize(desiredState, encoderRotation);
-    // SmartDashboard.putNumber(
-    //   "Swerve/" + getName() + "/Optimized Angle",
-    //   desiredState.angle.getDegrees()
-    // );
-    // SmartDashboard.putNumber(
-    //   "Swerve/" + getName() + "/Optimized Speed",
-    //   desiredState.speedMetersPerSecond
-    // );
-    setDesiredSpeed(desiredState.speedMetersPerSecond);
+    setDesiredSpeed(
+      CTREConverter.metersToRotations(
+        desiredState.speedMetersPerSecond,
+        m_config.DriveWheelCircumferenceMeters,
+        m_config.DriveGearRatio
+      )
+    );
+
     setDesiredAngle(desiredState.angle);
   }
 

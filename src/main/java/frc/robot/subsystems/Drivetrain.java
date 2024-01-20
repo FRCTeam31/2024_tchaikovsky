@@ -74,6 +74,8 @@ public class Drivetrain extends SubsystemBase {
       );
     m_snapToRotationController.enableContinuousInput(-Math.PI, Math.PI);
     m_snapToRotationController.setSetpoint(0);
+
+    m_inHighGear = m_config.Drivetrain.StartInHighGear;
   }
 
   /**
@@ -131,7 +133,7 @@ public class Drivetrain extends SubsystemBase {
     boolean fieldRelative
   ) {
     // Invert Y axis
-    forwardMetersPerSecond *= -1;
+    // forwardMetersPerSecond *= -1;
 
     ChassisSpeeds desiredChassisSpeeds;
 
