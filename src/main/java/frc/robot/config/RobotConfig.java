@@ -19,7 +19,7 @@ public class RobotConfig {
 
   public PIDConstants kDrivePidConstants = new PIDConstants(0.1, 0, 0);
 
-  public PIDConstants kSteeringPidConstants = new PIDConstants(0.1, 0, 0);
+  public PIDConstants kSteeringPidConstants = new PIDConstants(0.01, 0, 0);
 
   public SwerveModuleConfig FrontLeftSwerveModuleConfig = new SwerveModuleConfig(
     "Front-Left",
