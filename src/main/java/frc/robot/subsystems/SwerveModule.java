@@ -34,7 +34,7 @@ public class SwerveModule extends SubsystemBase {
   private final VelocityVoltage m_voltageVelocity = new VelocityVoltage(
     0,
     0,
-    true,
+    false,
     0,
     0,
     false,
