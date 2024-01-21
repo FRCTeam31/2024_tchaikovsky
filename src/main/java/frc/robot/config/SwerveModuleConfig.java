@@ -19,9 +19,8 @@ public class SwerveModuleConfig {
   public double ModuleLocationXMeters = 0;
   public double ModuleLocationYMeters = 0;
 
-  public int DriveGearRatio = 0;
-  public int SteeringGearRatio = 0;
-  public double DriveWheelDiameterMeters = 0;
+  public double DriveGearRatio = 6.75;
+  public double DriveWheelDiameterMeters = 0.102;
   public double DriveWheelCircumferenceMeters =
     Math.PI * DriveWheelDiameterMeters;
 
@@ -42,6 +41,7 @@ public class SwerveModuleConfig {
     int canCoderCanId,
     double startingOffset,
     boolean driveInverted,
+    boolean steerInverted,
     Translation2d location
   ) {
     ModuleName = moduleName;
@@ -50,6 +50,7 @@ public class SwerveModuleConfig {
     CANCoderCanId = canCoderCanId;
     StartingOffset = startingOffset;
     DriveInverted = driveInverted;
+    SteerInverted = steerInverted;
     ModuleLocationXMeters = location.getX();
     ModuleLocationYMeters = location.getY();
   }

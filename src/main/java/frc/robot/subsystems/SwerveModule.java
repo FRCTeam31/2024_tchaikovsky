@@ -4,6 +4,8 @@ import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.MagnetSensorConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.VelocityDutyCycle;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
@@ -27,8 +29,19 @@ public class SwerveModule extends SubsystemBase {
   private TalonFX m_driveMotor;
   private CANcoder m_encoder;
   private SwerveModuleConfig m_config;
-
   private PIDController m_steeringPidController;
+
+  /* Start at velocity 0, enable FOC, no feed forward, use slot 0 */
+  private final VelocityVoltage m_voltageVelocity = new VelocityVoltage(
+    0,
+    0,
+    true,
+    0,
+    0,
+    false,
+    false,
+    false
+  );
 
   public SwerveModule(
     SwerveModuleConfig moduleConfig,
@@ -63,8 +76,8 @@ public class SwerveModule extends SubsystemBase {
 
     // Create a PID controller to calculate steering motor output
     m_steeringPidController = new PIDController(pid[0], pid[1], pid[2], 0.020);
-    m_steeringPidController.enableContinuousInput(-180, 180);
-    m_steeringPidController.setTolerance(1);
+    m_steeringPidController.enableContinuousInput(0, 1);
+    m_steeringPidController.setTolerance((1 / 360.0) * 5);
   }
 
   /**
@@ -76,11 +89,10 @@ public class SwerveModule extends SubsystemBase {
     m_driveMotor.getConfigurator().apply(new TalonFXConfiguration());
 
     TalonFXConfiguration driveMotorConfig = new TalonFXConfiguration();
-    driveMotorConfig.ClosedLoopRamps =
-      m_config.DriveClosedLoopRampConfiguration;
     driveMotorConfig.Slot0 =
       new Slot0Configs().withKP(pid[0]).withKI(pid[1]).withKD(pid[2]);
-    driveMotorConfig.CurrentLimits = m_config.DriveCurrentLimitConfiguration;
+    driveMotorConfig.Voltage.PeakForwardVoltage = 12;
+    driveMotorConfig.Voltage.PeakReverseVoltage = -12;
 
     m_driveMotor.getConfigurator().apply(driveMotorConfig);
     m_driveMotor.setNeutralMode(NeutralModeValue.Brake);
@@ -102,9 +114,8 @@ public class SwerveModule extends SubsystemBase {
         new CANcoderConfiguration()
           .withMagnetSensor(
             new MagnetSensorConfigs()
-              .withAbsoluteSensorRange(
-                AbsoluteSensorRangeValue.Signed_PlusMinusHalf
-              )
+              .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Unsigned_0To1)
+              .withMagnetOffset(-m_config.StartingOffset)
           )
       );
   }
@@ -114,30 +125,38 @@ public class SwerveModule extends SubsystemBase {
    */
   @Override
   public void periodic() {
+    // SmartDashboard.putNumber(
+    //   "Swerve/" + getName() + "/Drive vel",
+    //   getVelocityMetersPerSecond()
+    // );
+    // // SmartDashboard.putNumber("Drive vel =>", mDriveMotor.getClosedLoopTarget(0));
+    // SmartDashboard.putNumber(
+    //   "Swerve/" + getName() + "/Drive output V",
+    //   m_driveMotor.getMotorVoltage().getValueAsDouble()
+    // );
+    // SmartDashboard.putNumber(
+    //   "Swerve/" + getName() + "/Drive output",
+    //   m_driveMotor.get()
+    // );
     SmartDashboard.putNumber(
-      "Module/" + getName() + "/VelocityMPS",
-      getVelocityMetersPerSecond()
+      "Swerve/" + getName() + "/Steering output",
+      m_SteeringMotor.get()
+    );
+    SmartDashboard.putBoolean(
+      "Swerve/" + getName() + "/PID On-Target",
+      m_steeringPidController.atSetpoint()
     );
     SmartDashboard.putNumber(
-      "Module/" + getName() + "/DriveVolts",
-      m_driveMotor.getMotorVoltage().getValueAsDouble()
-    );
-
-    SmartDashboard.putNumber(
-      "Module/" + getName() + "/Heading",
-      getAbsoluteRotation2dWithOffset().getDegrees()
-    );
-    SmartDashboard.putNumber(
-      "Module/" + getName() + "/HeadingSetpoint",
-      m_steeringPidController.getSetpoint()
-    );
-    SmartDashboard.putNumber(
-      "Module/" + getName() + "/HeadingError",
+      "Swerve/" + getName() + "/PID-error",
       m_steeringPidController.getPositionError()
     );
     SmartDashboard.putNumber(
-      "Module/" + getName() + "/SteerSpeed",
-      m_SteeringMotor.get()
+      "Swerve/" + getName() + "/PID-setpoint",
+      m_steeringPidController.getSetpoint()
+    );
+    SmartDashboard.putNumber(
+      "Swerve/" + getName() + "/PID-Measurement",
+      getEncoderHeading()
     );
   }
 
@@ -151,7 +170,7 @@ public class SwerveModule extends SubsystemBase {
         m_config.DriveWheelCircumferenceMeters,
         m_config.DriveGearRatio
       ),
-      getAbsoluteRotation2dWithOffset()
+      getEncoderHeadingRotation2d()
     );
   }
 
@@ -161,9 +180,15 @@ public class SwerveModule extends SubsystemBase {
    * @param angle the new angle for the module to steer to
    */
   public void setDesiredAngle(Rotation2d angle) {
+    // TODO: figure out why this is necessary
+    angle = angle.rotateBy(Rotation2d.fromDegrees(-90));
+
+    var setpoint = angle.getRotations() % 1;
+    if (setpoint < 0) setpoint += 1;
+
     var newOutput = m_steeringPidController.calculate(
-      getMeasurement(),
-      angle.getDegrees()
+      getEncoderHeading(),
+      setpoint
     );
 
     m_SteeringMotor.set(MathUtil.clamp(newOutput, -1, 1));
@@ -174,14 +199,11 @@ public class SwerveModule extends SubsystemBase {
    *
    * @param speedMetersPerSecond The desired speed in meters per second
    */
-  public void setDesiredSpeed(double speedMetersPerSecond) {
-    // TODO: Rewrite this to use velocity API in units of rotations per second
-    m_driveMotor.set(
-      CTREConverter.MPSToFalconTicks(
-        speedMetersPerSecond,
-        m_config.DriveWheelCircumferenceMeters,
-        m_config.DriveGearRatio
-      )
+  public void setDesiredSpeed(double speedRotationsPerSecond) {
+    m_driveMotor.setControl(
+      m_voltageVelocity
+        .withVelocity(speedRotationsPerSecond)
+        .withAcceleration(speedRotationsPerSecond)
     );
   }
 
@@ -192,10 +214,35 @@ public class SwerveModule extends SubsystemBase {
    *                     period
    */
   public void setDesiredState(SwerveModuleState desiredState) {
-    // Optimize the state to avoid turning wheels further than 90 degrees
-    var encoderRotation = getAbsoluteRotation2dWithOffset();
-    desiredState = SwerveModuleState.optimize(desiredState, encoderRotation);
-    setDesiredSpeed(desiredState.speedMetersPerSecond);
+    // TODO: Optimize the state to avoid turning wheels further than 90 degrees
+    // var encoderRotation = getEncoderHeadingRotation2d();
+    // desiredState = SwerveModuleState.optimize(desiredState, encoderRotation);
+    // SmartDashboard.putNumber(
+    //   "Swerve/" + getName() + "/Optimized Angle",
+    //   desiredState.angle.getDegrees()
+    // );
+    // SmartDashboard.putNumber(
+    //   "Swerve/" + getName() + "/Optimized Speed",
+    //   desiredState.speedMetersPerSecond
+    // );
+
+    SmartDashboard.putNumber(
+      "Swerve/" + getName() + "/Desired Angle",
+      desiredState.angle.getDegrees()
+    );
+    SmartDashboard.putNumber(
+      "Swerve/" + getName() + "/Desired Speed",
+      desiredState.speedMetersPerSecond
+    );
+
+    setDesiredSpeed(
+      CTREConverter.metersToRotations(
+        desiredState.speedMetersPerSecond,
+        m_config.DriveWheelCircumferenceMeters,
+        m_config.DriveGearRatio
+      )
+    );
+
     setDesiredAngle(desiredState.angle);
   }
 
@@ -228,25 +275,16 @@ public class SwerveModule extends SubsystemBase {
   }
 
   /**
-   * Gets the absolute position of the encoder in degrees
+   * Gets the heading of the encoder in rotations
    */
-  public double getEncoderAbsoluteRotations() {
+  public double getEncoderHeading() {
     return m_encoder.getAbsolutePosition().getValueAsDouble();
   }
 
   /**
-   * Gets the PIDSubsystem measurement term (absolute degrees)
+   * Gets the encoder heading as a Rotation2d
    */
-  protected double getMeasurement() {
-    return getAbsoluteRotation2dWithOffset().getDegrees();
-  }
-
-  /**
-   * Gets the absolute Rotation2d describing the heading of the module
-   */
-  private Rotation2d getAbsoluteRotation2dWithOffset() {
-    return Rotation2d.fromRotations(
-      getEncoderAbsoluteRotations() - (1 / m_config.StartingOffset)
-    );
+  protected Rotation2d getEncoderHeadingRotation2d() {
+    return Rotation2d.fromRotations(getEncoderHeading());
   }
 }

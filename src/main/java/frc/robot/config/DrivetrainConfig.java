@@ -8,8 +8,8 @@ public class DrivetrainConfig {
 
   public int PigeonId = 0;
 
-  public int MaxSpeedMetersPerSecond = 0;
-  public int MaxAccelerationMetersPerSecondSquared = 0;
+  public double MaxSpeedMetersPerSecond = 0;
+  public double MaxAccelerationMetersPerSecondSquared = 0;
   public double MaxAngularSpeedRadians = Math.PI;
   public double LowGearScalar = 0.5;
   public boolean StartInHighGear = false;
@@ -23,10 +23,11 @@ public class DrivetrainConfig {
     double wheelBaseMeters,
     double wheelBaseCircumferenceMeters,
     int pigeonId,
-    int maxSpeedMetersPerSecond,
-    int maxAccelerationMetersPerSecondSquared,
+    double maxSpeedMetersPerSecond,
+    double maxAccelerationMetersPerSecondSquared,
     double maxAngularSpeedRadians,
     double lowGearScalar,
+    boolean startInHighGear,
     double[] drivePID,
     double[] steeringPID,
     double[] snapToPID
@@ -42,6 +43,7 @@ public class DrivetrainConfig {
       maxAccelerationMetersPerSecondSquared;
     MaxAngularSpeedRadians = maxAngularSpeedRadians;
     LowGearScalar = lowGearScalar;
+    StartInHighGear = startInHighGear;
 
     DrivePID = drivePID;
     SteeringPID = steeringPID;
