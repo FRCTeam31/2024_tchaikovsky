@@ -4,19 +4,20 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.config.RobotConfig;
 import frc.robot.subsystems.Drivetrain;
-import prime.config.Controls;
+import prime.control.Controls;
+import prime.control.PrimeXboxController;
 
 public class RobotContainer {
 
   public RobotConfig m_config;
   public Drivetrain Drivetrain;
-  public CommandXboxController DriverController;
+  public PrimeXboxController DriverController;
 
   public RobotContainer(RobotConfig config) {
     m_config = config;
@@ -26,15 +27,41 @@ public class RobotContainer {
     configureBindings();
   }
 
+  public void reconfigure(RobotConfig config) {
+    try {
+      // Close subsystems before reconfiguring
+      Drivetrain.close();
+
+      // Save new config
+      m_config = config;
+
+      // Create new subsystems
+      Drivetrain = new Drivetrain(m_config);
+
+      // Reconfigure bindings
+      configureBindings();
+    } catch (Exception e) {
+      DriverStation.reportError(
+        "Failed to close subsystems before reconfiguring",
+        e.getStackTrace()
+      );
+    }
+  }
+
   private void configureBindings() {
-    DriverController = new CommandXboxController(Controls.DRIVER_PORT);
+    DriverController = new PrimeXboxController(Controls.DRIVER_PORT);
+
     Drivetrain.setDefaultCommand(
       Drivetrain.defaultDriveCommand(
-        () -> DriverController.getRawAxis(Controls.LEFT_STICK_Y),
-        () -> DriverController.getRawAxis(Controls.LEFT_STICK_X),
-        () ->
-          DriverController.getRawAxis(Controls.RIGHT_TRIGGER) -
-          DriverController.getRawAxis(Controls.LEFT_TRIGGER),
+        DriverController.getLeftStickYSupplier(
+          m_config.Drivetrain.DriveDeadband,
+          m_config.Drivetrain.DeadbandCurveWeight
+        ),
+        DriverController.getLeftStickXSupplier(
+          m_config.Drivetrain.DriveDeadband,
+          m_config.Drivetrain.DeadbandCurveWeight
+        ),
+        DriverController.getTriggerSupplier(),
         false
       )
     );

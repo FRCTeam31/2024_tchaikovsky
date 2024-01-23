@@ -16,13 +16,14 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.SwerveModuleConfig;
 import prime.movers.LazyCANSparkMax;
 import prime.utilities.CTREConverter;
 
-public class SwerveModule extends SubsystemBase {
+public class SwerveModule extends SubsystemBase implements AutoCloseable {
 
   private LazyCANSparkMax m_SteeringMotor;
   private TalonFX m_driveMotor;
@@ -285,5 +286,17 @@ public class SwerveModule extends SubsystemBase {
    */
   protected Rotation2d getEncoderHeadingRotation2d() {
     return Rotation2d.fromRotations(getEncoderHeading());
+  }
+
+  @Override
+  public void close() {
+    DriverStation.reportWarning(
+      ">> Module " + getName() + " closing...",
+      false
+    );
+    m_SteeringMotor.close();
+    m_driveMotor.close();
+    m_encoder.close();
+    m_steeringPidController.close();
   }
 }

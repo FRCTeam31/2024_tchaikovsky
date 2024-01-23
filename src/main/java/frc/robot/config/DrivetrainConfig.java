@@ -18,6 +18,9 @@ public class DrivetrainConfig {
   public double[] SteeringPID = new double[] { 0, 0, 0 };
   public double[] SnapToPID = new double[] { 0, 0, 0 };
 
+  public double DriveDeadband = 0;
+  public double DeadbandCurveWeight = 0;
+
   public DrivetrainConfig(
     double trackWidthMeters,
     double wheelBaseMeters,
@@ -30,7 +33,9 @@ public class DrivetrainConfig {
     boolean startInHighGear,
     double[] drivePID,
     double[] steeringPID,
-    double[] snapToPID
+    double[] snapToPID,
+    double driveDeadband,
+    double deadbandCurveWeight
   ) {
     TrackWidthMeters = trackWidthMeters;
     WheelBaseMeters = wheelBaseMeters;
@@ -48,5 +53,8 @@ public class DrivetrainConfig {
     DrivePID = drivePID;
     SteeringPID = steeringPID;
     SnapToPID = snapToPID;
+
+    DriveDeadband = driveDeadband;
+    DeadbandCurveWeight = deadbandCurveWeight;
   }
 }

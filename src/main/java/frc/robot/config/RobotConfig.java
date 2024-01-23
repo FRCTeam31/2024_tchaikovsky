@@ -31,7 +31,9 @@ public class RobotConfig {
         false,
         new double[] { 0.1, 0, 0 },
         new double[] { 2, 0, 0 },
-        new double[] { 0, 0, 0 }
+        new double[] { 0, 0, 0 },
+        0.15,
+        0.1
       );
 
     config.FrontLeftSwerveModule =
