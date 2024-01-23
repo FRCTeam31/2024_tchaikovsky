@@ -18,8 +18,8 @@ public class SwerveModuleConfig {
   public boolean DriveInverted = false;
   public boolean SteerInverted = false;
 
-  public PIDConstants DrivePidConstants = new PIDConstants(0);
-  public PIDConstants SteeringPidConstants = new PIDConstants(0);
+  public PIDConstants DrivePidConstants = new PIDConstants(0, 0, 0);
+  public PIDConstants SteeringPidConstants = new PIDConstants(0, 0, 0);
 
   public Translation2d ModuleLocation = new Translation2d();
 
