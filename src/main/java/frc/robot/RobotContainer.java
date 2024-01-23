@@ -42,7 +42,7 @@ public class RobotContainer {
       configureBindings();
     } catch (Exception e) {
       DriverStation.reportError(
-        "Failed to close subsystems before reconfiguring",
+        "Failed to reconfigure robot: " + e.getMessage(),
         e.getStackTrace()
       );
     }
