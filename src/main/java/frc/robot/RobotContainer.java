@@ -23,7 +23,8 @@ public class RobotContainer {
     m_config = config;
 
     Drivetrain = new Drivetrain(m_config);
-    SmartDashboard.putData(Drivetrain);
+    DriverController = new PrimeXboxController(Controls.DRIVER_PORT);
+
     configureBindings();
   }
 
@@ -49,8 +50,6 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    DriverController = new PrimeXboxController(Controls.DRIVER_PORT);
-
     Drivetrain.setDefaultCommand(
       Drivetrain.defaultDriveCommand(
         DriverController.getLeftStickYSupplier(
