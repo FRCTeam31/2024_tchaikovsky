@@ -16,7 +16,7 @@ public class RobotConfig {
     Math.PI,
     0.3,
     false,
-    new PIDConstants(0, 0, 0)
+    new PIDConstants(1, 0, 0)
   );
 
   public PIDConstants kDrivePidConstants = new PIDConstants(1, 0, 0);
