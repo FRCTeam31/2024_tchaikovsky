@@ -11,15 +11,15 @@ public class RobotConfig {
     0.55,
     Math.PI * 0.7778174593052,
     1,
+    Units.feetToMeters(19.685),
     Units.feetToMeters(10),
-    Units.feetToMeters(5),
     Math.PI,
     0.3,
     false,
     new PIDConstants(0, 0, 0)
   );
 
-  public PIDConstants kDrivePidConstants = new PIDConstants(0.1, 0, 0);
+  public PIDConstants kDrivePidConstants = new PIDConstants(1, 0, 0);
 
   public PIDConstants kSteeringPidConstants = new PIDConstants(2, 0, 0);
 

@@ -35,7 +35,7 @@ public class RobotContainer {
         () ->
           DriverController.getRawAxis(Controls.RIGHT_TRIGGER) -
           DriverController.getRawAxis(Controls.LEFT_TRIGGER),
-        false
+        true
       )
     );
 
