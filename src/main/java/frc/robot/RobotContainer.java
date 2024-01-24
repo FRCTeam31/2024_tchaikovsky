@@ -35,7 +35,7 @@ public class RobotContainer {
         () ->
           DriverController.getRawAxis(Controls.RIGHT_TRIGGER) -
           DriverController.getRawAxis(Controls.LEFT_TRIGGER),
-        false
+        true
       )
     );
 
@@ -51,6 +51,11 @@ public class RobotContainer {
     DriverController
       .pov(Controls.left)
       .onTrue(Drivetrain.driveWithSnapToAngleCommand(Math.toRadians(-90)));
+
+    DriverController.button(Controls.A).onTrue(Drivetrain.resetGyroCommand());
+    DriverController
+      .button(Controls.B)
+      .onTrue(Drivetrain.toggleShifterCommand());
   }
 
   public Command getAutonomousCommand() {
