@@ -5,7 +5,6 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.config.RobotConfig;
@@ -77,6 +76,11 @@ public class RobotContainer {
     DriverController
       .pov(Controls.left)
       .onTrue(Drivetrain.driveWithSnapToAngleCommand(Math.toRadians(-90)));
+
+    DriverController.button(Controls.A).onTrue(Drivetrain.resetGyroCommand());
+    DriverController
+      .button(Controls.B)
+      .onTrue(Drivetrain.toggleShifterCommand());
   }
 
   public Command getAutonomousCommand() {

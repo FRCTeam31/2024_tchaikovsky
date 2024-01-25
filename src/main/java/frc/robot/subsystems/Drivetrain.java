@@ -16,7 +16,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.RobotConfig;
-import java.sql.Driver;
 import java.util.function.DoubleSupplier;
 import prime.control.Controls;
 
@@ -337,27 +336,27 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     var robotPose = m_odometry.update(gyroAngle, getModulePositions());
     m_field.setRobotPose(robotPose);
 
-    // SmartDashboard.putNumber(
-    //   "Drive/SnapTo/PID error",
-    //   Math.toDegrees(m_snapToRotationController.getPositionError())
-    // );
-    // SmartDashboard.putNumber(
-    //   "Drive/SnapTo/PID last output",
-    //   m_lastSnapToCalculatedPIDOutput
-    // );
-    // SmartDashboard.putNumber(
-    //   "Drive/SnapTo/Rotation Radians",
-    //   m_lastRotationRadians
-    // );
-    // SmartDashboard.putNumber(
-    //   "Drive/SnapTo/ setpoint",
-    //   Math.toDegrees(m_snapToRotationController.getSetpoint())
-    // );
-    // SmartDashboard.putBoolean("Drive/SnapTo/ enabled?", m_snapToGyroEnabled);
-    // SmartDashboard.putNumber(
-    //   "Drive/SnapTo/Current GYro angle",
-    //   Math.toDegrees(MathUtil.angleModulus(m_gyro.getRotation2d().getRadians()))
-    // );
+    SmartDashboard.putNumber(
+      "Drive/SnapTo/PID error",
+      Math.toDegrees(m_snapToRotationController.getPositionError())
+    );
+    SmartDashboard.putNumber(
+      "Drive/SnapTo/PID last output",
+      m_lastSnapToCalculatedPIDOutput
+    );
+    SmartDashboard.putNumber(
+      "Drive/SnapTo/Rotation Radians",
+      m_lastRotationRadians
+    );
+    SmartDashboard.putNumber(
+      "Drive/SnapTo/ setpoint",
+      Math.toDegrees(m_snapToRotationController.getSetpoint())
+    );
+    SmartDashboard.putBoolean("Drive/SnapTo/ enabled?", m_snapToGyroEnabled);
+    SmartDashboard.putNumber(
+      "Drive/SnapTo/Current GYro angle",
+      Math.toDegrees(MathUtil.angleModulus(m_gyro.getRotation2d().getRadians()))
+    );
     SmartDashboard.putBoolean("Drive/ in high gear?", m_inHighGear);
   }
 
