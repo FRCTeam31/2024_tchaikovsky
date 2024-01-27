@@ -37,7 +37,7 @@ public class RobotContainer {
         () ->
           DriverController.getRawAxis(Controls.RIGHT_TRIGGER) -
           DriverController.getRawAxis(Controls.LEFT_TRIGGER),
-        true
+        false
       )
     );
 
@@ -61,8 +61,9 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-      // Load the path you want to follow using its name in the GUI
+    // Load the path you want to follow using its name in the GUI
     PathPlannerPath path = PathPlannerPath.fromPathFile("line 1m");
+    Drivetrain.resetGyro();
 
     // Create a path following command using AutoBuilder. This will also trigger event markers.
     return AutoBuilder.followPathWithEvents(path);
