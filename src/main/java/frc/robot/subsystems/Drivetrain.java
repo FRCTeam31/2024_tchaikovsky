@@ -38,7 +38,7 @@ public class Drivetrain extends SubsystemBase {
 
   // Odometry
   SwerveDriveOdometry m_odometry;
-  Field2d m_field;
+  public Field2d m_field;
 
   // Snap to Gyro Angle PID
   public double m_lastSnapToCalculatedPIDOutput;
@@ -68,7 +68,6 @@ public class Drivetrain extends SubsystemBase {
     // Configure field
     m_field = new Field2d();
     SmartDashboard.putData(getName() + "/Field", m_field);
-
     // Configure snap-to PID
     m_snapToRotationController =
       new PIDController(

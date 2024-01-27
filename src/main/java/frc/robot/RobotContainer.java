@@ -6,12 +6,15 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.config.RobotConfig;
 import frc.robot.subsystems.Drivetrain;
+import org.opencv.core.RotatedRect;
 import prime.config.Controls;
 
 public class RobotContainer {
@@ -63,6 +66,12 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     // Load the path you want to follow using its name in the GUI
     Drivetrain.resetGyro();
+
+    // Sets the starting Position on the path.
+    Rotation2d startingRotation = new Rotation2d(0);
+    Pose2d startingPosition = new Pose2d(1, 5.23, startingRotation);
+    Drivetrain.m_field.setRobotPose(startingPosition);
+
     PathPlannerPath path = PathPlannerPath.fromPathFile("line 1m");
 
     // Create a path following command using AutoBuilder. This will also trigger event markers.
