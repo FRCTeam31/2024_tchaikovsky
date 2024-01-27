@@ -68,9 +68,9 @@ public class RobotContainer {
     Drivetrain.resetGyro();
 
     // Sets the starting Position on the path.
-    Rotation2d startingRotation = new Rotation2d(0);
-    Pose2d startingPosition = new Pose2d(1, 5.23, startingRotation);
-    Drivetrain.m_field.setRobotPose(startingPosition);
+    // Rotation2d startingRotation = new Rotation2d(0);
+    // Pose2d startingPosition = new Pose2d(1, 5.23, startingRotation);
+    // Drivetrain.m_field.setRobotPose(startingPosition);
 
     PathPlannerPath path = PathPlannerPath.fromPathFile("line 1m");
 

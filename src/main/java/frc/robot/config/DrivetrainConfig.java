@@ -29,8 +29,7 @@ public class DrivetrainConfig {
     double maxAngularSpeedRadians,
     double lowGearScalar,
     boolean startInHighGear,
-    PIDConstants snapToPidConstants,
-    double driveBaseRadius
+    PIDConstants snapToPidConstants
   ) {
     TrackWidthMeters = trackWidthMeters;
     WheelBaseMeters = wheelBaseMeters;
@@ -46,6 +45,5 @@ public class DrivetrainConfig {
     StartInHighGear = startInHighGear;
 
     SnapToPidConstants = snapToPidConstants;
-    DriveBaseRadius = driveBaseRadius;
   }
 }

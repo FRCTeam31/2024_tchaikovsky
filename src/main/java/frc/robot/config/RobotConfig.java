@@ -16,8 +16,7 @@ public class RobotConfig {
     Math.PI,
     0.3,
     false,
-    new PIDConstants(1, 0, 0),
-    0.39513126933 // <- Math: DriveBaseRadius (in inches) is 11*sqrt(2) converted to meters.
+    new PIDConstants(1, 0, 0)
   );
 
   public PIDConstants kDrivePidConstants = new PIDConstants(1, 0, 0);
