@@ -227,13 +227,15 @@ public class SwerveModule extends SubsystemBase {
       desiredState.speedMetersPerSecond
     );
 
-    setDesiredSpeed(
-      CTREConverter.metersToRotations(
-        desiredState.speedMetersPerSecond,
-        m_config.DriveWheelCircumferenceMeters,
-        m_config.DriveGearRatio
-      )
-    );
+    if (m_steeringPidController.atSetpoint()) {
+      setDesiredSpeed(
+        CTREConverter.metersToRotations(
+          desiredState.speedMetersPerSecond,
+          m_config.DriveWheelCircumferenceMeters,
+          m_config.DriveGearRatio
+        )
+      );
+    }
 
     setDesiredAngle(desiredState.angle);
   }
