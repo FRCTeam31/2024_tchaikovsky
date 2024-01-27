@@ -167,6 +167,13 @@ public class SwerveModule extends SubsystemBase {
     );
   }
 
+  public SwerveModuleState getModuleState() {
+    return new SwerveModuleState(
+      getVelocityMetersPerSecond(),
+      getEncoderHeadingRotation2d()
+    );
+  }
+
   /**
    * Sets the setpoint of the steering PID to the new angle provided
    *
