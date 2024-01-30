@@ -39,7 +39,7 @@ public class Drivetrain extends SubsystemBase {
 
   // Odometry
   SwerveDriveOdometry m_odometry;
-  Field2d m_field;
+  public Field2d m_field;
 
   // Snap to Gyro Angle PID
   public double m_lastSnapToCalculatedPIDOutput;
@@ -69,7 +69,6 @@ public class Drivetrain extends SubsystemBase {
     // Configure field
     m_field = new Field2d();
     SmartDashboard.putData(getName() + "/Field", m_field);
-
     // Configure snap-to PID
     m_snapToRotationController =
       new PIDController(
@@ -88,8 +87,8 @@ public class Drivetrain extends SubsystemBase {
       this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
       this::drive, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
       new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
-        new PIDConstants(0, 0, 0), // Translation PID constants
-        new PIDConstants(0, 0, 0), // Rotation PID constants
+        new PIDConstants(0.1, 0, 0), // Translation PID constants
+        new PIDConstants(0, 0, 0), // Rotation PID constants        0.7
         m_config.Drivetrain.MaxSpeedMetersPerSecond, // Max module speed, in m/s
         m_config.Drivetrain.WheelBaseCircumferenceMeters / Math.PI / 2, // Drive base radius in meters. Distance from robot center to furthest module.
         new ReplanningConfig() // Default path replanning config. See the API for the options here

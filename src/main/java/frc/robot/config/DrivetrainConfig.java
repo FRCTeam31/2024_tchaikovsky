@@ -15,6 +15,7 @@ public class DrivetrainConfig {
   public double MaxAngularSpeedRadians = Math.PI;
   public double LowGearScalar = 0.5;
   public boolean StartInHighGear = false;
+  public double DriveBaseRadius = 0;
 
   public PIDConstants SnapToPidConstants = new PIDConstants(0, 0, 0);
 
