@@ -33,7 +33,7 @@ public class SwerveModule extends SubsystemBase {
   private final VelocityVoltage m_voltageVelocity = new VelocityVoltage(
     0,
     0,
-    true,
+    false,
     0,
     0,
     false,
@@ -118,10 +118,10 @@ public class SwerveModule extends SubsystemBase {
    */
   @Override
   public void periodic() {
-    // SmartDashboard.putNumber(
-    //   "Swerve/" + getName() + "/Drive vel",
-    //   getVelocityMetersPerSecond()
-    // );
+    SmartDashboard.putNumber(
+      "Swerve/" + getName() + "/Drive vel",
+      getModuleState().speedMetersPerSecond
+    );
     // // SmartDashboard.putNumber("Drive vel =>", mDriveMotor.getClosedLoopTarget(0));
     // SmartDashboard.putNumber(
     //   "Swerve/" + getName() + "/Drive output V",
@@ -202,7 +202,7 @@ public class SwerveModule extends SubsystemBase {
     m_driveMotor.setControl(
       m_voltageVelocity
         .withVelocity(speedRotationsPerSecond)
-        .withAcceleration(speedRotationsPerSecond)
+        .withAcceleration(speedRotationsPerSecond / 2)
     );
   }
 
