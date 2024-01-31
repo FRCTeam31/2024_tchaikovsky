@@ -33,7 +33,7 @@ public class SwerveModule extends SubsystemBase {
   private final VelocityVoltage m_voltageVelocity = new VelocityVoltage(
     0,
     0,
-    true,
+    false,
     0,
     0,
     false,
@@ -118,10 +118,10 @@ public class SwerveModule extends SubsystemBase {
    */
   @Override
   public void periodic() {
-    // SmartDashboard.putNumber(
-    //   "Swerve/" + getName() + "/Drive vel",
-    //   getVelocityMetersPerSecond()
-    // );
+    SmartDashboard.putNumber(
+      "Swerve/" + getName() + "/Drive vel",
+      getModuleState().speedMetersPerSecond
+    );
     // // SmartDashboard.putNumber("Drive vel =>", mDriveMotor.getClosedLoopTarget(0));
     // SmartDashboard.putNumber(
     //   "Swerve/" + getName() + "/Drive output V",
@@ -167,6 +167,13 @@ public class SwerveModule extends SubsystemBase {
     );
   }
 
+  public SwerveModuleState getModuleState() {
+    return new SwerveModuleState(
+      getVelocityMetersPerSecond(),
+      getEncoderHeadingRotation2d()
+    );
+  }
+
   /**
    * Sets the setpoint of the steering PID to the new angle provided
    *
@@ -195,7 +202,7 @@ public class SwerveModule extends SubsystemBase {
     m_driveMotor.setControl(
       m_voltageVelocity
         .withVelocity(speedRotationsPerSecond)
-        .withAcceleration(speedRotationsPerSecond)
+        .withAcceleration(speedRotationsPerSecond / 2)
     );
   }
 
@@ -209,14 +216,14 @@ public class SwerveModule extends SubsystemBase {
     // TODO: Optimize the state to avoid turning wheels further than 90 degrees
     // var encoderRotation = getEncoderHeadingRotation2d();
     // desiredState = SwerveModuleState.optimize(desiredState, encoderRotation);
-    // SmartDashboard.putNumber(
-    //   "Swerve/" + getName() + "/Optimized Angle",
-    //   desiredState.angle.getDegrees()
-    // );
-    // SmartDashboard.putNumber(
-    //   "Swerve/" + getName() + "/Optimized Speed",
-    //   desiredState.speedMetersPerSecond
-    // );
+    SmartDashboard.putNumber(
+      "Swerve/" + getName() + "/Optimized Angle",
+      desiredState.angle.getDegrees()
+    );
+    SmartDashboard.putNumber(
+      "Swerve/" + getName() + "/Optimized Speed",
+      desiredState.speedMetersPerSecond
+    );
 
     SmartDashboard.putNumber(
       "Swerve/" + getName() + "/Desired Angle",
@@ -227,13 +234,15 @@ public class SwerveModule extends SubsystemBase {
       desiredState.speedMetersPerSecond
     );
 
-    setDesiredSpeed(
-      CTREConverter.metersToRotations(
-        desiredState.speedMetersPerSecond,
-        m_config.DriveWheelCircumferenceMeters,
-        m_config.DriveGearRatio
-      )
-    );
+    if (m_steeringPidController.atSetpoint()) {
+      setDesiredSpeed(
+        CTREConverter.metersToRotations(
+          desiredState.speedMetersPerSecond,
+          m_config.DriveWheelCircumferenceMeters,
+          m_config.DriveGearRatio
+        )
+      );
+    }
 
     setDesiredAngle(desiredState.angle);
   }
