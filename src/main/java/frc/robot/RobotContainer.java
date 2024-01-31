@@ -4,9 +4,7 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.path.PathPlannerPath;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.config.RobotConfig;
@@ -23,7 +21,6 @@ public class RobotContainer {
     m_config = config;
 
     Drivetrain = new Drivetrain(m_config);
-    SmartDashboard.putData(Drivetrain);
     configureBindings();
   }
 
@@ -68,9 +65,7 @@ public class RobotContainer {
     // Pose2d startingPosition = new Pose2d(1, 5.23, startingRotation);
     // Drivetrain.m_field.setRobotPose(startingPosition);
 
-    PathPlannerPath path = PathPlannerPath.fromPathFile("line 1m");
-
     // Create a path following command using AutoBuilder. This will also trigger event markers.
-    return AutoBuilder.followPath(path);
+    return new PathPlannerAuto("1m Auto");
   }
 }

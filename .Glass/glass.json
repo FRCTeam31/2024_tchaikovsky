@@ -1,0 +1,27 @@
+{
+  "NetworkTables": {
+    "Transitory Values": {
+      "open": false
+    },
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/SmartDashboard/Drive/Field": "Field2d",
+      "/SmartDashboard/Drivetrain": "Subsystem",
+      "/SmartDashboard/Drivetrain/Field": "Field2d"
+    },
+    "windows": {
+      "/SmartDashboard/Drive/Field": {
+        "window": {
+          "visible": true
+        }
+      }
+    }
+  },
+  "NetworkTables Info": {
+    "visible": true
+  },
+  "NetworkTables Settings": {
+    "mode": "Client (NT4)",
+    "serverTeam": "31"
+  }
+}

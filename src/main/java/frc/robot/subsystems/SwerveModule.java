@@ -16,6 +16,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.SwerveModuleConfig;
@@ -180,9 +181,6 @@ public class SwerveModule extends SubsystemBase {
    * @param angle the new angle for the module to steer to
    */
   public void setDesiredAngle(Rotation2d angle) {
-    // TODO: figure out why this is necessary
-    angle = angle.rotateBy(Rotation2d.fromDegrees(-90));
-
     var setpoint = angle.getRotations() % 1;
     if (setpoint < 0) setpoint += 1;
 
@@ -213,27 +211,7 @@ public class SwerveModule extends SubsystemBase {
    *                     period
    */
   public void setDesiredState(SwerveModuleState desiredState) {
-    // TODO: Optimize the state to avoid turning wheels further than 90 degrees
-    // var encoderRotation = getEncoderHeadingRotation2d();
-    // desiredState = SwerveModuleState.optimize(desiredState, encoderRotation);
-    SmartDashboard.putNumber(
-      "Swerve/" + getName() + "/Optimized Angle",
-      desiredState.angle.getDegrees()
-    );
-    SmartDashboard.putNumber(
-      "Swerve/" + getName() + "/Optimized Speed",
-      desiredState.speedMetersPerSecond
-    );
-
-    SmartDashboard.putNumber(
-      "Swerve/" + getName() + "/Desired Angle",
-      desiredState.angle.getDegrees()
-    );
-    SmartDashboard.putNumber(
-      "Swerve/" + getName() + "/Desired Speed",
-      desiredState.speedMetersPerSecond
-    );
-
+    // desiredState = optimize(desiredState);
     if (m_steeringPidController.atSetpoint()) {
       setDesiredSpeed(
         CTREConverter.metersToRotations(
@@ -245,6 +223,31 @@ public class SwerveModule extends SubsystemBase {
     }
 
     setDesiredAngle(desiredState.angle);
+  }
+
+  public SwerveModuleState optimize(SwerveModuleState desiredState) {
+    double actualAngle = getEncoderHeadingRotation2d().getDegrees();
+    double desiredAngle = desiredState.angle.getDegrees();
+    double inputInv = (desiredAngle + 180) % 360;
+    double distNonInv = actualAngle - desiredAngle;
+    double distToInv = actualAngle - inputInv;
+    SwerveModuleState optimizedState;
+
+    if (distToInv < distNonInv) {
+      optimizedState =
+        new SwerveModuleState(
+          -desiredState.speedMetersPerSecond,
+          Rotation2d.fromDegrees(distToInv)
+        );
+    } else {
+      optimizedState =
+        new SwerveModuleState(
+          desiredState.speedMetersPerSecond,
+          Rotation2d.fromDegrees(distNonInv)
+        );
+    }
+
+    return optimizedState;
   }
 
   /**
@@ -279,7 +282,18 @@ public class SwerveModule extends SubsystemBase {
    * Gets the heading of the encoder in rotations
    */
   public double getEncoderHeading() {
-    return m_encoder.getAbsolutePosition().getValueAsDouble();
+    var rawHeading = m_encoder.getAbsolutePosition().getValueAsDouble();
+    // TODO: figure out why adjustment is necessary
+
+    return DriverStation.isAutonomous()
+      ? Rotation2d
+        .fromRotations(rawHeading)
+        .rotateBy(Rotation2d.fromDegrees(180))
+        .getRotations()
+      : Rotation2d
+        .fromRotations(rawHeading)
+        .rotateBy(Rotation2d.fromDegrees(90))
+        .getRotations();
   }
 
   /**

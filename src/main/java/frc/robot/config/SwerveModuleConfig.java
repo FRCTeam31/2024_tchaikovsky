@@ -18,7 +18,6 @@ public class SwerveModuleConfig {
   public boolean DriveInverted = false;
   public boolean SteerInverted = false;
 
-  public PIDConstants DrivePidConstants = new PIDConstants(0, 0, 0);
   public PIDConstants SteeringPidConstants = new PIDConstants(0, 0, 0);
 
   public double DriveKV = 0.18;
@@ -30,11 +29,8 @@ public class SwerveModuleConfig {
   public double DriveWheelCircumferenceMeters =
     Math.PI * DriveWheelDiameterMeters;
 
-  public Slot0Configs DriveSlot0Configuration = new Slot0Configs()
-    .withKP(0.019)
-    .withKI(0)
-    .withKD(0)
-    .withKV(0.18);
+  public Slot0Configs DriveSlot0Configuration;
+
   public ClosedLoopRampsConfigs DriveClosedLoopRampConfiguration = new ClosedLoopRampsConfigs()
     .withTorqueClosedLoopRampPeriod(0.5)
     .withVoltageClosedLoopRampPeriod(0.5)
@@ -64,7 +60,12 @@ public class SwerveModuleConfig {
     StartingOffset = startingOffset;
     DriveInverted = driveInverted;
     SteerInverted = steerInverted;
-    DrivePidConstants = drivePid;
+    DriveSlot0Configuration =
+      new Slot0Configs()
+        .withKP(drivePid.kP)
+        .withKI(drivePid.kI)
+        .withKD(drivePid.kD)
+        .withKV(0.105);
     SteeringPidConstants = steerPid;
     ModuleLocation = location;
   }
