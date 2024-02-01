@@ -44,7 +44,7 @@ public class RobotConfig {
         new PrimePIDConstants(0.018, 0, 0.005), // Pathing Translation PID
         new PrimePIDConstants(0, 0, 0), // Pathing Rotation PID
         0.15,
-        0.1
+        0.5
       );
 
     config.FrontLeftSwerveModule =

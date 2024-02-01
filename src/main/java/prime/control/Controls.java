@@ -64,9 +64,9 @@ public class Controls {
   }
 
   /**
-   * @param input The original input value. Range: -1 to 1
-   * @param cutoff The deadband cutoff
-   * @param weight The weight of the cubic curve
+   * @param input The original input value (-1 - 1)
+   * @param cutoff The deadband cutoff (0 - 1)
+   * @param weight The weight of the cubic curve (0 - 1)
    * @return Cubic-scaled input without a cutoff jump
    */
   public static double cubicScaledDeadband(
