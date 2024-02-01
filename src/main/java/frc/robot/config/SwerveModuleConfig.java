@@ -18,6 +18,7 @@ public class SwerveModuleConfig {
 
   public double ModuleLocationXMeters = 0;
   public double ModuleLocationYMeters = 0;
+  public Translation2d ModuleLocation = new Translation2d();
 
   public double DriveGearRatio = 6.75;
   public double DriveWheelDiameterMeters = 0.102;
@@ -53,6 +54,7 @@ public class SwerveModuleConfig {
     SteerInverted = steerInverted;
     ModuleLocationXMeters = location.getX();
     ModuleLocationYMeters = location.getY();
+    ModuleLocation = location;
   }
 
   public Translation2d getModuleLocation() {

@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.SwerveModuleConfig;
+import prime.control.PrimePIDConstants;
 import prime.movers.LazyCANSparkMax;
 import prime.utilities.CTREConverter;
 
@@ -45,8 +46,8 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
 
   public SwerveModule(
     SwerveModuleConfig moduleConfig,
-    double[] drivePID,
-    double[] steeringPID
+    PrimePIDConstants drivePID,
+    PrimePIDConstants steeringPID
   ) {
     m_config = moduleConfig;
     setName(m_config.ModuleName);
@@ -64,7 +65,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
   /**
    * Sets up the steering motor and PID controller
    */
-  private void setupSteeringMotor(double[] pid) {
+  private void setupSteeringMotor(PrimePIDConstants pid) {
     m_SteeringMotor =
       new LazyCANSparkMax(m_config.SteeringMotorCanId, MotorType.kBrushless);
     m_SteeringMotor.restoreFactoryDefaults();
@@ -75,7 +76,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
     m_SteeringMotor.setInverted(m_config.SteerInverted); // CCW inversion
 
     // Create a PID controller to calculate steering motor output
-    m_steeringPidController = new PIDController(pid[0], pid[1], pid[2], 0.020);
+    m_steeringPidController = new PIDController(pid.kP, pid.kI, pid.kD, 0.020);
     m_steeringPidController.enableContinuousInput(0, 1);
     m_steeringPidController.setTolerance((1 / 360.0) * 5);
   }
@@ -83,14 +84,14 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
   /**
    * Sets up the drive motor
    */
-  public void setupDriveMotor(double[] pid) {
+  public void setupDriveMotor(PrimePIDConstants pid) {
     m_driveMotor = new TalonFX(m_config.DriveMotorCanId);
     m_driveMotor.clearStickyFaults();
     m_driveMotor.getConfigurator().apply(new TalonFXConfiguration());
 
     TalonFXConfiguration driveMotorConfig = new TalonFXConfiguration();
     driveMotorConfig.Slot0 =
-      new Slot0Configs().withKP(pid[0]).withKI(pid[1]).withKD(pid[2]);
+      new Slot0Configs().withKP(pid.kP).withKI(pid.kI).withKD(pid.kD);
     driveMotorConfig.Voltage.PeakForwardVoltage = 12;
     driveMotorConfig.Voltage.PeakReverseVoltage = -12;
 
@@ -125,10 +126,10 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
    */
   @Override
   public void periodic() {
-    // SmartDashboard.putNumber(
-    //   "Swerve/" + getName() + "/Drive vel",
-    //   getVelocityMetersPerSecond()
-    // );
+    SmartDashboard.putNumber(
+      "Swerve/" + getName() + "/Drive vel",
+      getModuleState().speedMetersPerSecond
+    );
     // // SmartDashboard.putNumber("Drive vel =>", mDriveMotor.getClosedLoopTarget(0));
     // SmartDashboard.putNumber(
     //   "Swerve/" + getName() + "/Drive output V",
@@ -174,15 +175,19 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
     );
   }
 
+  public SwerveModuleState getModuleState() {
+    return new SwerveModuleState(
+      getVelocityMetersPerSecond(),
+      getEncoderHeadingRotation2d()
+    );
+  }
+
   /**
    * Sets the setpoint of the steering PID to the new angle provided
    *
    * @param angle the new angle for the module to steer to
    */
   public void setDesiredAngle(Rotation2d angle) {
-    // TODO: figure out why this is necessary
-    angle = angle.rotateBy(Rotation2d.fromDegrees(-90));
-
     var setpoint = angle.getRotations() % 1;
     if (setpoint < 0) setpoint += 1;
 
@@ -203,7 +208,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
     m_driveMotor.setControl(
       m_voltageVelocity
         .withVelocity(speedRotationsPerSecond)
-        .withAcceleration(speedRotationsPerSecond)
+        .withAcceleration(speedRotationsPerSecond / 2)
     );
   }
 
@@ -214,36 +219,43 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
    *                     period
    */
   public void setDesiredState(SwerveModuleState desiredState) {
-    // TODO: Optimize the state to avoid turning wheels further than 90 degrees
-    var encoderRotation = getEncoderHeadingRotation2d();
-    desiredState = SwerveModuleState.optimize(desiredState, encoderRotation);
-    SmartDashboard.putNumber(
-      "Swerve/" + getName() + "/Optimized Angle",
-      desiredState.angle.getDegrees()
-    );
-    SmartDashboard.putNumber(
-      "Swerve/" + getName() + "/Optimized Speed",
-      desiredState.speedMetersPerSecond
-    );
-
-    SmartDashboard.putNumber(
-      "Swerve/" + getName() + "/Desired Angle",
-      desiredState.angle.getDegrees()
-    );
-    SmartDashboard.putNumber(
-      "Swerve/" + getName() + "/Desired Speed",
-      desiredState.speedMetersPerSecond
-    );
-
-    setDesiredSpeed(
-      CTREConverter.metersToRotations(
-        desiredState.speedMetersPerSecond,
-        m_config.DriveWheelCircumferenceMeters,
-        m_config.DriveGearRatio
-      )
-    );
+    // desiredState = optimize(desiredState);
+    if (m_steeringPidController.atSetpoint()) {
+      setDesiredSpeed(
+        CTREConverter.metersToRotations(
+          desiredState.speedMetersPerSecond,
+          m_config.DriveWheelCircumferenceMeters,
+          m_config.DriveGearRatio
+        )
+      );
+    }
 
     setDesiredAngle(desiredState.angle);
+  }
+
+  public SwerveModuleState optimize(SwerveModuleState desiredState) {
+    double actualAngle = getEncoderHeadingRotation2d().getDegrees();
+    double desiredAngle = desiredState.angle.getDegrees();
+    double inputInv = (desiredAngle + 180) % 360;
+    double distNonInv = actualAngle - desiredAngle;
+    double distToInv = actualAngle - inputInv;
+    SwerveModuleState optimizedState;
+
+    if (distToInv < distNonInv) {
+      optimizedState =
+        new SwerveModuleState(
+          -desiredState.speedMetersPerSecond,
+          Rotation2d.fromDegrees(distToInv)
+        );
+    } else {
+      optimizedState =
+        new SwerveModuleState(
+          desiredState.speedMetersPerSecond,
+          Rotation2d.fromDegrees(distNonInv)
+        );
+    }
+
+    return optimizedState;
   }
 
   /**
@@ -278,7 +290,18 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
    * Gets the heading of the encoder in rotations
    */
   public double getEncoderHeading() {
-    return m_encoder.getAbsolutePosition().getValueAsDouble();
+    var rawHeading = m_encoder.getAbsolutePosition().getValueAsDouble();
+    // TODO: figure out why adjustment is necessary
+
+    return DriverStation.isAutonomous()
+      ? Rotation2d
+        .fromRotations(rawHeading)
+        .rotateBy(Rotation2d.fromDegrees(180))
+        .getRotations()
+      : Rotation2d
+        .fromRotations(rawHeading)
+        .rotateBy(Rotation2d.fromDegrees(90))
+        .getRotations();
   }
 
   /**

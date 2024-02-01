@@ -2,6 +2,7 @@ package frc.robot.config;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import prime.control.PrimePIDConstants;
 
 public class RobotConfig {
 
@@ -22,16 +23,16 @@ public class RobotConfig {
       new DrivetrainConfig(
         0.55,
         0.55,
-        Math.PI * 0.7778174593052,
+        Math.PI * 0.7778174593052, // Wheelbase Circumference
         1,
-        Units.feetToMeters(10),
-        Units.feetToMeters(5),
+        Units.feetToMeters(10), // Max Speed MPS
+        Units.feetToMeters(5), // Max Acceleration MPS^2
         Math.PI,
         0.3,
         false,
-        new double[] { 0.1, 0, 0 },
-        new double[] { 2, 0, 0 },
-        new double[] { 0, 0, 0 },
+        new PrimePIDConstants(0.019, 0, 0, 0, 0.18), // Drive PID
+        new PrimePIDConstants(2, 0, 0), // Steering PID
+        new PrimePIDConstants(0, 0, 0), // SnapTo PID
         0.15,
         0.1
       );

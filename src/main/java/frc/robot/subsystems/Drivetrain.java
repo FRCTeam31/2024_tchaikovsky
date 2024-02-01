@@ -1,6 +1,10 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -36,7 +40,7 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
 
   // Odometry
   SwerveDriveOdometry m_odometry;
-  Field2d m_field;
+  public Field2d m_field;
 
   // Snap to Gyro Angle PID
   public double m_lastSnapToCalculatedPIDOutput;
@@ -67,17 +71,32 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     // Configure field
     m_field = new Field2d();
     SmartDashboard.putData(getName() + "/Field", m_field);
-
     // Configure snap-to PID
     m_snapToRotationController =
       new PIDController(
-        m_config.Drivetrain.SnapToPID[0],
-        m_config.Drivetrain.SnapToPID[1],
-        m_config.Drivetrain.SnapToPID[2],
+        m_config.Drivetrain.SnapToPID.kP,
+        m_config.Drivetrain.SnapToPID.kI,
+        m_config.Drivetrain.SnapToPID.kD,
         0.02
       );
     m_snapToRotationController.enableContinuousInput(-Math.PI, Math.PI);
     m_snapToRotationController.setSetpoint(0);
+
+    AutoBuilder.configureHolonomic(
+      this::getPose, // Robot pose supplier
+      this::resetOdometry, // Method to reset odometry (will be called if your auto has a starting pose)
+      this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+      this::drive, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
+      new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
+        new PIDConstants(0.018, 0, 0.005), // Translation PID constants
+        new PIDConstants(0, 0, 0), // Rotation PID constants
+        m_config.Drivetrain.MaxSpeedMetersPerSecond, // Max module speed, in m/s
+        m_config.Drivetrain.WheelBaseCircumferenceMeters / Math.PI / 2, // Drive base radius in meters. Distance from robot center to furthest module.
+        new ReplanningConfig(false, false) // Default path replanning config. See the API for the options here
+      ),
+      () -> false,
+      this // Reference to this subsystem to set requirements
+    );
   }
 
   /**
@@ -325,6 +344,15 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     m_snapToRotationController.setSetpoint(0);
   }
 
+  public ChassisSpeeds getChassisSpeeds() {
+    return m_kinematics.toChassisSpeeds(
+      m_frontLeftModule.getModuleState(),
+      m_rearLeftModule.getModuleState(),
+      m_rearRightModule.getModuleState(),
+      m_frontRightModule.getModuleState()
+    );
+  }
+
   /**
    * Updates odometry and any other periodic drivetrain events
    */
@@ -335,6 +363,8 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     SmartDashboard.putNumber("Drive/GyroHeading", m_gyro.getAngle() % 360);
     var robotPose = m_odometry.update(gyroAngle, getModulePositions());
     m_field.setRobotPose(robotPose);
+
+    SmartDashboard.putData("Drive/Field", m_field);
 
     SmartDashboard.putNumber(
       "Drive/SnapTo/PID error",

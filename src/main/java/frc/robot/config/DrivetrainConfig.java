@@ -1,5 +1,7 @@
 package frc.robot.config;
 
+import prime.control.PrimePIDConstants;
+
 public class DrivetrainConfig {
 
   public double TrackWidthMeters = 0;
@@ -13,10 +15,11 @@ public class DrivetrainConfig {
   public double MaxAngularSpeedRadians = Math.PI;
   public double LowGearScalar = 0.5;
   public boolean StartInHighGear = false;
+  public double DriveBaseRadius = 0;
 
-  public double[] DrivePID = new double[] { 0, 0, 0 };
-  public double[] SteeringPID = new double[] { 0, 0, 0 };
-  public double[] SnapToPID = new double[] { 0, 0, 0 };
+  public PrimePIDConstants DrivePID;
+  public PrimePIDConstants SteeringPID;
+  public PrimePIDConstants SnapToPID;
 
   public double DriveDeadband = 0;
   public double DeadbandCurveWeight = 0;
@@ -31,9 +34,9 @@ public class DrivetrainConfig {
     double maxAngularSpeedRadians,
     double lowGearScalar,
     boolean startInHighGear,
-    double[] drivePID,
-    double[] steeringPID,
-    double[] snapToPID,
+    PrimePIDConstants drivePID,
+    PrimePIDConstants steeringPID,
+    PrimePIDConstants snapToPID,
     double driveDeadband,
     double deadbandCurveWeight
   ) {

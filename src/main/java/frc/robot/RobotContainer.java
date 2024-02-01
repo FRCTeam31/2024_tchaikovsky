@@ -4,9 +4,9 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.config.RobotConfig;
 import frc.robot.subsystems.Drivetrain;
 import prime.control.Controls;
@@ -84,6 +84,15 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return Commands.print("No autonomous command configured");
+    // Load the path you want to follow using its name in the GUI
+    Drivetrain.resetGyro();
+
+    // Sets the starting Position on the path.
+    // Rotation2d startingRotation = new Rotation2d(0);
+    // Pose2d startingPosition = new Pose2d(1, 5.23, startingRotation);
+    // Drivetrain.m_field.setRobotPose(startingPosition);
+
+    // Create a path following command using AutoBuilder. This will also trigger event markers.
+    return new PathPlannerAuto("1m Auto");
   }
 }
