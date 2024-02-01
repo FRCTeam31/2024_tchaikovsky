@@ -16,20 +16,32 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.SwerveModuleConfig;
+import java.util.Map;
 import prime.control.PrimePIDConstants;
 import prime.movers.LazyCANSparkMax;
 import prime.utilities.CTREConverter;
 
 public class SwerveModule extends SubsystemBase implements AutoCloseable {
 
+  private SwerveModuleConfig m_config;
+
+  // Shuffleboard configuration
+  private ShuffleboardTab d_moduleTab;
+  private GenericEntry d_driveVelocityEntry;
+  private GenericEntry d_driveVoltageEntry;
+  private GenericEntry d_moduleHeadingEntry;
+
+  // Devices
   private LazyCANSparkMax m_SteeringMotor;
   private TalonFX m_driveMotor;
   private CANcoder m_encoder;
-  private SwerveModuleConfig m_config;
   private PIDController m_steeringPidController;
 
   /* Start at velocity 0, enable FOC, no feed forward, use slot 0 */
@@ -52,6 +64,9 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
     m_config = moduleConfig;
     setName(m_config.ModuleName);
 
+    // Set up the shuffleboard tab
+    setupDashboard();
+
     // Set up the steering motor
     setupSteeringMotor(steeringPID);
 
@@ -60,6 +75,30 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
 
     // Set up our encoder
     setupCanCoder();
+  }
+
+  /**
+   * Sets up the shuffleboard tab for the module and the simple entries
+   */
+  private void setupDashboard() {
+    d_moduleTab = Shuffleboard.getTab(getName() + " Module");
+    d_driveVelocityEntry =
+      d_moduleTab
+        .add("Velocity (MPS)", 0)
+        .withWidget(BuiltInWidgets.kDial)
+        .withProperties(Map.of("min", 0, "max", 20))
+        .getEntry();
+    d_driveVoltageEntry =
+      d_moduleTab
+        .add("Voltage (V)", 0)
+        .withWidget(BuiltInWidgets.kVoltageView)
+        .getEntry();
+    d_moduleHeadingEntry =
+      d_moduleTab
+        .add("Heading (Degrees)", 0)
+        .withWidget(BuiltInWidgets.kGyro)
+        .withProperties(Map.of("major tick spacing", 15, "starting angle", 0))
+        .getEntry();
   }
 
   /**
@@ -77,8 +116,11 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
 
     // Create a PID controller to calculate steering motor output
     m_steeringPidController = new PIDController(pid.kP, pid.kI, pid.kD, 0.020);
-    m_steeringPidController.enableContinuousInput(0, 1);
-    m_steeringPidController.setTolerance((1 / 360.0) * 5);
+    m_steeringPidController.enableContinuousInput(0, 1); // 0 to 1 rotation
+    m_steeringPidController.setTolerance((1 / 360.0) * 5); // 5 degrees in units of rotations
+    d_moduleTab
+      .add("Steering PID", m_steeringPidController)
+      .withWidget(BuiltInWidgets.kPIDController);
   }
 
   /**
@@ -119,46 +161,6 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
               .withMagnetOffset(-m_config.StartingOffset)
           )
       );
-  }
-
-  /**
-   * Reports data to the dashboard
-   */
-  @Override
-  public void periodic() {
-    SmartDashboard.putNumber(
-      "Swerve/" + getName() + "/Drive vel",
-      getModuleState().speedMetersPerSecond
-    );
-    // // SmartDashboard.putNumber("Drive vel =>", mDriveMotor.getClosedLoopTarget(0));
-    // SmartDashboard.putNumber(
-    //   "Swerve/" + getName() + "/Drive output V",
-    //   m_driveMotor.getMotorVoltage().getValueAsDouble()
-    // );
-    // SmartDashboard.putNumber(
-    //   "Swerve/" + getName() + "/Drive output",
-    //   m_driveMotor.get()
-    // );
-    SmartDashboard.putNumber(
-      "Swerve/" + getName() + "/Steering output",
-      m_SteeringMotor.get()
-    );
-    SmartDashboard.putBoolean(
-      "Swerve/" + getName() + "/PID On-Target",
-      m_steeringPidController.atSetpoint()
-    );
-    SmartDashboard.putNumber(
-      "Swerve/" + getName() + "/PID-error",
-      m_steeringPidController.getPositionError()
-    );
-    SmartDashboard.putNumber(
-      "Swerve/" + getName() + "/PID-setpoint",
-      m_steeringPidController.getSetpoint()
-    );
-    SmartDashboard.putNumber(
-      "Swerve/" + getName() + "/PID-Measurement",
-      getEncoderHeading()
-    );
   }
 
   /**
@@ -309,6 +311,18 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
    */
   protected Rotation2d getEncoderHeadingRotation2d() {
     return Rotation2d.fromRotations(getEncoderHeading());
+  }
+
+  /**
+   * Updates dashboard data
+   */
+  @Override
+  public void periodic() {
+    d_driveVelocityEntry.setDouble(getModuleState().speedMetersPerSecond);
+    d_driveVoltageEntry.setDouble(
+      m_driveMotor.getMotorVoltage().getValueAsDouble()
+    );
+    d_moduleHeadingEntry.setDouble(getEncoderHeadingRotation2d().getDegrees());
   }
 
   @Override

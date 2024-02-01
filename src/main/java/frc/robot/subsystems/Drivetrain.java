@@ -11,12 +11,17 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.RobotConfig;
+import java.util.Map;
 import java.util.function.DoubleSupplier;
 import prime.control.Controls;
 
@@ -24,6 +29,15 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
 
   // Container for robot configuration
   private RobotConfig m_config;
+
+  // Shuffleboard configuration
+  private ShuffleboardTab d_dashboardTab = Shuffleboard.getTab("Drivetrain");
+  private GenericEntry d_snapToEnabledEntry = d_dashboardTab
+    .add("SnapTo Enabled", false)
+    .getEntry();
+  private GenericEntry d_inHighGearEntry = d_dashboardTab
+    .add("SnapTo Enabled", false)
+    .getEntry();
 
   // Gyro and Kinematics
   public Pigeon2 m_gyro;
@@ -51,7 +65,15 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
   public Drivetrain(RobotConfig config) {
     setName("Drivetrain");
     m_config = config;
+
+    // Create gyro
     m_gyro = new Pigeon2(config.Drivetrain.PigeonId);
+    d_dashboardTab
+      .add("Gyro", m_gyro)
+      .withWidget(BuiltInWidgets.kGyro)
+      .withProperties(Map.of("major tick spacing", 15, "starting angle", 0));
+
+    // Create swerve modules, kinematics, and odometry
     m_kinematics =
       new SwerveDriveKinematics(
         // in CCW order from FL to FR
@@ -60,14 +82,13 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
         m_config.RearRightSwerveModule.getModuleLocation(),
         m_config.FrontRightSwerveModule.getModuleLocation()
       );
-
-    // Create swerve modules and ODO
     createSwerveModulesAndOdometry();
     m_inHighGear = config.Drivetrain.StartInHighGear;
 
     // Configure field
     m_field = new Field2d();
-    SmartDashboard.putData(getName() + "/Field", m_field);
+    d_dashboardTab.add("Field", m_field).withWidget(BuiltInWidgets.kField);
+
     // Configure snap-to PID
     m_snapToRotationController =
       new PIDController(
@@ -78,6 +99,9 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
       );
     m_snapToRotationController.enableContinuousInput(-Math.PI, Math.PI);
     m_snapToRotationController.setSetpoint(0);
+    d_dashboardTab
+      .add("SnapTo PID", m_snapToRotationController)
+      .withWidget(BuiltInWidgets.kPIDController);
 
     AutoBuilder.configureHolonomic(
       this::getPose, // Robot pose supplier
@@ -351,34 +375,12 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
   public void periodic() {
     // Update odometry
     var gyroAngle = m_gyro.getRotation2d();
-    SmartDashboard.putNumber("Drive/GyroHeading", m_gyro.getAngle() % 360);
     var robotPose = m_odometry.update(gyroAngle, getModulePositions());
     m_field.setRobotPose(robotPose);
 
-    SmartDashboard.putData("Drive/Field", m_field);
-
-    SmartDashboard.putNumber(
-      "Drive/SnapTo/PID error",
-      Math.toDegrees(m_snapToRotationController.getPositionError())
-    );
-    SmartDashboard.putNumber(
-      "Drive/SnapTo/PID last output",
-      m_lastSnapToCalculatedPIDOutput
-    );
-    SmartDashboard.putNumber(
-      "Drive/SnapTo/Rotation Radians",
-      m_lastRotationRadians
-    );
-    SmartDashboard.putNumber(
-      "Drive/SnapTo/ setpoint",
-      Math.toDegrees(m_snapToRotationController.getSetpoint())
-    );
-    SmartDashboard.putBoolean("Drive/SnapTo/ enabled?", m_snapToGyroEnabled);
-    SmartDashboard.putNumber(
-      "Drive/SnapTo/Current GYro angle",
-      Math.toDegrees(MathUtil.angleModulus(m_gyro.getRotation2d().getRadians()))
-    );
-    SmartDashboard.putBoolean("Drive/ in high gear?", m_inHighGear);
+    // Update shuffleboard entries
+    d_snapToEnabledEntry.setBoolean(m_snapToGyroEnabled);
+    d_inHighGearEntry.setBoolean(m_inHighGear);
   }
 
   //#region Commands
