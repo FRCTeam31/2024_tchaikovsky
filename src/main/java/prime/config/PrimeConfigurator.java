@@ -3,6 +3,7 @@ package prime.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import java.io.File;
 import java.io.FilenameFilter;
 
@@ -10,6 +11,36 @@ import java.io.FilenameFilter;
  * A utility class providing static methods for configuring the robot from a JSON file
  */
 public class PrimeConfigurator {
+
+  /**
+   * Create and populate a sendable chooser with all JSON config files in the project
+   *
+   * @return SendableChooser populated with all config files in the /deploy folder
+   */
+  public static SendableChooser<String> buildConfigChooser() {
+    var chooser = new SendableChooser<String>();
+    for (var configName : PrimeConfigurator.getAvailableConfigsInDeploy()) chooser.addOption(
+      configName,
+      configName
+    );
+
+    return chooser;
+  }
+
+  /**
+   * Create and populate a sendable chooser with all JSON config files in the project
+   *
+   * @param defaultOption The name of the config that should be the default option.
+   * @return SendableChooser populated with all config files in the /deploy folder
+   */
+  public static SendableChooser<String> buildConfigChooser(
+    String defaultOption
+  ) {
+    var chooser = buildConfigChooser();
+    chooser.setDefaultOption(defaultOption, defaultOption);
+
+    return chooser;
+  }
 
   /**
    * Retreives a list of configuration files in the /deploy folder

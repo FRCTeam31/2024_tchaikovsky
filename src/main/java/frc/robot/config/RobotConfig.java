@@ -6,18 +6,27 @@ import prime.control.PrimePIDConstants;
 
 public class RobotConfig {
 
+  public String Name;
   public DrivetrainConfig Drivetrain;
   public SwerveModuleConfig FrontLeftSwerveModule;
   public SwerveModuleConfig FrontRightSwerveModule;
   public SwerveModuleConfig RearRightSwerveModule;
   public SwerveModuleConfig RearLeftSwerveModule;
 
+  public RobotConfig() {
+    Name = "[none]";
+  }
+
+  public RobotConfig(String name) {
+    Name = name;
+  }
+
   /**
    * Gets a default instance of a RobotConfig with all properties set to 0
    * @return A default instance of a RobotConfig
    */
   public static RobotConfig getDefault() {
-    var config = new RobotConfig();
+    var config = new RobotConfig("Default Config");
     config.Drivetrain =
       new DrivetrainConfig(
         0.55,
@@ -99,5 +108,10 @@ public class RobotConfig {
       );
 
     return config;
+  }
+
+  @Override
+  public String toString() {
+    return Name;
   }
 }

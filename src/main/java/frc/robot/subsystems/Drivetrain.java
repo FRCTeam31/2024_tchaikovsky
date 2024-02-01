@@ -31,11 +31,11 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
   private RobotConfig m_config;
 
   // Shuffleboard configuration
-  private ShuffleboardTab d_dashboardTab = Shuffleboard.getTab("Drivetrain");
-  private GenericEntry d_snapToEnabledEntry = d_dashboardTab
+  private ShuffleboardTab d_driveTab = Shuffleboard.getTab("Drivetrain");
+  private GenericEntry d_snapToEnabledEntry = d_driveTab
     .add("SnapTo Enabled", false)
     .getEntry();
-  private GenericEntry d_inHighGearEntry = d_dashboardTab
+  private GenericEntry d_inHighGearEntry = d_driveTab
     .add("SnapTo Enabled", false)
     .getEntry();
 
@@ -68,7 +68,7 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
 
     // Create gyro
     m_gyro = new Pigeon2(config.Drivetrain.PigeonId);
-    d_dashboardTab
+    d_driveTab
       .add("Gyro", m_gyro)
       .withWidget(BuiltInWidgets.kGyro)
       .withProperties(Map.of("major tick spacing", 15, "starting angle", 0));
@@ -87,7 +87,7 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
 
     // Configure field
     m_field = new Field2d();
-    d_dashboardTab.add("Field", m_field).withWidget(BuiltInWidgets.kField);
+    d_driveTab.add("Field", m_field).withWidget(BuiltInWidgets.kField);
 
     // Configure snap-to PID
     m_snapToRotationController =
@@ -99,7 +99,7 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
       );
     m_snapToRotationController.enableContinuousInput(-Math.PI, Math.PI);
     m_snapToRotationController.setSetpoint(0);
-    d_dashboardTab
+    d_driveTab
       .add("SnapTo PID", m_snapToRotationController)
       .withWidget(BuiltInWidgets.kPIDController);
 
