@@ -44,7 +44,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
   private CANcoder m_encoder;
   private PIDController m_steeringPidController;
 
-  /* Start at velocity 0, enable FOC, no feed forward, use slot 0 */
+  /* Start at velocity 0, no feed forward, use slot 0 */
   private final VelocityVoltage m_voltageVelocity = new VelocityVoltage(
     0,
     0,
@@ -129,14 +129,27 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
   public void setupDriveMotor(PrimePIDConstants pid) {
     m_driveMotor = new TalonFX(m_config.DriveMotorCanId);
     m_driveMotor.clearStickyFaults();
-    m_driveMotor.getConfigurator().apply(new TalonFXConfiguration());
+    m_driveMotor.getConfigurator().apply(new TalonFXConfiguration()); // Reset to factory default
 
     TalonFXConfiguration driveMotorConfig = new TalonFXConfiguration();
+
+    // Set the PID values for slot 0
     driveMotorConfig.Slot0 =
       new Slot0Configs().withKP(pid.kP).withKI(pid.kI).withKD(pid.kD);
+
+    // Set the voltage limits
     driveMotorConfig.Voltage.PeakForwardVoltage = 12;
     driveMotorConfig.Voltage.PeakReverseVoltage = -12;
 
+    // Set the current limits
+    driveMotorConfig.withCurrentLimits(m_config.DriveCurrentLimitConfiguration);
+
+    // Set the ramp rates
+    driveMotorConfig.withClosedLoopRamps(
+      m_config.DriveClosedLoopRampConfiguration
+    );
+
+    // Apply the configuration
     m_driveMotor.getConfigurator().apply(driveMotorConfig);
     m_driveMotor.setNeutralMode(NeutralModeValue.Brake);
     m_driveMotor.setInverted(m_config.DriveInverted); // Clockwise Inversion

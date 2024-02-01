@@ -7,21 +7,21 @@ import prime.control.PrimePIDConstants;
 public class DrivetrainConfig {
 
   // Physical properties
-  public double TrackWidthMeters = 0;
-  public double WheelBaseMeters = 0;
-  public double WheelBaseCircumferenceMeters = 0;
-  public double MaxSpeedMetersPerSecond = 0;
-  public double MaxAccelerationMetersPerSecondSquared = 0;
-  public double MaxAngularSpeedRadians = Math.PI;
+  public double TrackWidthMeters;
+  public double WheelBaseMeters;
+  public double WheelBaseCircumferenceMeters;
+  public double MaxSpeedMetersPerSecond;
+  public double MaxAccelerationMetersPerSecondSquared;
+  public double MaxAngularSpeedRadians;
 
   // CAN IDs
-  public int PigeonId = 0;
+  public int PigeonId;
 
   // Control properties
-  public double LowGearScalar = 0.5;
-  public boolean StartInHighGear = false;
-  public double DriveDeadband = 0;
-  public double DeadbandCurveWeight = 0;
+  public double LowGearScalar;
+  public boolean StartInHighGear;
+  public double DriveDeadband;
+  public double DeadbandCurveWeight;
 
   // PID configs
   public PrimePIDConstants DrivePID;

@@ -8,29 +8,27 @@ public class SwerveModuleConfig {
 
   public String ModuleName = "DefaultModuleName";
 
-  public int DriveMotorCanId = 0;
-  public int SteeringMotorCanId = 0;
-  public int CANCoderCanId = 0;
+  public int DriveMotorCanId;
+  public int SteeringMotorCanId;
+  public int CANCoderCanId;
 
-  public double StartingOffset = 0;
-  public boolean DriveInverted = false;
-  public boolean SteerInverted = false;
+  public double StartingOffset;
+  public boolean DriveInverted;
+  public boolean SteerInverted;
 
-  public double ModuleLocationXMeters = 0;
-  public double ModuleLocationYMeters = 0;
-  public Translation2d ModuleLocation = new Translation2d();
+  public double ModuleLocationXMeters;
+  public double ModuleLocationYMeters;
 
-  public double DriveGearRatio = 6.75;
-  public double DriveWheelDiameterMeters = 0.102;
-  public double DriveWheelCircumferenceMeters =
-    Math.PI * DriveWheelDiameterMeters;
+  public double DriveGearRatio;
+  public double DriveWheelDiameterMeters;
+  public double DriveWheelCircumferenceMeters;
 
   public ClosedLoopRampsConfigs DriveClosedLoopRampConfiguration = new ClosedLoopRampsConfigs()
     .withTorqueClosedLoopRampPeriod(0.5)
     .withVoltageClosedLoopRampPeriod(0.5)
     .withDutyCycleClosedLoopRampPeriod(0.5);
   public CurrentLimitsConfigs DriveCurrentLimitConfiguration = new CurrentLimitsConfigs()
-    .withStatorCurrentLimitEnable(true)
+    .withSupplyCurrentLimitEnable(true)
     .withSupplyCurrentLimit(40)
     .withSupplyCurrentThreshold(50)
     .withSupplyTimeThreshold(100);
@@ -43,18 +41,26 @@ public class SwerveModuleConfig {
     double startingOffset,
     boolean driveInverted,
     boolean steerInverted,
-    Translation2d location
+    Translation2d location,
+    double driveGearRatio,
+    double driveWheelDiameterMeters
   ) {
     ModuleName = moduleName;
+
     DriveMotorCanId = driveMotorCanId;
     SteeringMotorCanId = steeringMotorCanId;
     CANCoderCanId = canCoderCanId;
+
     StartingOffset = startingOffset;
     DriveInverted = driveInverted;
     SteerInverted = steerInverted;
+
     ModuleLocationXMeters = location.getX();
     ModuleLocationYMeters = location.getY();
-    ModuleLocation = location;
+
+    DriveGearRatio = driveGearRatio;
+    DriveWheelDiameterMeters = driveWheelDiameterMeters;
+    DriveWheelCircumferenceMeters = Math.PI * DriveWheelDiameterMeters;
   }
 
   public Translation2d getModuleLocation() {

@@ -35,7 +35,7 @@ public class RobotConfig {
         1,
         Units.feetToMeters(10), // Max Speed MPS
         Units.feetToMeters(5), // Max Acceleration MPS^2
-        Math.PI,
+        Math.PI, // Max Angular Speed in Radians
         0.3,
         false,
         new PrimePIDConstants(0.019, 0, 0, 0, 0.18), // Drive PID
@@ -59,7 +59,9 @@ public class RobotConfig {
         new Translation2d(
           -config.Drivetrain.TrackWidthMeters / 2,
           config.Drivetrain.WheelBaseMeters / 2
-        )
+        ),
+        6.75,
+        0.102
       );
 
     config.FrontRightSwerveModule =
@@ -74,7 +76,9 @@ public class RobotConfig {
         new Translation2d(
           config.Drivetrain.TrackWidthMeters / 2,
           config.Drivetrain.WheelBaseMeters / 2
-        )
+        ),
+        6.75,
+        0.102
       );
 
     config.RearRightSwerveModule =
@@ -89,7 +93,9 @@ public class RobotConfig {
         new Translation2d(
           config.Drivetrain.TrackWidthMeters / 2,
           -config.Drivetrain.WheelBaseMeters / 2
-        )
+        ),
+        6.75,
+        0.102
       );
 
     config.RearLeftSwerveModule =
@@ -104,7 +110,9 @@ public class RobotConfig {
         new Translation2d(
           -config.Drivetrain.TrackWidthMeters / 2,
           -config.Drivetrain.WheelBaseMeters / 2
-        )
+        ),
+        6.75,
+        0.102
       );
 
     return config;
