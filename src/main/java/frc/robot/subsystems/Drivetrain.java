@@ -2,9 +2,6 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
-import com.pathplanner.lib.util.PIDConstants;
-import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -87,14 +84,8 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
       this::resetOdometry, // Method to reset odometry (will be called if your auto has a starting pose)
       this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
       this::drive, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
-      new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
-        new PIDConstants(0.018, 0, 0.005), // Translation PID constants
-        new PIDConstants(0, 0, 0), // Rotation PID constants
-        m_config.Drivetrain.MaxSpeedMetersPerSecond, // Max module speed, in m/s
-        m_config.Drivetrain.WheelBaseCircumferenceMeters / Math.PI / 2, // Drive base radius in meters. Distance from robot center to furthest module.
-        new ReplanningConfig(false, false) // Default path replanning config. See the API for the options here
-      ),
-      () -> false,
+      m_config.Drivetrain.getHolonomicPathFollowerConfig(),
+      () -> false, // Method to determine whether or not to flip the path
       this // Reference to this subsystem to set requirements
     );
   }

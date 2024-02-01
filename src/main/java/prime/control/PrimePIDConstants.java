@@ -1,14 +1,18 @@
 package prime.control;
 
+import com.pathplanner.lib.util.PIDConstants;
+
 public class PrimePIDConstants {
 
   public double kP;
   public double kI;
   public double kD;
   public double kF;
-  public double kV;
-  public double kA;
-  public double kS;
+
+  // See https://docs.wpilib.org/en/latest/docs/software/advanced-controls/introduction/introduction-to-feedforward.html#the-permanent-magnet-dc-motor-feedforward-equation
+  public double kV; // Voltage needed to hold a constant velocity while overcoming any additional friction that increases with speed
+  public double kA; // Voltage needed to induce a given acceleration in the system
+  public double kS; // Voltage needed to overcome the system’s static friction
 
   public PrimePIDConstants(
     double kP,
@@ -48,5 +52,9 @@ public class PrimePIDConstants {
     double kV
   ) {
     this(kP, kI, kD, kF, kV, 0, 0);
+  }
+
+  public PIDConstants toPIDConstants() {
+    return new PIDConstants(kP, kI, kD);
   }
 }

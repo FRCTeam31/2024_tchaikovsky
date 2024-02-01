@@ -42,8 +42,8 @@ public class PrimeConfigurator {
       return config;
     } catch (Exception e) {
       DriverStation.reportError(
-        "Failed to map config: " + e.getMessage(),
-        true
+        "[ERROR] >> Failed to map config: " + e.getMessage(),
+        e.getStackTrace()
       );
       return null;
     }

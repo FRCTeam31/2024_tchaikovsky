@@ -4,9 +4,8 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.config.RobotConfig;
 import frc.robot.subsystems.Drivetrain;
 import prime.control.Controls;
@@ -15,84 +14,80 @@ import prime.control.PrimeXboxController;
 public class RobotContainer {
 
   public RobotConfig m_config;
-  public Drivetrain Drivetrain;
-  public PrimeXboxController DriverController;
+  public Drivetrain m_drivetrain;
+  public PrimeXboxController m_driverController;
 
   public RobotContainer(RobotConfig config) {
-    m_config = config;
-
-    Drivetrain = new Drivetrain(m_config);
-    DriverController = new PrimeXboxController(Controls.DRIVER_PORT);
-
-    configureBindings();
+    reconfigure(config);
   }
 
+  /**
+   * Stops all commands and reconfigures the robot with a new config instance
+   * @param config
+   */
   public void reconfigure(RobotConfig config) {
     try {
+      // Stop all commands
+      CommandScheduler.getInstance().cancelAll();
+
       // Close subsystems before reconfiguring
-      Drivetrain.close();
+      if (m_drivetrain != null) m_drivetrain.close();
 
       // Save new config
       m_config = config;
 
       // Create new subsystems
-      Drivetrain = new Drivetrain(m_config);
+      m_drivetrain = new Drivetrain(m_config);
 
       // Reconfigure bindings
-      configureBindings();
+      configureTeleopControls();
     } catch (Exception e) {
       DriverStation.reportError(
-        "Failed to reconfigure robot: " + e.getMessage(),
+        "[ERROR] >> Failed to reconfigure robot: " + e.getMessage(),
         e.getStackTrace()
       );
     }
   }
 
-  private void configureBindings() {
-    Drivetrain.setDefaultCommand(
-      Drivetrain.defaultDriveCommand(
-        DriverController.getLeftStickYSupplier(
+  /**
+   * Creates the controller and configures teleop controls
+   */
+  public void configureTeleopControls() {
+    m_driverController = new PrimeXboxController(Controls.DRIVER_PORT);
+
+    m_drivetrain.setDefaultCommand(
+      m_drivetrain.defaultDriveCommand(
+        m_driverController.getLeftStickYSupplier(
           m_config.Drivetrain.DriveDeadband,
           m_config.Drivetrain.DeadbandCurveWeight
         ),
-        DriverController.getLeftStickXSupplier(
+        m_driverController.getLeftStickXSupplier(
           m_config.Drivetrain.DriveDeadband,
           m_config.Drivetrain.DeadbandCurveWeight
         ),
-        DriverController.getTriggerSupplier(),
+        m_driverController.getTriggerSupplier(),
         false
       )
     );
 
-    DriverController
+    m_driverController
       .pov(Controls.up)
-      .onTrue(Drivetrain.driveWithSnapToAngleCommand(Math.toRadians(0)));
-    DriverController
+      .onTrue(m_drivetrain.driveWithSnapToAngleCommand(Math.toRadians(0)));
+    m_driverController
       .pov(Controls.right)
-      .onTrue(Drivetrain.driveWithSnapToAngleCommand(Math.toRadians(90)));
-    DriverController
+      .onTrue(m_drivetrain.driveWithSnapToAngleCommand(Math.toRadians(90)));
+    m_driverController
       .pov(Controls.down)
-      .onTrue(Drivetrain.driveWithSnapToAngleCommand(Math.toRadians(180)));
-    DriverController
+      .onTrue(m_drivetrain.driveWithSnapToAngleCommand(Math.toRadians(180)));
+    m_driverController
       .pov(Controls.left)
-      .onTrue(Drivetrain.driveWithSnapToAngleCommand(Math.toRadians(-90)));
+      .onTrue(m_drivetrain.driveWithSnapToAngleCommand(Math.toRadians(-90)));
 
-    DriverController.button(Controls.A).onTrue(Drivetrain.resetGyroCommand());
-    DriverController
+    m_driverController
+      .button(Controls.A)
+      .onTrue(m_drivetrain.resetGyroCommand());
+    m_driverController
       .button(Controls.B)
-      .onTrue(Drivetrain.toggleShifterCommand());
-  }
-
-  public Command getAutonomousCommand() {
-    // Load the path you want to follow using its name in the GUI
-    Drivetrain.resetGyro();
-
-    // Sets the starting Position on the path.
-    // Rotation2d startingRotation = new Rotation2d(0);
-    // Pose2d startingPosition = new Pose2d(1, 5.23, startingRotation);
-    // Drivetrain.m_field.setRobotPose(startingPosition);
-
-    // Create a path following command using AutoBuilder. This will also trigger event markers.
-    return new PathPlannerAuto("1m Auto");
+      .onTrue(m_drivetrain.toggleShifterCommand());
   }
 }

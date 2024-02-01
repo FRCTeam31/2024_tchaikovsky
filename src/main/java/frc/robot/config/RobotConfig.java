@@ -7,7 +7,6 @@ import prime.control.PrimePIDConstants;
 public class RobotConfig {
 
   public DrivetrainConfig Drivetrain;
-
   public SwerveModuleConfig FrontLeftSwerveModule;
   public SwerveModuleConfig FrontRightSwerveModule;
   public SwerveModuleConfig RearRightSwerveModule;
@@ -32,7 +31,9 @@ public class RobotConfig {
         false,
         new PrimePIDConstants(0.019, 0, 0, 0, 0.18), // Drive PID
         new PrimePIDConstants(2, 0, 0), // Steering PID
-        new PrimePIDConstants(0, 0, 0), // SnapTo PID
+        new PrimePIDConstants(0, 0, 0), // SnapTo PID,
+        new PrimePIDConstants(0.018, 0, 0.005), // Pathing Translation PID
+        new PrimePIDConstants(0, 0, 0), // Pathing Rotation PID
         0.15,
         0.1
       );
