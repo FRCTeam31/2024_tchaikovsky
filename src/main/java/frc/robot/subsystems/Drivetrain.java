@@ -33,9 +33,10 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
   private ShuffleboardTab d_driveTab = Shuffleboard.getTab("Drivetrain");
   private GenericEntry d_snapToEnabledEntry = d_driveTab
     .add("SnapTo Enabled", false)
+    .withWidget(BuiltInWidgets.kBooleanBox)
     .getEntry();
   private GenericEntry d_inHighGearEntry = d_driveTab
-    .add("SnapTo Enabled", false)
+    .add("In High Gear", false)
     .getEntry();
 
   // Gyro and Kinematics
@@ -100,7 +101,8 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     m_snapToRotationController.setSetpoint(0);
     d_driveTab
       .add("SnapTo PID", m_snapToRotationController)
-      .withWidget(BuiltInWidgets.kPIDController);
+      .withWidget(BuiltInWidgets.kPIDController)
+      .withPosition(0, 0);
 
     AutoBuilder.configureHolonomic(
       this::getPose, // Robot pose supplier

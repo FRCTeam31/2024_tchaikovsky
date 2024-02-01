@@ -74,14 +74,14 @@ public class RobotContainer {
       .pov(Controls.up)
       .onTrue(m_drivetrain.driveWithSnapToAngleCommand(Math.toRadians(0)));
     m_driverController
-      .pov(Controls.right)
+      .pov(Controls.left)
       .onTrue(m_drivetrain.driveWithSnapToAngleCommand(Math.toRadians(90)));
     m_driverController
       .pov(Controls.down)
       .onTrue(m_drivetrain.driveWithSnapToAngleCommand(Math.toRadians(180)));
     m_driverController
-      .pov(Controls.left)
-      .onTrue(m_drivetrain.driveWithSnapToAngleCommand(Math.toRadians(-90)));
+      .pov(Controls.right)
+      .onTrue(m_drivetrain.driveWithSnapToAngleCommand(Math.toRadians(270)));
 
     m_driverController
       .button(Controls.A)
