@@ -238,7 +238,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
    *                     period
    */
   public void setDesiredState(SwerveModuleState desiredState) {
-    // desiredState = optimize(desiredState);
+    desiredState = optimize(desiredState);
     if (m_steeringPidController.atSetpoint()) {
       setDesiredSpeed(
         CTREConverter.metersToRotations(
@@ -253,11 +253,11 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
   }
 
   public SwerveModuleState optimize(SwerveModuleState desiredState) {
-    double actualAngle = getEncoderHeadingRotation2d().getDegrees();
+    double actualAngle = getEncoderHeading();
     double desiredAngle = desiredState.angle.getDegrees();
     double inputInv = (desiredAngle + 180) % 360;
-    double distNonInv = actualAngle - desiredAngle;
-    double distToInv = actualAngle - inputInv;
+    double distNonInv = Math.abs(actualAngle - desiredAngle);
+    double distToInv = Math.abs(actualAngle - inputInv);
     SwerveModuleState optimizedState;
 
     if (distToInv < distNonInv) {
