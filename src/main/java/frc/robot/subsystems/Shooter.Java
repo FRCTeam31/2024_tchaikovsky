@@ -14,6 +14,6 @@ public class Shooter {
   }
 
   public void runShooter() {
-    // shooterTalonFX
+    shooter
   }
 }
