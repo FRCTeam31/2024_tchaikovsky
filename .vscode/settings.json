@@ -31,5 +31,6 @@
     "editor.formatOnPaste": true,
     "editor.defaultFormatter": "mwpb.java-prettier-formatter"
   },
-  "prettier.printWidth": 120
+  "prettier.printWidth": 120,
+  "wpilib.autoStartRioLog": false
 }

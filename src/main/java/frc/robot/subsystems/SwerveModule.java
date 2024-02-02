@@ -135,7 +135,11 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
 
     // Set the PID values for slot 0
     driveMotorConfig.Slot0 =
-      new Slot0Configs().withKP(pid.kP).withKI(pid.kI).withKD(pid.kD);
+      new Slot0Configs()
+        .withKP(pid.kP)
+        .withKI(pid.kI)
+        .withKD(pid.kD)
+        .withKV(pid.kV);
 
     // Set the voltage limits
     driveMotorConfig.Voltage.PeakForwardVoltage = 12;

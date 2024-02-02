@@ -33,16 +33,16 @@ public class RobotConfig {
         0.55,
         Math.PI * 0.7778174593052, // Wheelbase Circumference
         1,
-        Units.feetToMeters(10), // Max Speed MPS
-        Units.feetToMeters(5), // Max Acceleration MPS^2
-        Math.PI, // Max Angular Speed in Radians
-        0.3,
+        Units.feetToMeters(15.7), // Max Speed MPS
+        Units.feetToMeters(10), // Max Acceleration MPS^2
+        Math.PI * 2, // Max Angular Speed in Radians
+        0.5,
         false,
-        new PrimePIDConstants(0.019, 0, 0, 0, 0.18), // Drive PID
+        new PrimePIDConstants(0.019, 0, 0, 0, 0.122), // Drive PID
         new PrimePIDConstants(2, 0, 0), // Steering PID
         new PrimePIDConstants(0, 0, 0), // SnapTo PID,
-        new PrimePIDConstants(0.018, 0, 0.005), // Pathing Translation PID
-        new PrimePIDConstants(0, 0, 0), // Pathing Rotation PID
+        new PrimePIDConstants(0.001, 0, 0), // Pathing Translation PID
+        new PrimePIDConstants(1, 0, 0), // Pathing Rotation PID
         0.15,
         0.5
       );

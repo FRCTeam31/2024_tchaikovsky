@@ -5,8 +5,10 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -21,29 +23,29 @@ import prime.config.PrimeConfigurator;
 
 public class Robot extends TimedRobot {
 
-  private ShuffleboardTab d_robotTab = Shuffleboard.getTab("Robot");
+  public ShuffleboardTab d_robotTab = Shuffleboard.getTab("Robot");
 
   private final String m_defaultConfigName = "swerve_test_bot.json";
   private String m_selectedConfigName = m_defaultConfigName;
   private RobotContainer m_robotContainer;
 
   private SendableChooser<String> m_configChooser;
-  private SendableChooser<Command> m_autoChooser;
+  public static SendableChooser<Command> m_autoChooser;
   private Command m_autonomousCommand;
 
   @Override
   public void robotInit() {
     // Create the robot container with the default config
-    m_robotContainer =
-      new RobotContainer(readConfigFromFile(m_defaultConfigName));
+    // m_robotContainer =
+    //   new RobotContainer(readConfigFromFile(m_defaultConfigName));
+    m_robotContainer = new RobotContainer(RobotConfig.getDefault());
 
     // Set up configuration selection
     m_configChooser = PrimeConfigurator.buildConfigChooser(m_defaultConfigName);
     d_robotTab.add(m_configChooser).withWidget(BuiltInWidgets.kComboBoxChooser);
-
     // Build an auto chooser. This will use Commands.none() as the default option.
-    m_autoChooser = AutoBuilder.buildAutoChooser("1m Auto");
-    d_robotTab.add(m_autoChooser).withWidget(BuiltInWidgets.kComboBoxChooser);
+    // m_autoChooser = AutoBuilder.buildAutoChooser("1m Auto");
+    // d_robotTab.add(m_autoChooser).withWidget(BuiltInWidgets.kComboBoxChooser);
   }
 
   /**
@@ -68,19 +70,23 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     // ENABLE THIS CODE TO USE THE AUTO CHOOSER
-    m_autonomousCommand = m_autoChooser.getSelected();
-
-    // Exit without scheduling an auto command if none is selected
-    if (m_autonomousCommand == null || m_autonomousCommand == Commands.none()) {
-      DriverStation.reportError("[ERROR] >> No auto command selected", false);
-      return;
-    }
-
-    // Reset the gyro and the starting Pose of the drive.
+    //    // m_autonomousCommand = m_autoChooser.getSelected();
     m_robotContainer.m_drivetrain.resetGyro();
-    m_robotContainer.m_drivetrain.m_field.setRobotPose(
-      new Pose2d(0, 0, new Rotation2d(0))
+    m_robotContainer.m_drivetrain.resetOdometry(
+      new Pose2d(1, 5, Rotation2d.fromDegrees(0))
     );
+    m_autonomousCommand = new PathPlannerAuto("1m Auto reversed");
+    // // Exit without scheduling an auto command if none is selected
+    // if (m_autonomousCommand == null || m_autonomousCommand == Commands.none()) {
+    //   DriverStation.reportError("[ERROR] >> No auto command selected", false);
+    //   return;
+    // }
+
+    // // Reset the gyro and the starting Pose of the drive.
+    // m_robotContainer.m_drivetrain.resetGyro();
+    // m_robotContainer.m_drivetrain.m_field.setRobotPose(
+    //   new Pose2d(0, 0, new Rotation2d(0))
+    // );
 
     m_autonomousCommand.schedule();
   }

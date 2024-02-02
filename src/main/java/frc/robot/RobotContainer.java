@@ -66,7 +66,7 @@ public class RobotContainer {
           m_config.Drivetrain.DeadbandCurveWeight
         ),
         m_driverController.getTriggerSupplier(),
-        false
+        true
       )
     );
 

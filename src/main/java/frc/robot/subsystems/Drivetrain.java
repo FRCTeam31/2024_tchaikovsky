@@ -12,6 +12,8 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -22,7 +24,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.RobotConfig;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
-import prime.control.Controls;
 
 public class Drivetrain extends SubsystemBase implements AutoCloseable {
 
@@ -30,6 +31,7 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
   private RobotConfig m_config;
 
   // Shuffleboard configuration
+  private final StructArrayPublisher<SwerveModuleState> publisher;
   private ShuffleboardTab d_driveTab = Shuffleboard.getTab("Drivetrain");
   private GenericEntry d_snapToEnabledEntry = d_driveTab
     .add("SnapTo Enabled", false)
@@ -37,6 +39,11 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     .getEntry();
   private GenericEntry d_inHighGearEntry = d_driveTab
     .add("In High Gear", false)
+    .getEntry();
+  private GenericEntry d_gyroAngle = d_driveTab
+    .add("Gyro Angle", 0)
+    .withWidget(BuiltInWidgets.kGyro)
+    .withProperties(Map.of("major tick spacing", 15, "starting angle", 0))
     .getEntry();
 
   // Gyro and Kinematics
@@ -68,12 +75,14 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
 
     // Create gyro
     m_gyro = new Pigeon2(config.Drivetrain.PigeonId);
-    d_driveTab
-      .add("Gyro", m_gyro)
-      .withWidget(BuiltInWidgets.kGyro)
-      .withProperties(Map.of("major tick spacing", 15, "starting angle", 0));
 
     // Create swerve modules, kinematics, and odometry
+    publisher =
+      NetworkTableInstance
+        .getDefault()
+        .getStructArrayTopic("/SwerveStates", SwerveModuleState.struct)
+        .publish();
+
     m_kinematics =
       new SwerveDriveKinematics(
         // in CCW order from FL to FR
@@ -113,6 +122,8 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
       () -> false, // Method to determine whether or not to flip the path
       this // Reference to this subsystem to set requirements
     );
+    // Robot.m_autoChooser = AutoBuilder.buildAutoChooser("1m Auto");
+
   }
 
   /**
@@ -148,12 +159,7 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
       new SwerveDriveOdometry(
         m_kinematics,
         m_gyro.getRotation2d(),
-        new SwerveModulePosition[] { // in CCW order from FL to FR
-          m_frontLeftModule.getPosition(),
-          m_rearLeftModule.getPosition(),
-          m_rearRightModule.getPosition(),
-          m_frontRightModule.getPosition(),
-        },
+        getModulePositions(),
         new Pose2d(0, 0, Rotation2d.fromDegrees(0))
       );
 
@@ -242,19 +248,17 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
       m_config.Drivetrain.MaxSpeedMetersPerSecond
     );
 
-    drive(swerveModuleStates);
-  }
-
-  /**
-   * Feeds the swerve modules each a desired state.
-   * @param swerveModuleStates The new states of the modules in CCW order from FL
-   *                           to FR
-   */
-  public void drive(SwerveModuleState[] swerveModuleStates) {
-    m_frontLeftModule.setDesiredState(swerveModuleStates[0]);
-    m_rearLeftModule.setDesiredState(swerveModuleStates[1]);
-    m_rearRightModule.setDesiredState(swerveModuleStates[2]);
-    m_frontRightModule.setDesiredState(swerveModuleStates[3]);
+    if (DriverStation.isAutonomous()) {
+      m_frontLeftModule.setDesiredState(swerveModuleStates[0]);
+      m_rearLeftModule.setDesiredState(swerveModuleStates[1]);
+      m_rearRightModule.setDesiredState(swerveModuleStates[3]);
+      m_frontRightModule.setDesiredState(swerveModuleStates[2]);
+    } else {
+      m_frontLeftModule.setDesiredState(swerveModuleStates[0]);
+      m_rearLeftModule.setDesiredState(swerveModuleStates[1]);
+      m_rearRightModule.setDesiredState(swerveModuleStates[2]);
+      m_frontRightModule.setDesiredState(swerveModuleStates[3]);
+    }
   }
 
   /**
@@ -363,6 +367,16 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
   public void periodic() {
     // Update odometry
     var gyroAngle = m_gyro.getRotation2d();
+    d_gyroAngle.setDouble(gyroAngle.getDegrees());
+
+    publisher.set(
+      new SwerveModuleState[] {
+        m_frontLeftModule.getModuleState(),
+        m_rearLeftModule.getModuleState(),
+        m_rearRightModule.getModuleState(),
+        m_frontRightModule.getModuleState(),
+      }
+    );
     var robotPose = m_odometry.update(gyroAngle, getModulePositions());
     m_field.setRobotPose(robotPose);
 
@@ -383,26 +397,13 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     boolean fieldRelative
   ) {
     return this.run(() -> {
-        var strafeX = Controls.cubicScaledDeadband(
-          xSupplier.getAsDouble(),
-          0.15,
-          0.1
-        );
-
-        var forwardY = Controls.cubicScaledDeadband(
-          ySupplier.getAsDouble(),
-          0.15,
-          0.1
-        );
-        var rotation = Controls.cubicScaledDeadband(
-          rotationSupplier.getAsDouble(),
-          0.1,
-          0.1
-        );
-
-        strafeX *= m_config.Drivetrain.MaxSpeedMetersPerSecond;
-        forwardY *= m_config.Drivetrain.MaxSpeedMetersPerSecond;
-        rotation *= m_config.Drivetrain.MaxAngularSpeedRadians;
+        var strafeX =
+          xSupplier.getAsDouble() * m_config.Drivetrain.MaxSpeedMetersPerSecond;
+        var forwardY =
+          ySupplier.getAsDouble() * m_config.Drivetrain.MaxSpeedMetersPerSecond;
+        var rotation =
+          rotationSupplier.getAsDouble() *
+          m_config.Drivetrain.MaxAngularSpeedRadians;
 
         driveFromCartesianSpeeds(-strafeX, forwardY, rotation, fieldRelative);
       });

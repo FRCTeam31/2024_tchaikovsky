@@ -76,7 +76,7 @@ public class DrivetrainConfig {
       PathingRotationPid.toPIDConstants(),
       MaxSpeedMetersPerSecond,
       MaxAccelerationMetersPerSecondSquared,
-      new ReplanningConfig(false, false)
+      new ReplanningConfig(false, true)
     );
   }
 }
