@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import com.revrobotics.CANEncoder;
+import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
@@ -8,6 +10,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.RobotConfig;
+import java.util.concurrent.CancellationException;
 import java.util.function.DoubleSupplier;
 import prime.movers.LazyCANSparkMax;
 
@@ -47,6 +50,13 @@ public class Intake extends SubsystemBase {
     m_intakeAnglePid.setI(0);
     m_intakeAnglePid.setD(0);
     m_intakeAnglePid.setOutputRange(-1, 1);
+  }
+
+  public void periodic() {
+    final CANSparkMax motor = new CANSparkMax(14, MotorType.kBrushless);
+    final CANEncoder encoder = motor.getEncoder();
+
+    getEncoder().getPosition();
   }
 
   // Method for giving the Intake Roller Motor a speed
