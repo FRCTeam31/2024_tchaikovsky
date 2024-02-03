@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.config.RobotConfig;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.JointSubsystem;
 import frc.robot.subsystems.Shooter;
 import prime.control.Controls;
 import prime.control.PrimeXboxController;
