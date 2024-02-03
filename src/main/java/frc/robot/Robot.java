@@ -72,7 +72,7 @@ public class Robot extends TimedRobot {
     m_robotContainer.m_drivetrain.resetOdometry(
       new Pose2d(1, 5, Rotation2d.fromDegrees(0))
     );
-    m_autonomousCommand = new PathPlannerAuto("1m Auto reversed");
+    m_autonomousCommand = new PathPlannerAuto("Square auto");
     // // Exit without scheduling an auto command if none is selected
     // if (m_autonomousCommand == null || m_autonomousCommand == Commands.none()) {
     //   DriverStation.reportError("[ERROR] >> No auto command selected", false);
