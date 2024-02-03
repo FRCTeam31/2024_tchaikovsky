@@ -18,6 +18,7 @@ public class Shooter extends SubsystemBase {
   /** Creates a new Shooter. */
   public Shooter(RobotConfig robotConfig) {
     m_robotConfig = robotConfig;
+    m_shooterFalconFX = new TalonFX(0);
   }
 
   public void runShooter(double speed) {

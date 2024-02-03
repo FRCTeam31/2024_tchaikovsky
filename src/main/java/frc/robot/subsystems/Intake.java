@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.RobotConfig;
@@ -12,6 +13,7 @@ public class Intake extends SubsystemBase {
   LazyCANSparkMax m_intakeAngleSparkMaxLeft;
   LazyCANSparkMax m_intakeAngleSparkMaxRight;
   RobotConfig m_RobotConfig;
+  RelativeEncoder leftEncoder;
 
   public Intake(RobotConfig robotConfig) {
     m_RobotConfig = robotConfig;
