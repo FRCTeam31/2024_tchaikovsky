@@ -68,24 +68,24 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     // ENABLE THIS CODE TO USE THE AUTO CHOOSER
     //    // m_autonomousCommand = m_autoChooser.getSelected();
-    m_robotContainer.m_drivetrain.resetGyro();
-    m_robotContainer.m_drivetrain.resetOdometry(
-      new Pose2d(1, 5, Rotation2d.fromDegrees(0))
-    );
-    m_autonomousCommand = new PathPlannerAuto("1m Auto reversed");
-    // // Exit without scheduling an auto command if none is selected
-    // if (m_autonomousCommand == null || m_autonomousCommand == Commands.none()) {
-    //   DriverStation.reportError("[ERROR] >> No auto command selected", false);
-    //   return;
-    // }
-
-    // // Reset the gyro and the starting Pose of the drive.
     // m_robotContainer.m_drivetrain.resetGyro();
-    // m_robotContainer.m_drivetrain.m_field.setRobotPose(
-    //   new Pose2d(0, 0, new Rotation2d(0))
+    // m_robotContainer.m_drivetrain.resetOdometry(
+    //   new Pose2d(1, 5, Rotation2d.fromDegrees(0))
     // );
+    // m_autonomousCommand = new PathPlannerAuto("1m Auto reversed");
+    // // // Exit without scheduling an auto command if none is selected
+    // // if (m_autonomousCommand == null || m_autonomousCommand == Commands.none()) {
+    // //   DriverStation.reportError("[ERROR] >> No auto command selected", false);
+    // //   return;
+    // // }
 
-    m_autonomousCommand.schedule();
+    // // // Reset the gyro and the starting Pose of the drive.
+    // // m_robotContainer.m_drivetrain.resetGyro();
+    // // m_robotContainer.m_drivetrain.m_field.setRobotPose(
+    // //   new Pose2d(0, 0, new Rotation2d(0))
+    // // );
+
+    // m_autonomousCommand.schedule();
   }
 
   /**

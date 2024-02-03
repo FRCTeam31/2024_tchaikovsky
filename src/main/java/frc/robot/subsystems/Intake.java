@@ -1,7 +1,10 @@
 package frc.robot.subsystems;
 
+import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxPIDController;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.RobotConfig;
@@ -13,6 +16,7 @@ public class Intake extends SubsystemBase {
   LazyCANSparkMax m_intakeRollerSparkMax;
   LazyCANSparkMax m_intakeAngleSparkMaxLeft;
   LazyCANSparkMax m_intakeAngleSparkMaxRight;
+  SparkMaxPIDController m_intakeAnglePid;
   RobotConfig m_RobotConfig;
   RelativeEncoder leftEncoder;
 
@@ -24,6 +28,7 @@ public class Intake extends SubsystemBase {
         RobotConfig.m_intakeRollerSparkMaxCanID,
         MotorType.kBrushless
       );
+
     m_intakeAngleSparkMaxLeft =
       new LazyCANSparkMax(
         RobotConfig.m_intakeAngleSparkMaxLeftCanID,
@@ -34,30 +39,47 @@ public class Intake extends SubsystemBase {
         RobotConfig.m_intakeAngleSparkMaxRightCanID,
         MotorType.kBrushless
       );
+    m_intakeAngleSparkMaxRight.setInverted(true);
+
+    m_intakeAnglePid = m_intakeAngleSparkMaxLeft.getPIDController();
+
+    m_intakeAnglePid.setP(0.1);
+    m_intakeAnglePid.setI(0);
+    m_intakeAnglePid.setD(0);
+    m_intakeAnglePid.setOutputRange(-1, 1);
   }
 
   // Method for giving the Intake Roller Motor a speed
-  public void runIntake(double speed) {
+  public void runIntakeRollers(double speed) {
     m_intakeRollerSparkMax.set(speed);
   }
 
-  // Method for giving the Intake Angle Motors a speed
-  public void intakeAngle(double speed) {
-    m_intakeAngleSparkMaxLeft.set(speed);
-    m_intakeAngleSparkMaxRight.set(-speed);
+  public void setIntakeAngle(Rotation2d rotation2d) {
+    var desiredRotation = rotation2d.getRotations();
+    var desiredRotationWithRatio = desiredRotation * 20;
+
+    setIntakeRotation(desiredRotationWithRatio);
+  }
+
+  // Method for setting a rotational setpoint for the intake motors to seek
+  public void setIntakeRotation(double rotation) {
+    m_intakeAnglePid.setReference(rotation, ControlType.kPosition);
+
+    var motorOutput = m_intakeAngleSparkMaxLeft.get();
+    m_intakeAngleSparkMaxRight.set(motorOutput);
   }
 
   // Command for running the intake to intake a Note
   public Command RunIntakeCommand(DoubleSupplier speed) {
     return this.run(() -> {
-        runIntake(speed.getAsDouble());
+        runIntakeRollers(speed.getAsDouble());
       });
   }
 
   // Command for changing the angle of the Position
   public Command IntakeAngleCommand(DoubleSupplier speed) {
     return this.run(() -> {
-        intakeAngle(speed.getAsDouble());
+        setIntakeRotation(speed.getAsDouble());
       });
   }
 
@@ -68,5 +90,11 @@ public class Intake extends SubsystemBase {
         m_intakeAngleSparkMaxRight.stopMotor();
         m_intakeRollerSparkMax.stopMotor();
       });
+  }
+
+  public void close() {
+    m_intakeAngleSparkMaxLeft.close();
+    m_intakeAngleSparkMaxRight.close();
+    m_intakeRollerSparkMax.close();
   }
 }

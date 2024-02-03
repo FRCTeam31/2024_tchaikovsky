@@ -8,8 +8,9 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.RobotConfig;
+import java.util.function.DoubleSupplier;
 
-public class Shooter extends SubsystemBase {
+public class Shooter extends SubsystemBase implements AutoCloseable {
 
   TalonFX m_shooterFalconFX;
   RobotConfig m_robotConfig;
@@ -31,5 +32,14 @@ public class Shooter extends SubsystemBase {
         m_shooterFalconFX.stopMotor();
       });
   }
-  // Note: Command for running the Shooter is in JointSubsystem.java since it requires the Intake to run
+
+  public Command runMotorsCommand(DoubleSupplier speed) {
+    return this.run(() -> {
+        runShooter(speed.getAsDouble());
+      });
+  }
+
+  public void close() {
+    m_shooterFalconFX.close();
+  }
 }
