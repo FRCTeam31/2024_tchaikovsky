@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.config.RobotConfig;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.JointSubsystem;
 import frc.robot.subsystems.Shooter;
 import prime.control.Controls;
 import prime.control.PrimeXboxController;
@@ -21,6 +22,7 @@ public class RobotContainer {
   public PrimeXboxController m_operatorController;
   public Shooter m_shooter;
   public Intake m_intake;
+  public JointSubsystem m_jointSubsystem;
 
   public RobotContainer(RobotConfig config) {
     reconfigure(config);
@@ -78,8 +80,12 @@ public class RobotContainer {
       )
     );
 
-    m_shooter.setDefaultCommand(
-      m_shooter.RunShooterCommand(m_operatorController.getTriggerSupplier())
+    m_jointSubsystem.setDefaultCommand(
+      m_jointSubsystem.RunShooterCommand(
+        m_operatorController.getTriggerSupplier(),
+        m_shooter,
+        m_intake
+      )
     );
     m_intake.setDefaultCommand(
       m_intake.RunIntakeCommand(
