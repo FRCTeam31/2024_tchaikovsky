@@ -8,6 +8,8 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.config.RobotConfig;
 import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Shooter;
 import prime.control.Controls;
 import prime.control.PrimeXboxController;
 
@@ -16,6 +18,9 @@ public class RobotContainer {
   public RobotConfig m_config;
   public Drivetrain m_drivetrain;
   public PrimeXboxController m_driverController;
+  public PrimeXboxController m_operatorController;
+  public Shooter m_shooter;
+  public Intake m_intake;
 
   public RobotContainer(RobotConfig config) {
     reconfigure(config);
@@ -47,6 +52,8 @@ public class RobotContainer {
         e.getStackTrace()
       );
     }
+
+    m_shooter = new Shooter(config);
   }
 
   /**
@@ -54,6 +61,7 @@ public class RobotContainer {
    */
   public void configureTeleopControls() {
     m_driverController = new PrimeXboxController(Controls.DRIVER_PORT);
+    m_operatorController = new PrimeXboxController(Controls.OPERATOR_PORT);
 
     m_drivetrain.setDefaultCommand(
       m_drivetrain.defaultDriveCommand(
@@ -70,6 +78,15 @@ public class RobotContainer {
       )
     );
 
+    m_shooter.setDefaultCommand(
+      m_shooter.RunShooterCommand(m_operatorController.getTriggerSupplier())
+    );
+    m_intake.setDefaultCommand(
+      m_intake.RunIntakeCommand(
+        m_operatorController.getRightStickXSupplier(0.1)
+      )
+    );
+    m_intake.setDefaultCommand(m_intake.IntakeAngleCommand(null));
     m_driverController
       .pov(Controls.up)
       .onTrue(m_drivetrain.driveWithSnapToAngleCommand(Math.toRadians(0)));

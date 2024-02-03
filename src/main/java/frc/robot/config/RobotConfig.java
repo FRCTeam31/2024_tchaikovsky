@@ -122,4 +122,6 @@ public class RobotConfig {
   public String toString() {
     return Name;
   }
+
+  public int shoulderMotorCANID = 0;
 }
