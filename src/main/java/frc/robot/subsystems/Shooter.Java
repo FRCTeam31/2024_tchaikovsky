@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 import frc.robot.config.RobotConfig;
 import java.util.function.DoubleSupplier;
 
@@ -18,7 +19,7 @@ public class Shooter extends SubsystemBase {
   /** Creates a new Shooter. */
   public Shooter(RobotConfig robotConfig) {
     m_robotConfig = robotConfig;
-    m_shooterFalconFX = new TalonFX(0);
+    m_shooterFalconFX = new TalonFX(RobotConfig.m_shooterFalconFXCanID);
   }
 
   public void runShooter(double speed) {
