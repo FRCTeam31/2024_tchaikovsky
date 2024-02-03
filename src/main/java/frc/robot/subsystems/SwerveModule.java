@@ -139,6 +139,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
         .withKP(pid.kP)
         .withKI(pid.kI)
         .withKD(pid.kD)
+        .withKS(pid.kS)
         .withKV(pid.kV);
 
     // Set the voltage limits
