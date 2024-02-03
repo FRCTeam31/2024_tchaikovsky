@@ -6,14 +6,17 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -31,7 +34,10 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
   private RobotConfig m_config;
 
   // Shuffleboard configuration
-  private final StructArrayPublisher<SwerveModuleState> publisher;
+  private final StructArrayPublisher<SwerveModuleState> m_measuredSwerveStatesPublisher;
+  private final StructArrayPublisher<SwerveModuleState> m_desiredSwerveStatesPublisher;
+  private final DoublePublisher m_gyroPublisher;
+
   private ShuffleboardTab d_driveTab = Shuffleboard.getTab("Drivetrain");
   private GenericEntry d_snapToEnabledEntry = d_driveTab
     .add("SnapTo Enabled", false)
@@ -52,7 +58,9 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
   private boolean m_inHighGear = true;
 
   // Swerve Modules, in CCW order from FL to FR
-  SwerveModule m_frontLeftModule, m_rearLeftModule, m_rearRightModule, m_frontRightModule;
+  // SwerveModule m_frontLeftModule, m_rearLeftModule, m_rearRightModule, m_frontRightModule;
+  SwerveModule m_frontLeftModule, m_frontRightModule, m_rearLeftModule, m_rearRightModule;
+
   public SwerveModule[] m_swerveModules;
   public SwerveModulePosition[] m_swerveModulePositions = new SwerveModulePosition[4];
 
@@ -77,19 +85,27 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     m_gyro = new Pigeon2(config.Drivetrain.PigeonId);
 
     // Create swerve modules, kinematics, and odometry
-    publisher =
+    m_measuredSwerveStatesPublisher =
       NetworkTableInstance
         .getDefault()
         .getStructArrayTopic("/SwerveStates", SwerveModuleState.struct)
         .publish();
 
+    m_desiredSwerveStatesPublisher =
+      NetworkTableInstance
+        .getDefault()
+        .getStructArrayTopic("/DesiredSwerveStates", SwerveModuleState.struct)
+        .publish();
+
+    m_gyroPublisher =
+      NetworkTableInstance.getDefault().getDoubleTopic("/Gyro").publish();
+
     m_kinematics =
       new SwerveDriveKinematics(
-        // in CCW order from FL to FR
         m_config.FrontLeftSwerveModule.getModuleLocation(),
+        m_config.FrontRightSwerveModule.getModuleLocation(),
         m_config.RearLeftSwerveModule.getModuleLocation(),
-        m_config.RearRightSwerveModule.getModuleLocation(),
-        m_config.FrontRightSwerveModule.getModuleLocation()
+        m_config.RearRightSwerveModule.getModuleLocation()
       );
     createSwerveModulesAndOdometry();
     m_inHighGear = config.Drivetrain.StartInHighGear;
@@ -167,9 +183,9 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     m_swerveModules =
       new SwerveModule[] {
         m_frontLeftModule,
+        m_frontLeftModule,
         m_rearLeftModule,
         m_rearRightModule,
-        m_frontLeftModule,
       };
   }
 
@@ -240,6 +256,12 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
    * @param desiredChassisSpeeds
    */
   public void drive(ChassisSpeeds desiredChassisSpeeds) {
+    // var xSpeed = desiredChassisSpeeds.vxMetersPerSecond;
+    // var ySpeed = desiredChassisSpeeds.vyMetersPerSecond;
+
+    // desiredChassisSpeeds.vxMetersPerSecond = ySpeed;
+    // desiredChassisSpeeds.vyMetersPerSecond = xSpeed;
+
     var swerveModuleStates = m_kinematics.toSwerveModuleStates(
       desiredChassisSpeeds
     );
@@ -248,17 +270,21 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
       m_config.Drivetrain.MaxSpeedMetersPerSecond
     );
 
-    if (DriverStation.isAutonomous()) {
-      m_frontLeftModule.setDesiredState(swerveModuleStates[0]);
-      m_rearLeftModule.setDesiredState(swerveModuleStates[1]);
-      m_rearRightModule.setDesiredState(swerveModuleStates[3]);
-      m_frontRightModule.setDesiredState(swerveModuleStates[2]);
-    } else {
-      m_frontLeftModule.setDesiredState(swerveModuleStates[0]);
-      m_rearLeftModule.setDesiredState(swerveModuleStates[1]);
-      m_rearRightModule.setDesiredState(swerveModuleStates[2]);
-      m_frontRightModule.setDesiredState(swerveModuleStates[3]);
-    }
+    swerveModuleStates[0].angle =
+      swerveModuleStates[0].angle.minus(Rotation2d.fromDegrees(90));
+    swerveModuleStates[1].angle =
+      swerveModuleStates[1].angle.minus(Rotation2d.fromDegrees(90));
+    swerveModuleStates[2].angle =
+      swerveModuleStates[2].angle.minus(Rotation2d.fromDegrees(90));
+    swerveModuleStates[3].angle =
+      swerveModuleStates[3].angle.minus(Rotation2d.fromDegrees(90));
+
+    m_desiredSwerveStatesPublisher.set(swerveModuleStates);
+
+    m_frontLeftModule.setDesiredState(swerveModuleStates[0]);
+    m_frontRightModule.setDesiredState(swerveModuleStates[1]);
+    m_rearLeftModule.setDesiredState(swerveModuleStates[2]);
+    m_rearRightModule.setDesiredState(swerveModuleStates[3]);
   }
 
   /**
@@ -273,9 +299,9 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
    */
   public void resetOdometry(Pose2d pose) {
     m_swerveModulePositions[0] = m_frontLeftModule.getPosition();
-    m_swerveModulePositions[1] = m_rearLeftModule.getPosition();
-    m_swerveModulePositions[2] = m_rearRightModule.getPosition();
-    m_swerveModulePositions[3] = m_frontRightModule.getPosition();
+    m_swerveModulePositions[1] = m_frontRightModule.getPosition();
+    m_swerveModulePositions[2] = m_rearLeftModule.getPosition();
+    m_swerveModulePositions[3] = m_rearRightModule.getPosition();
 
     m_odometry.resetPosition(
       m_gyro.getRotation2d(),
@@ -310,9 +336,9 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
    */
   public void stopMotors() {
     m_frontLeftModule.stopMotors();
+    m_frontRightModule.stopMotors();
     m_rearLeftModule.stopMotors();
     m_rearRightModule.stopMotors();
-    m_frontRightModule.stopMotors();
   }
 
   /**
@@ -320,9 +346,9 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
    */
   public void setWheelAngles(Rotation2d angle) {
     m_frontLeftModule.setDesiredAngle(angle);
+    m_frontRightModule.setDesiredAngle(angle);
     m_rearLeftModule.setDesiredAngle(angle);
     m_rearRightModule.setDesiredAngle(angle);
-    m_frontRightModule.setDesiredAngle(angle);
   }
 
   /**
@@ -332,9 +358,9 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
   public SwerveModulePosition[] getModulePositions() {
     return new SwerveModulePosition[] {
       m_frontLeftModule.getPosition(),
+      m_frontRightModule.getPosition(),
       m_rearLeftModule.getPosition(),
       m_rearRightModule.getPosition(),
-      m_frontRightModule.getPosition(),
     };
   }
 
@@ -354,9 +380,9 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
   public ChassisSpeeds getChassisSpeeds() {
     return m_kinematics.toChassisSpeeds(
       m_frontLeftModule.getModuleState(),
+      m_frontRightModule.getModuleState(),
       m_rearLeftModule.getModuleState(),
-      m_rearRightModule.getModuleState(),
-      m_frontRightModule.getModuleState()
+      m_rearRightModule.getModuleState()
     );
   }
 
@@ -368,13 +394,14 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     // Update odometry
     var gyroAngle = m_gyro.getRotation2d();
     d_gyroAngle.setDouble(gyroAngle.getDegrees());
+    m_gyroPublisher.set(gyroAngle.getRadians());
 
-    publisher.set(
+    m_measuredSwerveStatesPublisher.set(
       new SwerveModuleState[] {
         m_frontLeftModule.getModuleState(),
+        m_frontRightModule.getModuleState(),
         m_rearLeftModule.getModuleState(),
         m_rearRightModule.getModuleState(),
-        m_frontRightModule.getModuleState(),
       }
     );
     var robotPose = m_odometry.update(gyroAngle, getModulePositions());
@@ -398,11 +425,13 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
   ) {
     return this.run(() -> {
         var strafeX =
-          xSupplier.getAsDouble() * m_config.Drivetrain.MaxSpeedMetersPerSecond;
+          -xSupplier.getAsDouble() *
+          m_config.Drivetrain.MaxSpeedMetersPerSecond;
         var forwardY =
-          ySupplier.getAsDouble() * m_config.Drivetrain.MaxSpeedMetersPerSecond;
+          -ySupplier.getAsDouble() *
+          m_config.Drivetrain.MaxSpeedMetersPerSecond;
         var rotation =
-          rotationSupplier.getAsDouble() *
+          -rotationSupplier.getAsDouble() *
           m_config.Drivetrain.MaxAngularSpeedRadians;
 
         driveFromCartesianSpeeds(-strafeX, forwardY, rotation, fieldRelative);
@@ -472,9 +501,9 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     // close all physical resources
     m_gyro.close();
     m_frontLeftModule.close();
+    m_frontRightModule.close();
     m_rearLeftModule.close();
     m_rearRightModule.close();
-    m_frontRightModule.close();
     m_snapToRotationController.close();
 
     // release memory resources

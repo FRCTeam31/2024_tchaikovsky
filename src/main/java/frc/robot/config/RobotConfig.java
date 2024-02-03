@@ -41,7 +41,7 @@ public class RobotConfig {
         new PrimePIDConstants(0.019, 0, 0, 0, 0.122), // Drive PID
         new PrimePIDConstants(2, 0, 0), // Steering PID
         new PrimePIDConstants(0, 0, 0), // SnapTo PID,
-        new PrimePIDConstants(0.001, 0, 0), // Pathing Translation PID
+        new PrimePIDConstants(0.0125, 0, 0), // Pathing Translation PID
         new PrimePIDConstants(1, 0, 0), // Pathing Rotation PID
         0.15,
         0.5
@@ -54,10 +54,10 @@ public class RobotConfig {
         3,
         4,
         0.164551,
-        true,
+        false,
         true,
         new Translation2d(
-          -config.Drivetrain.TrackWidthMeters / 2,
+          -(config.Drivetrain.TrackWidthMeters / 2),
           config.Drivetrain.WheelBaseMeters / 2
         ),
         6.75,
@@ -71,7 +71,7 @@ public class RobotConfig {
         6,
         7,
         0.350098,
-        false,
+        true,
         true,
         new Translation2d(
           config.Drivetrain.TrackWidthMeters / 2,
@@ -88,11 +88,11 @@ public class RobotConfig {
         9,
         10,
         0.717773,
-        false,
+        true,
         true,
         new Translation2d(
           config.Drivetrain.TrackWidthMeters / 2,
-          -config.Drivetrain.WheelBaseMeters / 2
+          -(config.Drivetrain.WheelBaseMeters / 2)
         ),
         6.75,
         0.102
@@ -105,11 +105,11 @@ public class RobotConfig {
         12,
         13,
         0.181152,
-        true,
+        false,
         true,
         new Translation2d(
-          -config.Drivetrain.TrackWidthMeters / 2,
-          -config.Drivetrain.WheelBaseMeters / 2
+          -(config.Drivetrain.TrackWidthMeters / 2),
+          -(config.Drivetrain.WheelBaseMeters / 2)
         ),
         6.75,
         0.102

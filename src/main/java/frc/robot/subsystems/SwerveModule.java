@@ -238,7 +238,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
    *                     period
    */
   public void setDesiredState(SwerveModuleState desiredState) {
-    desiredState = optimize(desiredState);
+    // desiredState = optimize(desiredState);
     if (m_steeringPidController.atSetpoint()) {
       setDesiredSpeed(
         CTREConverter.metersToRotations(
@@ -312,15 +312,17 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
     var rawHeading = m_encoder.getAbsolutePosition().getValueAsDouble();
     // TODO: figure out why adjustment is necessary
 
-    return DriverStation.isAutonomous()
-      ? Rotation2d
-        .fromRotations(rawHeading)
-        .rotateBy(Rotation2d.fromDegrees(180))
-        .getRotations()
-      : Rotation2d
-        .fromRotations(rawHeading)
-        .rotateBy(Rotation2d.fromDegrees(90))
-        .getRotations();
+    // return DriverStation.isAutonomous()
+    //   ? Rotation2d
+    //     .fromRotations(rawHeading)
+    //     .rotateBy(Rotation2d.fromDegrees(180))
+    //     .getRotations()
+    //   : Rotation2d
+    //     .fromRotations(rawHeading)
+    //     .rotateBy(Rotation2d.fromDegrees(90))
+    //     .getRotations();
+
+    return rawHeading;
   }
 
   /**

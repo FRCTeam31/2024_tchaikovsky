@@ -19,8 +19,9 @@ public class RobotContainer {
   public Drivetrain m_drivetrain;
   public PrimeXboxController m_driverController;
   public PrimeXboxController m_operatorController;
-  public Shooter m_shooter;
-  public Intake m_intake;
+
+  // public Shooter m_shooter;
+  // public Intake m_intake;
 
   public RobotContainer(RobotConfig config) {
     reconfigure(config);
@@ -52,8 +53,7 @@ public class RobotContainer {
         e.getStackTrace()
       );
     }
-
-    m_shooter = new Shooter(config);
+    // m_shooter = new Shooter(config);
   }
 
   /**
@@ -78,15 +78,15 @@ public class RobotContainer {
       )
     );
 
-    m_shooter.setDefaultCommand(
-      m_shooter.RunShooterCommand(m_operatorController.getTriggerSupplier())
-    );
-    m_intake.setDefaultCommand(
-      m_intake.RunIntakeCommand(
-        m_operatorController.getRightStickXSupplier(0.1)
-      )
-    );
-    m_intake.setDefaultCommand(m_intake.IntakeAngleCommand(null));
+    // m_shooter.setDefaultCommand(
+    //   m_shooter.RunShooterCommand(m_operatorController.getTriggerSupplier())
+    // );
+    // m_intake.setDefaultCommand(
+    //   m_intake.RunIntakeCommand(
+    //     m_operatorController.getRightStickXSupplier(0.1)
+    //   )
+    // );
+    // m_intake.setDefaultCommand(m_intake.IntakeAngleCommand(null));
     m_driverController
       .pov(Controls.up)
       .onTrue(m_drivetrain.driveWithSnapToAngleCommand(Math.toRadians(0)));
