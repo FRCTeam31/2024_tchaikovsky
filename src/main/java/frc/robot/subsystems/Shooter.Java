@@ -7,28 +7,29 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Robot;
 import frc.robot.config.RobotConfig;
-import java.util.function.DoubleSupplier;
 
 public class Shooter extends SubsystemBase {
 
   TalonFX m_shooterFalconFX;
   RobotConfig m_robotConfig;
 
-  /** Creates a new Shooter. */
+  // Creates a new Shooter
   public Shooter(RobotConfig robotConfig) {
     m_robotConfig = robotConfig;
     m_shooterFalconFX = new TalonFX(RobotConfig.m_shooterFalconFXCanID);
   }
 
+  // Method for giving the Shooter Motor a speed
   public void runShooter(double speed) {
     m_shooterFalconFX.set(speed);
   }
 
-  public Command RunShooterCommand(DoubleSupplier speed) {
+  // Command for stopping the shooter motors
+  public Command stopMotorsCommand() {
     return this.run(() -> {
-        runShooter(speed.getAsDouble());
+        m_shooterFalconFX.stopMotor();
       });
   }
+  // Note: Command for running the Shooter is in JointSubsystem.java since it requires the Intake to run
 }
