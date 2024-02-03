@@ -4,9 +4,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.function.DoubleSupplier;
 
-// Runs the Shooter and Intake to shoot a Note
 public class JointSubsystem {
 
+  // Runs the Shooter and Intake to shoot a Note
   public Command RunShooterCommand(
     DoubleSupplier speed,
     Shooter shooter,
