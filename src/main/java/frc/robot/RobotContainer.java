@@ -110,14 +110,14 @@ public class RobotContainer {
         m_shooter
           .runMotorsCommand(() -> m_driverController.getRightTriggerAxis())
           .alongWith(
-            m_intake.RunIntakeCommand(() ->
+            m_intake.runRollersCommand(() ->
               -m_driverController.getRightTriggerAxis()
             )
           )
       );
 
     m_intake.setDefaultCommand(
-      m_intake.RunIntakeCommand(() -> m_driverController.getLeftTriggerAxis())
+      m_intake.runRollersCommand(() -> m_driverController.getLeftTriggerAxis())
     );
     // m_intake.setDefaultCommand(m_intake.IntakeAngleCommand(null));
   }
