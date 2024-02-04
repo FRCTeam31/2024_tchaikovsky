@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -14,19 +13,19 @@ import prime.movers.LazyCANSparkMax;
 
 public class Intake extends SubsystemBase {
 
+  RobotConfig m_config;
+
   LazyCANSparkMax m_rollers;
   LazyCANSparkMax m_neoLeft;
   LazyCANSparkMax m_neoRight;
   SparkMaxPIDController m_intakeAnglePid;
-  RobotConfig m_RobotConfig;
-  RelativeEncoder leftEncoder;
 
   /**
    * Creates a new Intake subsystem
    * @param robotConfig
    */
   public Intake(RobotConfig robotConfig) {
-    m_RobotConfig = robotConfig;
+    m_config = robotConfig;
     m_rollers =
       new LazyCANSparkMax(
         RobotConfig.m_intakeRollerSparkMaxCanID,
