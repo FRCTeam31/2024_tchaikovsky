@@ -31,17 +31,20 @@ public class Intake extends SubsystemBase {
         RobotConfig.m_intakeRollerSparkMaxCanID,
         MotorType.kBrushless
       );
+    m_rollers.restoreFactoryDefaults();
 
     m_neoLeft =
       new LazyCANSparkMax(
         RobotConfig.m_intakeAngleSparkMaxLeftCanID,
         MotorType.kBrushless
       );
+    m_neoLeft.restoreFactoryDefaults();
     m_neoRight =
       new LazyCANSparkMax(
         RobotConfig.m_intakeAngleSparkMaxRightCanID,
         MotorType.kBrushless
       );
+    m_neoRight.restoreFactoryDefaults();
     m_neoRight.setInverted(true);
 
     m_intakeAnglePid = m_neoLeft.getPIDController();
