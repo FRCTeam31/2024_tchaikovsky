@@ -6,7 +6,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
@@ -16,14 +15,20 @@ import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
-import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import frc.robot.config.RobotConfig;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
@@ -352,7 +357,22 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Gets the module positions as an array ordered in standard CCW order
+   * Sets the drive voltage of all modules. Used for SysID routines
+   *
+   * @param voltage
+   */
+  public void setModuleDriveVoltages(Measure<Voltage> voltage) {
+    // Lock the wheels facing forward
+    setWheelAngles(Rotation2d.fromDegrees(0));
+
+    m_frontLeftModule.setDriveVoltage(voltage.magnitude());
+    m_frontRightModule.setDriveVoltage(voltage.magnitude());
+    m_rearLeftModule.setDriveVoltage(voltage.magnitude());
+    m_rearRightModule.setDriveVoltage(voltage.magnitude());
+  }
+
+  /**
+   * Gets the module positions as an array
    * @return
    */
   public SwerveModulePosition[] getModulePositions() {
@@ -364,19 +384,24 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     };
   }
 
-  public void enableSnapToGyroControl() {
-    m_snapToGyroEnabled = true;
+  /**
+   * Enabled/disables snap-to gyro control
+   */
+  public void setSnapToGyroControl(boolean enabled) {
+    m_snapToGyroEnabled = enabled;
   }
 
-  public void disableSnapToGyroControl() {
-    m_snapToGyroEnabled = false;
-  }
-
+  /**
+   * Toggles snap-to gyro control
+   */
   public void toggleSnapToGyroControl() {
     m_snapToGyroEnabled = !m_snapToGyroEnabled;
     m_snapToRotationController.setSetpoint(0);
   }
 
+  /**
+   * Gets the current chassis speeds of the robot
+   */
   public ChassisSpeeds getChassisSpeeds() {
     return m_kinematics.toChassisSpeeds(
       m_frontLeftModule.getModuleState(),
@@ -469,8 +494,8 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
   /**
    * Creates a command that enables snap to gyro control
    */
-  public Command enableSnapToGyroControlCommand() {
-    return this.runOnce(() -> enableSnapToGyroControl());
+  public Command setSnapToGyroControlCommand(boolean enabled) {
+    return this.runOnce(() -> setSnapToGyroControl(enabled));
   }
 
   /**
@@ -487,9 +512,110 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
    */
   public Command driveWithSnapToAngleCommand(double angle) {
     return this.runOnce(() -> {
-        enableSnapToGyroControl();
+        setSnapToGyroControl(true);
         m_snapToRotationController.setSetpoint(angle);
       });
+  }
+
+  //#endregion
+
+  //#region SysID Routines
+
+  /**
+   * Factory method for creating a quasistatic SysID routine for the drivetrain
+   * @param direction
+   */
+  public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return generateSysIdRoutine().quasistatic(direction);
+  }
+
+  /**
+   * Factory method for creating a dynamic SysID routine for the drivetrain
+   * @param direction
+   */
+  public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+    return generateSysIdRoutine().dynamic(direction);
+  }
+
+  /**
+   * Generates a SysID routine for the drivetrain
+   * @return
+   */
+  public SysIdRoutine generateSysIdRoutine() {
+    var config = new SysIdRoutine.Config(
+      Units.Volts.per(Units.Second).of(1),
+      Units.Volts.of(5),
+      Units.Seconds.of(15),
+      state -> {
+        SmartDashboard.putString(
+          "Drive/SysID Current Routine",
+          state.toString()
+        );
+      }
+    );
+
+    var mechanism = new Mechanism(
+      this::setModuleDriveVoltages,
+      this::logMotors,
+      this,
+      getName()
+    );
+
+    return new SysIdRoutine(config, mechanism);
+  }
+
+  /**
+   * Logs the voltage, distance, and velocity of each swerve module to SysID
+   * @param log
+   */
+  private void logMotors(SysIdRoutineLog log) {
+    log
+      .motor(m_frontLeftModule.getName())
+      .voltage(Units.Volts.of(m_frontLeftModule.getDriveVoltage()))
+      .linearPosition(
+        Units.Meters.of(m_frontLeftModule.getPosition().distanceMeters)
+      )
+      .linearVelocity(
+        Units.MetersPerSecond.of(
+          m_frontLeftModule.getModuleState().speedMetersPerSecond
+        )
+      );
+
+    log
+      .motor(m_frontRightModule.getName())
+      .voltage(Units.Volts.of(m_frontRightModule.getDriveVoltage()))
+      .linearPosition(
+        Units.Meters.of(m_frontRightModule.getPosition().distanceMeters)
+      )
+      .linearVelocity(
+        Units.MetersPerSecond.of(
+          m_frontRightModule.getModuleState().speedMetersPerSecond
+        )
+      );
+
+    log
+      .motor(m_rearLeftModule.getName())
+      .voltage(Units.Volts.of(m_rearLeftModule.getDriveVoltage()))
+      .linearPosition(
+        Units.Meters.of(m_rearLeftModule.getPosition().distanceMeters)
+      )
+      .linearVelocity(
+        Units.MetersPerSecond.of(
+          m_rearLeftModule.getModuleState().speedMetersPerSecond
+        )
+      );
+
+    log
+      .motor(m_rearRightModule.getName())
+      .voltage(Units.Volts.of(m_rearRightModule.getDriveVoltage()))
+      .linearPosition(
+        Units.Meters.of(m_rearRightModule.getPosition().distanceMeters)
+      )
+      .linearVelocity(
+        Units.MetersPerSecond.of(
+          m_rearRightModule.getModuleState().speedMetersPerSecond
+        )
+      );
   }
 
   //#endregion

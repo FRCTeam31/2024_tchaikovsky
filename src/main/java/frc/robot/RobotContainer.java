@@ -6,6 +6,8 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.config.RobotConfig;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Intake;
@@ -45,6 +47,8 @@ public class RobotContainer {
 
       // Create new subsystems
       m_drivetrain = new Drivetrain(m_config);
+      // m_shooter = new Shooter(config);
+      // m_intake = new Intake(config);
 
       // Reconfigure bindings
       configureTeleopControls();
@@ -54,7 +58,6 @@ public class RobotContainer {
         e.getStackTrace()
       );
     }
-    // m_shooter = new Shooter(config);
   }
 
   /**
@@ -107,5 +110,32 @@ public class RobotContainer {
     m_driverController
       .button(Controls.B)
       .onTrue(m_drivetrain.toggleShifterCommand());
+  }
+
+  /**
+   * Configures the controllers and binds test & SysID commands to buttons
+   */
+  public void configureTestControls() {
+    m_driverController = new PrimeXboxController(Controls.DRIVER_PORT);
+
+    m_driverController
+      .start()
+      .whileTrue(m_drivetrain.sysIdQuasistatic(Direction.kForward))
+      .onFalse(Commands.runOnce(() -> m_drivetrain.stopMotors(), m_drivetrain));
+
+    m_driverController
+      .back()
+      .whileTrue(m_drivetrain.sysIdQuasistatic(Direction.kReverse))
+      .onFalse(Commands.runOnce(() -> m_drivetrain.stopMotors(), m_drivetrain));
+
+    m_driverController
+      .rightBumper()
+      .whileTrue(m_drivetrain.sysIdDynamic(Direction.kForward))
+      .onFalse(Commands.runOnce(() -> m_drivetrain.stopMotors(), m_drivetrain));
+
+    m_driverController
+      .leftBumper()
+      .whileTrue(m_drivetrain.sysIdDynamic(Direction.kReverse))
+      .onFalse(Commands.runOnce(() -> m_drivetrain.stopMotors(), m_drivetrain));
   }
 }

@@ -182,23 +182,34 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Gets the cumulative SwerveModulePosition of the module
+   * Sets the desired state of the module.
+   *
+   * @param desiredState The state of the module that we'd like to be at in this
+   *                     period
    */
-  public SwerveModulePosition getPosition() {
-    return new SwerveModulePosition(
-      CTREConverter.rotationsToMeters(
-        m_driveMotor.getPosition().getValueAsDouble(),
+  public void setDesiredState(SwerveModuleState desiredState) {
+    // desiredState = optimize(desiredState);
+    setDesiredSpeed(
+      CTREConverter.metersToRotations(
+        desiredState.speedMetersPerSecond,
         m_config.DriveWheelCircumferenceMeters,
         m_config.DriveGearRatio
-      ),
-      getEncoderHeadingRotation2d()
+      )
     );
+
+    setDesiredAngle(desiredState.angle);
   }
 
-  public SwerveModuleState getModuleState() {
-    return new SwerveModuleState(
-      getVelocityMetersPerSecond(),
-      getEncoderHeadingRotation2d()
+  /**
+   * Sets the desired speed of the module in closed-loop velocity mode
+   *
+   * @param speedMetersPerSecond The desired speed in meters per second
+   */
+  public void setDesiredSpeed(double speedRotationsPerSecond) {
+    m_driveMotor.setControl(
+      m_voltageVelocity
+        .withVelocity(speedRotationsPerSecond)
+        .withAcceleration(speedRotationsPerSecond / 2)
     );
   }
 
@@ -220,62 +231,36 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Sets the desired speed of the module in closed-loop velocity mode
+   * Sets the voltage of the drive motor. Used for SysID routines
    *
-   * @param speedMetersPerSecond The desired speed in meters per second
+   * @param voltage The voltage to set the drive motor to
    */
-  public void setDesiredSpeed(double speedRotationsPerSecond) {
-    m_driveMotor.setControl(
-      m_voltageVelocity
-        .withVelocity(speedRotationsPerSecond)
-        .withAcceleration(speedRotationsPerSecond / 2)
-    );
+  public void setDriveVoltage(double voltage) {
+    m_driveMotor.setVoltage(voltage);
   }
 
   /**
-   * Sets the desired state of the module.
+   * Optimizes the module state to minimize the distance the module needs to
+   * travel
    *
-   * @param desiredState The state of the module that we'd like to be at in this
-   *                     period
+   * @param desiredState The desired state of the module
+   * @return The optimized state of the module
    */
-  public void setDesiredState(SwerveModuleState desiredState) {
-    // desiredState = optimize(desiredState);
-    // if (m_steeringPidController.atSetpoint()) {
-    setDesiredSpeed(
-      CTREConverter.metersToRotations(
-        desiredState.speedMetersPerSecond,
-        m_config.DriveWheelCircumferenceMeters,
-        m_config.DriveGearRatio
-      )
-    );
-    // }
-
-    setDesiredAngle(desiredState.angle);
-  }
-
-  public SwerveModuleState optimize(SwerveModuleState desiredState) {
+  private SwerveModuleState optimize(SwerveModuleState desiredState) {
     double actualAngle = getEncoderHeading();
     double desiredAngle = desiredState.angle.getDegrees();
-    double inputInv = (desiredAngle + 180) % 360;
-    double distNonInv = Math.abs(actualAngle - desiredAngle);
-    double distToInv = Math.abs(actualAngle - inputInv);
-    SwerveModuleState optimizedState;
+    double inputInverted = (desiredAngle + 180) % 360;
+    double distNonInverted = Math.abs(actualAngle - desiredAngle);
+    double distToInverted = Math.abs(actualAngle - inputInverted);
 
-    if (distToInv < distNonInv) {
-      optimizedState =
-        new SwerveModuleState(
-          -desiredState.speedMetersPerSecond,
-          Rotation2d.fromDegrees(distToInv)
-        );
+    if (distToInverted < distNonInverted) {
+      return new SwerveModuleState(
+        -desiredState.speedMetersPerSecond,
+        Rotation2d.fromDegrees(inputInverted)
+      );
     } else {
-      optimizedState =
-        new SwerveModuleState(
-          desiredState.speedMetersPerSecond,
-          Rotation2d.fromDegrees(distNonInv)
-        );
+      return desiredState;
     }
-
-    return optimizedState;
   }
 
   /**
@@ -296,6 +281,30 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Gets the cumulative SwerveModulePosition of the module
+   */
+  public SwerveModulePosition getPosition() {
+    return new SwerveModulePosition(
+      CTREConverter.rotationsToMeters(
+        m_driveMotor.getPosition().getValueAsDouble(),
+        m_config.DriveWheelCircumferenceMeters,
+        m_config.DriveGearRatio
+      ),
+      getEncoderHeadingRotation2d()
+    );
+  }
+
+  /**
+   * Gets the current state of the module
+   */
+  public SwerveModuleState getModuleState() {
+    return new SwerveModuleState(
+      getVelocityMetersPerSecond(),
+      getEncoderHeadingRotation2d()
+    );
+  }
+
+  /**
    * Gets the velocity of the drive motor in meters per second
    */
   public double getVelocityMetersPerSecond() {
@@ -311,17 +320,6 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
    */
   public double getEncoderHeading() {
     var rawHeading = m_encoder.getAbsolutePosition().getValueAsDouble();
-    // TODO: figure out why adjustment is necessary
-
-    // return DriverStation.isAutonomous()
-    //   ? Rotation2d
-    //     .fromRotations(rawHeading)
-    //     .rotateBy(Rotation2d.fromDegrees(180))
-    //     .getRotations()
-    //   : Rotation2d
-    //     .fromRotations(rawHeading)
-    //     .rotateBy(Rotation2d.fromDegrees(90))
-    //     .getRotations();
 
     return rawHeading;
   }
@@ -331,6 +329,14 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
    */
   protected Rotation2d getEncoderHeadingRotation2d() {
     return Rotation2d.fromRotations(getEncoderHeading());
+  }
+
+  /**
+   * Gets the voltage of the drive motor
+   * @return
+   */
+  public double getDriveVoltage() {
+    return m_driveMotor.getMotorVoltage().getValueAsDouble();
   }
 
   /**
@@ -345,6 +351,9 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
     d_moduleHeadingEntry.setDouble(getEncoderHeadingRotation2d().getDegrees());
   }
 
+  /**
+   * Closes the module and its devices
+   */
   @Override
   public void close() {
     DriverStation.reportWarning(
