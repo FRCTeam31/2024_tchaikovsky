@@ -88,7 +88,7 @@ public class Robot extends TimedRobot {
     if (m_autoChooser != null) {
       m_autonomousCommand = m_autoChooser.getSelected();
     } else {
-      m_autonomousCommand = new PathPlannerAuto("Square auto");
+      m_autonomousCommand = new PathPlannerAuto("line 1m");
     }
 
     // Exit without scheduling an auto command if none is selected
