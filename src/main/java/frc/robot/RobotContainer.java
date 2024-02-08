@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.config.RobotConfig;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
+import prime.control.Controls;
 import prime.control.PrimeXboxController;
 
 public class RobotContainer {
@@ -61,7 +62,7 @@ public class RobotContainer {
    * Creates the controller and configures teleop controls
    */
   public void configureTeleopControls() {
-    // m_driverController = new PrimeXboxController(Controls.DRIVER_PORT);
+    m_driverController = new PrimeXboxController(Controls.DRIVER_PORT);
     // m_operatorController = new PrimeXboxController(Controls.OPERATOR_PORT);
 
     // m_drivetrain.setDefaultCommand(
@@ -99,22 +100,22 @@ public class RobotContainer {
     //   .button(Controls.B)
     //   .onTrue(m_drivetrain.toggleShifterCommand());
 
-    m_shooter.setDefaultCommand(
-      m_shooter.runMotorsCommand(() -> m_driverController.getRightTriggerAxis())
-    );
+    // m_shooter.setDefaultCommand(
+    //   m_shooter.runMotorsCommand(() -> m_driverController.getRightTriggerAxis())
+    // );
 
-    // Load/Shoot
-    m_driverController
-      .leftBumper()
-      .whileTrue(
-        m_shooter
-          .runMotorsCommand(() -> m_driverController.getRightTriggerAxis())
-          .alongWith(
-            m_intake.RunIntakeCommand(() ->
-              -m_driverController.getRightTriggerAxis()
-            )
-          )
-      );
+    // // Load/Shoot
+    // m_driverController
+    //   .leftBumper()
+    //   .whileTrue(
+    //     m_shooter
+    //       .runMotorsCommand(() -> m_driverController.getRightTriggerAxis())
+    //       .alongWith(
+    //         m_intake.RunIntakeCommand(() ->
+    //           -m_driverController.getRightTriggerAxis()
+    //         )
+    //       )
+    //   );
 
     m_intake.setDefaultCommand(
       m_intake.RunIntakeCommand(() -> m_driverController.getLeftTriggerAxis())

@@ -7,6 +7,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.RobotConfig;
@@ -52,11 +53,12 @@ public class Intake extends SubsystemBase {
     m_intakeAnglePid.setOutputRange(-1, 1);
   }
 
+  @Override
   public void periodic() {
-    final CANSparkMax motor = new CANSparkMax(14, MotorType.kBrushless);
-    final CANEncoder encoder = motor.getEncoder();
-
-    getEncoder().getPosition();
+    SmartDashboard.putNumber(
+      "Right NEO Encoder Value",
+      m_intakeAngleSparkMaxRight.getEncoder().getPosition()
+    );
   }
 
   // Method for giving the Intake Roller Motor a speed
