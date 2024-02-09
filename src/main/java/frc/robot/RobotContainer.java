@@ -117,9 +117,10 @@ public class RobotContainer {
     //       )
     //   );
 
-    m_intake.setDefaultCommand(
-      m_intake.RunIntakeCommand(() -> m_driverController.getLeftTriggerAxis())
-    );
-    // m_intake.setDefaultCommand(m_intake.IntakeAngleCommand(null));
+    m_intake.setDefaultCommand(m_intake.runIntakeAnglePid());
+    m_driverController
+      .y()
+      .onTrue(m_intake.setIntakeAngleCommand(m_intake.m_upperLimit / 2));
+    m_driverController.a().onTrue(m_intake.setIntakeAngleCommand(1));
   }
 }

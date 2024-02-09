@@ -1,64 +1,89 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.CANEncoder;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkMaxPIDController;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.RobotConfig;
-import java.util.concurrent.CancellationException;
+import java.util.Map;
 import java.util.function.DoubleSupplier;
 import prime.movers.LazyCANSparkMax;
 
 public class Intake extends SubsystemBase {
 
-  LazyCANSparkMax m_intakeRollerSparkMax;
-  LazyCANSparkMax m_intakeAngleSparkMaxLeft;
-  LazyCANSparkMax m_intakeAngleSparkMaxRight;
-  SparkMaxPIDController m_intakeAnglePid;
-  RobotConfig m_RobotConfig;
-  RelativeEncoder leftEncoder;
+  private RobotConfig m_robotConfig;
+  private ShuffleboardTab d_intakeTab;
+  private GenericEntry d_intakePositionEntry;
+  private GenericEntry d_intakePidOutputEntry;
+
+  private LazyCANSparkMax m_intakeRollerSparkMax;
+  private LazyCANSparkMax m_intakeAngleSparkMaxLeft;
+  private LazyCANSparkMax m_intakeAngleSparkMaxRight;
+  private PIDController m_intakeAnglePid;
+  private RelativeEncoder leftEncoder;
+
+  // TODO: move these into config
+  public double m_upperLimit = 10.09;
+  public double m_lowerLimit = 0.02;
+  private double m_positionSetpoint = 1;
 
   // Creates a new Intake
   public Intake(RobotConfig robotConfig) {
-    m_RobotConfig = robotConfig;
+    m_robotConfig = robotConfig;
+    setName("Intake");
+    d_intakeTab = Shuffleboard.getTab(getName());
+
     m_intakeRollerSparkMax =
       new LazyCANSparkMax(
-        RobotConfig.m_intakeRollerSparkMaxCanID,
+        m_robotConfig.m_intakeRollerSparkMaxCanID,
         MotorType.kBrushless
       );
 
     m_intakeAngleSparkMaxLeft =
       new LazyCANSparkMax(
-        RobotConfig.m_intakeAngleSparkMaxLeftCanID,
+        m_robotConfig.m_intakeAngleSparkMaxLeftCanID,
         MotorType.kBrushless
       );
     m_intakeAngleSparkMaxRight =
       new LazyCANSparkMax(
-        RobotConfig.m_intakeAngleSparkMaxRightCanID,
+        m_robotConfig.m_intakeAngleSparkMaxRightCanID,
         MotorType.kBrushless
       );
     m_intakeAngleSparkMaxRight.setInverted(true);
 
-    m_intakeAnglePid = m_intakeAngleSparkMaxLeft.getPIDController();
+    d_intakePositionEntry =
+      d_intakeTab
+        .add("Position (rotations)", 0)
+        .withWidget(BuiltInWidgets.kNumberBar)
+        .withProperties(Map.of("Max", 15, "Min", -5))
+        .getEntry();
 
-    m_intakeAnglePid.setP(0.1);
-    m_intakeAnglePid.setI(0);
-    m_intakeAnglePid.setD(0);
-    m_intakeAnglePid.setOutputRange(-1, 1);
+    m_intakeAnglePid = new PIDController(0.1, 0, 0, 0.02);
+    d_intakeTab
+      .add("Steering PID", m_intakeAnglePid)
+      .withWidget(BuiltInWidgets.kPIDController);
+    d_intakePidOutputEntry =
+      d_intakeTab
+        .add("PID output", 0)
+        .withWidget(BuiltInWidgets.kNumberBar)
+        .withProperties(Map.of("Max", 2, "Min", -2))
+        .getEntry();
   }
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber(
-      "Right NEO Encoder Value",
-      m_intakeAngleSparkMaxRight.getEncoder().getPosition()
-    );
+    d_intakePositionEntry.setDouble(getPosition());
+  }
+
+  public double getPosition() {
+    return m_intakeAngleSparkMaxRight.getEncoder().getPosition();
   }
 
   // Method for giving the Intake Roller Motor a speed
@@ -66,32 +91,59 @@ public class Intake extends SubsystemBase {
     m_intakeRollerSparkMax.set(speed);
   }
 
-  public void setIntakeAngle(Rotation2d rotation2d) {
-    var desiredRotation = rotation2d.getRotations();
-    var desiredRotationWithRatio = desiredRotation * 20;
-
-    setIntakeRotation(desiredRotationWithRatio);
+  public void setAngleMotorSpeed(double speed) {
+    m_intakeAngleSparkMaxLeft.set(speed);
+    m_intakeAngleSparkMaxLeft.set(speed);
   }
+
+  // public void setIntakeAngle(Rotation2d rotation2d) {
+  //   var desiredRotation = rotation2d.getRotations();
+  //   var desiredRotationWithRatio = desiredRotation * 20;
+
+  //   setIntakeRotation();
+  // }
 
   // Method for setting a rotational setpoint for the intake motors to seek
-  public void setIntakeRotation(double rotation) {
-    m_intakeAnglePid.setReference(rotation, ControlType.kPosition);
+  public void setIntakeRotation() {
+    var pidOutput = m_intakeAnglePid.calculate(
+      getPosition(),
+      m_positionSetpoint
+    );
 
-    var motorOutput = m_intakeAngleSparkMaxLeft.get();
-    m_intakeAngleSparkMaxRight.set(motorOutput);
+    d_intakePidOutputEntry.setDouble(pidOutput);
+
+    var currentPosition = getPosition();
+    if (currentPosition < m_upperLimit && pidOutput > 0) {
+      setAngleMotorSpeed(MathUtil.clamp(pidOutput, 0, 0.2));
+    } else if (currentPosition > m_lowerLimit && pidOutput < 0) {
+      setAngleMotorSpeed(MathUtil.clamp(pidOutput, -0.2, 0));
+    } else {
+      setAngleMotorSpeed(0);
+    }
   }
 
+  //#region Commands
   // Command for running the intake to intake a Note
-  public Command RunIntakeCommand(DoubleSupplier speed) {
+  public Command runIntakeCommand(DoubleSupplier speed) {
     return this.run(() -> {
         runIntakeRollers(speed.getAsDouble());
       });
   }
 
   // Command for changing the angle of the Position
-  public Command IntakeAngleCommand(DoubleSupplier speed) {
+  public Command setIntakeAngleCommand(double position) {
+    return this.runOnce(() -> {
+        m_positionSetpoint = position;
+      });
+  }
+
+  public Command runIntakeAnglePid() {
+    return this.run(() -> setIntakeRotation());
+  }
+
+  public Command setIntakeAngleSpeed(DoubleSupplier speed) {
     return this.run(() -> {
-        setIntakeRotation(speed.getAsDouble());
+        setAngleMotorSpeed(speed.getAsDouble());
       });
   }
 
@@ -104,9 +156,12 @@ public class Intake extends SubsystemBase {
       });
   }
 
+  //#endregion
+
   public void close() {
     m_intakeAngleSparkMaxLeft.close();
     m_intakeAngleSparkMaxRight.close();
     m_intakeRollerSparkMax.close();
+    m_intakeAnglePid.close();
   }
 }

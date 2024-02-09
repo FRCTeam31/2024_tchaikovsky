@@ -18,7 +18,7 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
   // Creates a new Shooter
   public Shooter(RobotConfig robotConfig) {
     m_robotConfig = robotConfig;
-    m_shooterFalconFX = new TalonFX(RobotConfig.m_shooterFalconFXCanID);
+    m_shooterFalconFX = new TalonFX(m_robotConfig.m_shooterFalconFXCanID);
   }
 
   // Method for giving the Shooter Motor a speed

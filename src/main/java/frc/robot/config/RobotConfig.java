@@ -123,8 +123,8 @@ public class RobotConfig {
     return Name;
   }
 
-  public static final int m_intakeRollerSparkMaxCanID = 16;
-  public static final int m_intakeAngleSparkMaxLeftCanID = 14;
-  public static final int m_intakeAngleSparkMaxRightCanID = 15;
-  public static final int m_shooterFalconFXCanID = 20;
+  public final int m_intakeRollerSparkMaxCanID = 16;
+  public final int m_intakeAngleSparkMaxLeftCanID = 14;
+  public final int m_intakeAngleSparkMaxRightCanID = 15;
+  public final int m_shooterFalconFXCanID = 20;
 }
