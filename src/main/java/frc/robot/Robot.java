@@ -50,7 +50,7 @@ public class Robot extends TimedRobot {
       .withPosition(0, 0);
 
     // Build an auto chooser. This will use Commands.none() as the default option.
-    m_autoChooser = AutoBuilder.buildAutoChooser("1m Auto");
+    m_autoChooser = AutoBuilder.buildAutoChooser("3m");
     d_robotTab
       .add(m_autoChooser)
       .withWidget(BuiltInWidgets.kComboBoxChooser)
