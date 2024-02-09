@@ -50,7 +50,7 @@ public class Robot extends TimedRobot {
       .withPosition(0, 0);
 
     // Build an auto chooser. This will use Commands.none() as the default option.
-    m_autoChooser = AutoBuilder.buildAutoChooser("1m Auto");
+    m_autoChooser = AutoBuilder.buildAutoChooser("3m");
     d_robotTab
       .add(m_autoChooser)
       .withWidget(BuiltInWidgets.kComboBoxChooser)
@@ -88,7 +88,7 @@ public class Robot extends TimedRobot {
     if (m_autoChooser != null) {
       m_autonomousCommand = m_autoChooser.getSelected();
     } else {
-      m_autonomousCommand = new PathPlannerAuto("Square auto");
+      m_autonomousCommand = new PathPlannerAuto("line 1m");
     }
 
     // Exit without scheduling an auto command if none is selected
