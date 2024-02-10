@@ -9,7 +9,6 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Robot;
 import frc.robot.config.RobotConfig;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
@@ -26,8 +25,6 @@ public class Intake extends SubsystemBase {
   private LazyCANSparkMax m_intakeAngleSparkMaxLeft;
   private LazyCANSparkMax m_intakeAngleSparkMaxRight;
   private PIDController m_intakeAnglePid;
-
-  // TODO: move these into config
 
   // Creates a new Intake
   public Intake(RobotConfig robotConfig) {
@@ -108,9 +105,9 @@ public class Intake extends SubsystemBase {
     d_intakePidOutputEntry.setDouble(pidOutput);
 
     var currentPosition = getPosition();
-    if (currentPosition < robotConfig.m_upperLimit && pidOutput > 0) {
+    if (currentPosition < RobotConfig.m_upperLimit && pidOutput > 0) {
       setAngleMotorSpeed(MathUtil.clamp(pidOutput, 0, 0.2));
-    } else if (currentPosition > robotConfig.m_lowerLimit && pidOutput < 0) {
+    } else if (currentPosition > RobotConfig.m_lowerLimit && pidOutput < 0) {
       setAngleMotorSpeed(MathUtil.clamp(pidOutput, -0.2, 0));
     } else {
       setAngleMotorSpeed(0);

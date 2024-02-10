@@ -16,11 +16,14 @@ public class RobotConfig {
   public final int m_intakeRollerSparkMaxCanID = 16;
   public final int m_intakeAngleSparkMaxLeftCanID = 14;
   public final int m_intakeAngleSparkMaxRightCanID = 15;
+  public final int m_climbersVictorSPXRightCanID = 17;
+  public final int m_climbersVictorSPXLeftCanID = 18;
   public final int m_shooterSparkMaxCanID = 20;
 
-  public double m_upperLimit = 10.09;
-  public double m_lowerLimit = 0.02;
   public double m_positionSetpoint = 1;
+  public static double m_upperLimit = 10.09;
+  public static double m_lowerLimit = 0.02;
+  public static double m_climbSpeed = 0.2;
 
   public RobotConfig() {
     Name = "[none]";
