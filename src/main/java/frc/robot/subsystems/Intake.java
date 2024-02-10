@@ -84,8 +84,8 @@ public class Intake extends SubsystemBase {
   }
 
   public void setAngleMotorSpeed(double speed) {
-    m_intakeAngleSparkMaxLeft.set(speed);
-    m_intakeAngleSparkMaxLeft.set(speed);
+    m_intakeAngleSparkMaxLeft.set(-speed);
+    m_intakeAngleSparkMaxRight.set(speed);
   }
 
   // public void setIntakeAngle(Rotation2d rotation2d) {

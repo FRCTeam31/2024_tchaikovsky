@@ -20,9 +20,10 @@ public class RobotConfig {
   public final int m_climbersVictorSPXLeftCanID = 18;
   public final int m_shooterTalonFXCanID = 20;
 
+  // Encoder Values are inverted because they inverted the position of the NEO's.
   public double m_positionSetpoint = 1;
-  public static double m_upperLimit = 10.09;
-  public static double m_lowerLimit = 0.02;
+  public static double m_upperLimit = -10.09;
+  public static double m_lowerLimit = -0.02;
   public static double m_climbSpeed = 0.2;
 
   public RobotConfig() {
