@@ -4,37 +4,32 @@
 
 package frc.robot.subsystems;
 
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.RobotConfig;
 import java.util.function.DoubleSupplier;
-import prime.movers.LazyCANSparkMax;
 
 public class Shooter extends SubsystemBase implements AutoCloseable {
 
-  private LazyCANSparkMax m_shooterSparkMax;
+  TalonFX m_shooterTalonFX;
   RobotConfig m_robotConfig;
 
   // Creates a new Shooter
   public Shooter(RobotConfig robotConfig) {
     m_robotConfig = robotConfig;
-    m_shooterSparkMax =
-      new LazyCANSparkMax(
-        m_robotConfig.m_shooterSparkMaxCanID,
-        MotorType.kBrushless
-      );
+    m_shooterTalonFX = new TalonFX(robotConfig.m_shooterTalonFXCanID);
   }
 
   // Method for giving the Shooter Motor a speed
   public void runShooter(double speed) {
-    m_shooterSparkMax.set(speed);
+    m_shooterTalonFX.set(speed);
   }
 
   // Command for stopping the shooter motors
   public Command stopMotorsCommand() {
     return this.run(() -> {
-        m_shooterSparkMax.stopMotor();
+        m_shooterTalonFX.stopMotor();
       });
   }
 
@@ -45,6 +40,6 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
   }
 
   public void close() {
-    m_shooterSparkMax.close();
+    m_shooterTalonFX.close();
   }
 }
