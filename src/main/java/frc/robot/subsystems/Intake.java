@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 import frc.robot.config.RobotConfig;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
@@ -27,9 +28,6 @@ public class Intake extends SubsystemBase {
   private PIDController m_intakeAnglePid;
 
   // TODO: move these into config
-  public double m_upperLimit = 10.09;
-  public double m_lowerLimit = 0.02;
-  private double m_positionSetpoint = 1;
 
   // Creates a new Intake
   public Intake(RobotConfig robotConfig) {
@@ -101,18 +99,18 @@ public class Intake extends SubsystemBase {
   // }
 
   // Method for setting a rotational setpoint for the intake motors to seek
-  public void setIntakeRotation() {
+  public void setIntakeRotation(RobotConfig robotConfig) {
     var pidOutput = m_intakeAnglePid.calculate(
       getPosition(),
-      m_positionSetpoint
+      robotConfig.m_positionSetpoint
     );
 
     d_intakePidOutputEntry.setDouble(pidOutput);
 
     var currentPosition = getPosition();
-    if (currentPosition < m_upperLimit && pidOutput > 0) {
+    if (currentPosition < robotConfig.m_upperLimit && pidOutput > 0) {
       setAngleMotorSpeed(MathUtil.clamp(pidOutput, 0, 0.2));
-    } else if (currentPosition > m_lowerLimit && pidOutput < 0) {
+    } else if (currentPosition > robotConfig.m_lowerLimit && pidOutput < 0) {
       setAngleMotorSpeed(MathUtil.clamp(pidOutput, -0.2, 0));
     } else {
       setAngleMotorSpeed(0);
@@ -128,14 +126,17 @@ public class Intake extends SubsystemBase {
   }
 
   // Command for changing the angle of the Position
-  public Command setIntakeAngleCommand(double position) {
+  public Command setIntakeAngleCommand(
+    double position,
+    RobotConfig robotConfig
+  ) {
     return this.runOnce(() -> {
-        m_positionSetpoint = position;
+        robotConfig.m_positionSetpoint = position;
       });
   }
 
   public Command runIntakeAnglePid() {
-    return this.run(() -> setIntakeRotation());
+    return this.run(() -> setIntakeRotation(m_robotConfig));
   }
 
   public Command setIntakeAngleSpeed(DoubleSupplier speed) {

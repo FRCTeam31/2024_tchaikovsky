@@ -13,6 +13,15 @@ public class RobotConfig {
   public SwerveModuleConfig RearRightSwerveModule;
   public SwerveModuleConfig RearLeftSwerveModule;
 
+  public final int m_intakeRollerSparkMaxCanID = 16;
+  public final int m_intakeAngleSparkMaxLeftCanID = 14;
+  public final int m_intakeAngleSparkMaxRightCanID = 15;
+  public final int m_shooterSparkMaxCanID = 20;
+
+  public double m_upperLimit = 10.09;
+  public double m_lowerLimit = 0.02;
+  public double m_positionSetpoint = 1;
+
   public RobotConfig() {
     Name = "[none]";
   }
@@ -122,9 +131,4 @@ public class RobotConfig {
   public String toString() {
     return Name;
   }
-
-  public final int m_intakeRollerSparkMaxCanID = 16;
-  public final int m_intakeAngleSparkMaxLeftCanID = 14;
-  public final int m_intakeAngleSparkMaxRightCanID = 15;
-  public final int m_shooterSparkMaxCanID = 20;
 }
