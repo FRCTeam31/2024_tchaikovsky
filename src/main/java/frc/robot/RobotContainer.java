@@ -98,13 +98,12 @@ public class RobotContainer {
     //   .onTrue(m_drivetrain.resetGyroCommand());
     // m_driverController
     //   .button(Controls.B)
-    //   .onTrue(m_drivetrain.toggleShifterCommand());
+    //   .onTrue(m_drivetrain.toggleShifterCommand());ta
 
-    // m_shooter.setDefaultCommand(
-    //   m_shooter.runMotorsCommand(() -> m_driverController.getRightTriggerAxis())
-    // );
-
-    // // Load/Shoot
+    m_shooter.setDefaultCommand(
+      m_shooter.runMotorsCommand(() -> m_driverController.getRightTriggerAxis())
+    );
+    // Load/Shoot
     // m_driverController
     //   .leftBumper()
     //   .whileTrue(
@@ -117,10 +116,10 @@ public class RobotContainer {
     //       )
     //   );
 
-    m_intake.setDefaultCommand(m_intake.runIntakeAnglePid());
-    m_driverController
-      .y()
-      .onTrue(m_intake.setIntakeAngleCommand(m_intake.m_upperLimit / 2));
-    m_driverController.a().onTrue(m_intake.setIntakeAngleCommand(1));
+    //   m_intake.setDefaultCommand(m_intake.runIntakeAnglePid());
+    //   m_driverController
+    //     .y()
+    //     .onTrue(m_intake.setIntakeAngleCommand(m_intake.m_upperLimit / 2));
+    //   m_driverController.a().onTrue(m_intake.setIntakeAngleCommand(1));
   }
 }

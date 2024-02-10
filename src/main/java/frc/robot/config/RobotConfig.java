@@ -126,5 +126,5 @@ public class RobotConfig {
   public final int m_intakeRollerSparkMaxCanID = 16;
   public final int m_intakeAngleSparkMaxLeftCanID = 14;
   public final int m_intakeAngleSparkMaxRightCanID = 15;
-  public final int m_shooterFalconFXCanID = 20;
+  public final int m_shooterSparkMaxCanID = 20;
 }

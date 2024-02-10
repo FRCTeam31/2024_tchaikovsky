@@ -1,10 +1,8 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -27,7 +25,6 @@ public class Intake extends SubsystemBase {
   private LazyCANSparkMax m_intakeAngleSparkMaxLeft;
   private LazyCANSparkMax m_intakeAngleSparkMaxRight;
   private PIDController m_intakeAnglePid;
-  private RelativeEncoder leftEncoder;
 
   // TODO: move these into config
   public double m_upperLimit = 10.09;
