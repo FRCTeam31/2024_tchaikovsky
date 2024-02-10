@@ -82,6 +82,7 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     autoEnabled = true;
 
+    m_robotContainer.m_drivetrain.resetGyro();
     m_robotContainer.m_drivetrain.resetOdometry(
       new Pose2d(1.5, 5.5, Rotation2d.fromDegrees(270))
     );
