@@ -277,15 +277,6 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
       m_config.Drivetrain.MaxSpeedMetersPerSecond
     );
 
-    swerveModuleStates[0].angle =
-      swerveModuleStates[0].angle.minus(Rotation2d.fromDegrees(90));
-    swerveModuleStates[1].angle =
-      swerveModuleStates[1].angle.minus(Rotation2d.fromDegrees(90));
-    swerveModuleStates[2].angle =
-      swerveModuleStates[2].angle.minus(Rotation2d.fromDegrees(90));
-    swerveModuleStates[3].angle =
-      swerveModuleStates[3].angle.minus(Rotation2d.fromDegrees(90));
-
     m_desiredSwerveStatesPublisher.set(swerveModuleStates);
 
     m_frontLeftModule.setDesiredState(swerveModuleStates[0]);

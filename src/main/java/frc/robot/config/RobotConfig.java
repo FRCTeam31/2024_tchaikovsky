@@ -41,9 +41,9 @@ public class RobotConfig {
         new PrimePIDConstants(0.019, 0, 0, 0, 0.138, 0, 0.05), // Drive PID
         new PrimePIDConstants(2, 0, 0), // Steering PID
         new PrimePIDConstants(0, 0, 0), // SnapTo PID,
-        new PrimePIDConstants(0, 0, 0), // Pathing Translation PID
+        new PrimePIDConstants(1, 0, 0), // Pathing Translation PID
         // new PrimePIDConstants(0.0425, 0, 0.004)
-        new PrimePIDConstants(1, 0, 0), // Pathing Rotation PID
+        new PrimePIDConstants(1.5, 0, 0), // Pathing Rotation PID
         0.15,
         0.5
       );
@@ -54,7 +54,7 @@ public class RobotConfig {
         2,
         3,
         4,
-        0.164551,
+        0.164551 - 0.25,
         false,
         true,
         new Translation2d(
@@ -71,7 +71,7 @@ public class RobotConfig {
         5,
         6,
         7,
-        0.350098,
+        0.350098 - 0.25,
         true,
         true,
         new Translation2d(
@@ -88,7 +88,7 @@ public class RobotConfig {
         8,
         9,
         10,
-        0.717773,
+        0.717773 - 0.25,
         true,
         true,
         new Translation2d(
@@ -105,7 +105,7 @@ public class RobotConfig {
         11,
         12,
         13,
-        0.181152,
+        0.181152 - 0.25,
         false,
         true,
         new Translation2d(
