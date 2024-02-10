@@ -264,8 +264,10 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     // var xSpeed = desiredChassisSpeeds.vxMetersPerSecond;
     // var ySpeed = desiredChassisSpeeds.vyMetersPerSecond;
 
-    // desiredChassisSpeeds.vxMetersPerSecond = ySpeed;
-    // desiredChassisSpeeds.vyMetersPerSecond = xSpeed;
+    desiredChassisSpeeds.vxMetersPerSecond =
+      desiredChassisSpeeds.vxMetersPerSecond;
+    desiredChassisSpeeds.vyMetersPerSecond =
+      desiredChassisSpeeds.vyMetersPerSecond;
 
     var swerveModuleStates = m_kinematics.toSwerveModuleStates(
       desiredChassisSpeeds

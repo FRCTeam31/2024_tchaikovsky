@@ -24,6 +24,7 @@ import prime.config.PrimeConfigurator;
 public class Robot extends TimedRobot {
 
   public ShuffleboardTab d_robotTab = Shuffleboard.getTab("Robot");
+  public boolean autoEnabled = false;
 
   private SendableChooser<String> m_configChooser;
   private final String m_defaultConfigName = "swerve_test_bot.json";
@@ -79,6 +80,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
+    autoEnabled = true;
     m_robotContainer.m_drivetrain.resetGyro();
     m_robotContainer.m_drivetrain.resetOdometry(
       new Pose2d(0, 0, Rotation2d.fromDegrees(0))
