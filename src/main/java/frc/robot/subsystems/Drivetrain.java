@@ -126,9 +126,8 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
 
   }
 
-  /**
-   * Creates the swerve modules and starts odometry
-   */
+  // #region Methods
+  // Creates the swerve modules and starts odometry
   private void createSwerveModulesAndOdometry() {
     m_frontLeftModule =
       new SwerveModule(
@@ -173,9 +172,7 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
       };
   }
 
-  /**
-   * Resets the gyro
-   */
+  // Resets the Gyro
   public void resetGyro() {
     m_gyro.reset();
   }
@@ -261,16 +258,12 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     }
   }
 
-  /**
-   * Gets the current pose of the drivetrain from odometry
-   */
+  // Gets the current pose of the drivetrain from odometry
   public Pose2d getPose() {
     return m_odometry.getPoseMeters();
   }
 
-  /**
-   * Resets the position of odometry to the current position, minus 90
-   */
+  // Resets the position of odometry to the current position, minus 90
   public void resetOdometry(Pose2d pose) {
     m_swerveModulePositions[0] = m_frontLeftModule.getPosition();
     m_swerveModulePositions[1] = m_rearLeftModule.getPosition();
@@ -284,30 +277,22 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     );
   }
 
-  /**
-   * Gets the direction the robot is facing in degrees, CCW+
-   */
+  // Gets the direction the robot is facing in degrees, CCW+
   public double getHeading() {
     return m_gyro.getRotation2d().getDegrees();
   }
 
-  /**
-   * Sets the virtual gearbox shifter
-   */
+  // Sets the virtual gearbox shifter
   public void setShift(boolean inHighGear) {
     m_inHighGear = inHighGear;
   }
 
-  /**
-   * Toggles the virtual gearbox shifter
-   */
+  // Toggles the virtual gearbox shifter
   public void toggleShifter() {
     m_inHighGear = !m_inHighGear;
   }
 
-  /**
-   * Stops all drivetrain motors
-   */
+  // Stops all drivetrain motors
   public void stopMotors() {
     m_frontLeftModule.stopMotors();
     m_rearLeftModule.stopMotors();
@@ -315,9 +300,7 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     m_frontRightModule.stopMotors();
   }
 
-  /**
-   * Sets the modules all to a single heading
-   */
+  // Sets the modules all to a single heading
   public void setWheelAngles(Rotation2d angle) {
     m_frontLeftModule.setDesiredAngle(angle);
     m_rearLeftModule.setDesiredAngle(angle);
@@ -338,19 +321,23 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     };
   }
 
+  // Enables the Snap-To Controls
   public void enableSnapToGyroControl() {
     m_snapToGyroEnabled = true;
   }
 
+  // Disables the Snap-To Controls
   public void disableSnapToGyroControl() {
     m_snapToGyroEnabled = false;
   }
 
+  // Toggles the Snap-To Controls
   public void toggleSnapToGyroControl() {
     m_snapToGyroEnabled = !m_snapToGyroEnabled;
     m_snapToRotationController.setSetpoint(0);
   }
 
+  // Method for getting Swerve Module States
   public ChassisSpeeds getChassisSpeeds() {
     return m_kinematics.toChassisSpeeds(
       m_frontLeftModule.getModuleState(),
@@ -360,9 +347,7 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     );
   }
 
-  /**
-   * Updates odometry and any other periodic drivetrain events
-   */
+  // Updates odometry and any other periodic drivetrain events
   @Override
   public void periodic() {
     // Update odometry
@@ -385,11 +370,10 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     d_inHighGearEntry.setBoolean(m_inHighGear);
   }
 
-  //#region Commands
+  // #endregion
 
-  /**
-   * Creates a command that drives the robot using the default controls
-   */
+  //#region Commands
+  // Creates a command that drives the robot using the default controls
   public Command defaultDriveCommand(
     DoubleSupplier ySupplier,
     DoubleSupplier xSupplier,
@@ -409,53 +393,39 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
       });
   }
 
-  /**
-   * Creates a command that resets the gyro
-   */
+  // Command for resetting the gyro
   public Command resetGyroCommand() {
     return this.runOnce(() -> resetGyro());
   }
 
-  /**
-   * Creates a command that resets the odometry
-   */
+  // Command for resetting the Robots odometry
   public Command resetOdometryCommand(Pose2d pose) {
     return this.runOnce(() -> resetOdometry(pose));
   }
 
-  /**
-   * Creates a command that toggles the shifter
-   */
+  // Command for toggling the shifter
   public Command toggleShifterCommand() {
     return this.runOnce(() -> toggleShifter());
   }
 
-  /**
-   * Creates a command that sets the wheel angles to a single angle
-   */
+  // Command for setting the angle of the wheels
   public Command setWheelAnglesCommand(Rotation2d angle) {
     return this.runOnce(() -> setWheelAngles(angle));
   }
 
-  /**
-   * Creates a command that enables snap to gyro control
-   */
+  // Command for enabling Snap-To controls
   public Command enableSnapToGyroControlCommand() {
     return this.runOnce(() -> enableSnapToGyroControl());
   }
 
-  /**
-   * Creates a command that toggles snap to gyro control
-   */
+  // Command for toggling Snap-To controls
   public Command toggleSnapToAngleCommand() {
     return this.runOnce(() -> {
         toggleSnapToGyroControl();
       });
   }
 
-  /**
-   * Creates a command that drives with snap to gyro control
-   */
+  // Command for driving with Snap-To controls enabled
   public Command driveWithSnapToAngleCommand(double angle) {
     return this.runOnce(() -> {
         enableSnapToGyroControl();

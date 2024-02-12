@@ -44,7 +44,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
   private CANcoder m_encoder;
   private PIDController m_steeringPidController;
 
-  /* Start at velocity 0, no feed forward, use slot 0 */
+  // Start at velocity 0, no feed forward, use slot 0
   private final VelocityVoltage m_voltageVelocity = new VelocityVoltage(
     0,
     0,
@@ -77,9 +77,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
     setupCanCoder();
   }
 
-  /**
-   * Sets up the shuffleboard tab for the module and the simple entries
-   */
+  // Sets up the shuffleboard tab for the module and the simple entries
   private void setupDashboard() {
     d_moduleTab = Shuffleboard.getTab(getName() + " Module");
     d_driveVelocityEntry =
@@ -101,9 +99,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
         .getEntry();
   }
 
-  /**
-   * Sets up the steering motor and PID controller
-   */
+  // Sets up the steering motor and PID controller
   private void setupSteeringMotor(PrimePIDConstants pid) {
     m_SteeringMotor =
       new LazyCANSparkMax(m_config.SteeringMotorCanId, MotorType.kBrushless);
@@ -123,9 +119,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
       .withWidget(BuiltInWidgets.kPIDController);
   }
 
-  /**
-   * Sets up the drive motor
-   */
+  // Sets up the drive motors
   public void setupDriveMotor(PrimePIDConstants pid) {
     m_driveMotor = new TalonFX(m_config.DriveMotorCanId);
     m_driveMotor.clearStickyFaults();
@@ -159,9 +153,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
     m_driveMotor.setInverted(m_config.DriveInverted); // Clockwise Inversion
   }
 
-  /**
-   * Sets up the CANCoder
-   */
+  // Sets up the CANCoder
   public void setupCanCoder() {
     m_encoder = new CANcoder(m_config.CANCoderCanId);
     m_encoder.clearStickyFaults();
@@ -180,9 +172,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
       );
   }
 
-  /**
-   * Gets the cumulative SwerveModulePosition of the module
-   */
+  // Gets the cumulative SwerveModulePosition of the module
   public SwerveModulePosition getPosition() {
     return new SwerveModulePosition(
       CTREConverter.rotationsToMeters(
@@ -286,17 +276,13 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
     m_encoder.setPosition(newPosition);
   }
 
-  /**
-   * Stops both of the module's motors
-   */
+  // Stops both motors within the Module
   public void stopMotors() {
     m_driveMotor.stopMotor();
     m_SteeringMotor.stopMotor();
   }
 
-  /**
-   * Gets the velocity of the drive motor in meters per second
-   */
+  // Gets the velocity of the drive motor in meters per second
   public double getVelocityMetersPerSecond() {
     return CTREConverter.rotationsToMeters(
       m_driveMotor.getVelocity().getValueAsDouble(),
@@ -305,9 +291,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
     );
   }
 
-  /**
-   * Gets the heading of the encoder in rotations
-   */
+  // Gets the heading of the encoder in rotations
   public double getEncoderHeading() {
     var rawHeading = m_encoder.getAbsolutePosition().getValueAsDouble();
     // TODO: figure out why adjustment is necessary
@@ -323,16 +307,12 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
         .getRotations();
   }
 
-  /**
-   * Gets the encoder heading as a Rotation2d
-   */
+  // Gets the encoder heading as a Rotation2d
   protected Rotation2d getEncoderHeadingRotation2d() {
     return Rotation2d.fromRotations(getEncoderHeading());
   }
 
-  /**
-   * Updates dashboard data
-   */
+  // Updates Dashboard Data
   @Override
   public void periodic() {
     d_driveVelocityEntry.setDouble(getModuleState().speedMetersPerSecond);

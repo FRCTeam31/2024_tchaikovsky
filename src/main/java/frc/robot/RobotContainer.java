@@ -119,9 +119,11 @@ public class RobotContainer {
         () -> m_driverController.getRawAxis(Controls.RIGHT_TRIGGER)
       )
     );
+    // Runs the shooter when the Right Trigger is pressed
     // m_shooter.setDefaultCommand(
     //   m_shooter.runMotorsCommand(() -> m_driverController.getRightTriggerAxis())
     // );
+
     // Load/Shoot
     // m_driverController
     //   .leftBumper()

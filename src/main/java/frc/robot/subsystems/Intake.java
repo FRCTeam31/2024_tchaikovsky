@@ -69,11 +69,13 @@ public class Intake extends SubsystemBase {
         .getEntry();
   }
 
+  //#region Methods
   @Override
   public void periodic() {
     d_intakePositionEntry.setDouble(getPosition());
   }
 
+  // Gets the position of the Intake using the Encoder
   public double getPosition() {
     return m_intakeAngleSparkMaxRight.getEncoder().getPosition();
   }
@@ -83,17 +85,11 @@ public class Intake extends SubsystemBase {
     m_intakeRollerSparkMax.set(speed);
   }
 
+  // Gives the motors used for chnaging the Intake Angle a speed
   public void setAngleMotorSpeed(double speed) {
     m_intakeAngleSparkMaxLeft.set(-speed);
     m_intakeAngleSparkMaxRight.set(speed);
   }
-
-  // public void setIntakeAngle(Rotation2d rotation2d) {
-  //   var desiredRotation = rotation2d.getRotations();
-  //   var desiredRotationWithRatio = desiredRotation * 20;
-
-  //   setIntakeRotation();
-  // }
 
   // Method for setting a rotational setpoint for the intake motors to seek
   public void setIntakeRotation(RobotConfig robotConfig) {
@@ -114,8 +110,17 @@ public class Intake extends SubsystemBase {
     }
   }
 
+  public void close() {
+    m_intakeAngleSparkMaxLeft.close();
+    m_intakeAngleSparkMaxRight.close();
+    m_intakeRollerSparkMax.close();
+    m_intakeAnglePid.close();
+  }
+
+  //#endregion
+
   //#region Commands
-  // Command for running the intake to intake a Note
+  // Command for running the Intake to Intake a Note
   public Command runIntakeCommand(DoubleSupplier speed) {
     return this.run(() -> {
         runIntakeRollers(speed.getAsDouble());
@@ -132,10 +137,12 @@ public class Intake extends SubsystemBase {
       });
   }
 
+  // I forgor
   public Command runIntakeAnglePid() {
     return this.run(() -> setIntakeRotation(m_robotConfig));
   }
 
+  // Command for setting the Intake Angle
   public Command setIntakeAngleSpeed(DoubleSupplier speed) {
     return this.run(() -> {
         setAngleMotorSpeed(speed.getAsDouble());
@@ -150,13 +157,5 @@ public class Intake extends SubsystemBase {
         m_intakeRollerSparkMax.stopMotor();
       });
   }
-
   //#endregion
-
-  public void close() {
-    m_intakeAngleSparkMaxLeft.close();
-    m_intakeAngleSparkMaxRight.close();
-    m_intakeRollerSparkMax.close();
-    m_intakeAnglePid.close();
-  }
 }

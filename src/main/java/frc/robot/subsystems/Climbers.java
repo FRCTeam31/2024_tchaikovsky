@@ -13,12 +13,14 @@ public class Climbers extends SubsystemBase {
   private VictorSPX m_rightVictorSPX;
   private boolean toggleClimber = false;
 
+  // Creates the Climbers
   public Climbers(RobotConfig robotConfig) {
     m_leftVictorSPX = new VictorSPX(robotConfig.m_climbersVictorSPXLeftCanID);
     m_rightVictorSPX = new VictorSPX(robotConfig.m_climbersVictorSPXRightCanID);
   }
 
   //#region Methods
+  // Raises the Left Climber
   public void raiseLeftArm() {
     m_leftVictorSPX.set(
       VictorSPXControlMode.PercentOutput,
@@ -26,6 +28,7 @@ public class Climbers extends SubsystemBase {
     );
   }
 
+  // Raises the Right Climber
   public void raiseRightArm() {
     m_rightVictorSPX.set(
       VictorSPXControlMode.PercentOutput,
@@ -33,6 +36,7 @@ public class Climbers extends SubsystemBase {
     );
   }
 
+  // Lowers the Left Climber
   public void lowerLeftArm() {
     m_leftVictorSPX.set(
       VictorSPXControlMode.PercentOutput,
@@ -40,6 +44,7 @@ public class Climbers extends SubsystemBase {
     );
   }
 
+  // Lowers the Right Climber
   public void lowerRightArm() {
     m_rightVictorSPX.set(
       VictorSPXControlMode.PercentOutput,
@@ -47,10 +52,12 @@ public class Climbers extends SubsystemBase {
     );
   }
 
+  // Stops the Right CLimber Motor
   public void stopLeftArm() {
     m_leftVictorSPX.set(VictorSPXControlMode.PercentOutput, 0);
   }
 
+  // Stops the Left Climber Motor
   public void stopRightArm() {
     m_rightVictorSPX.set(VictorSPXControlMode.PercentOutput, 0);
   }
@@ -58,7 +65,7 @@ public class Climbers extends SubsystemBase {
   //#endregion
 
   //#region Commands
-
+  // Command for toggling the climbers on and off
   public Command toggleClimbersCommand() {
     return this.runOnce(() -> {
         if (!toggleClimber) {
@@ -69,6 +76,7 @@ public class Climbers extends SubsystemBase {
       });
   }
 
+  // Command for raising the Left Arm
   public Command raiseLeftArmCommand() {
     return this.run(() -> {
         if (toggleClimber) {
@@ -77,6 +85,7 @@ public class Climbers extends SubsystemBase {
       });
   }
 
+  // Command  for raising the Right Arm
   public Command raiseRightArmCommand() {
     return this.run(() -> {
         if (toggleClimber) {
@@ -85,6 +94,7 @@ public class Climbers extends SubsystemBase {
       });
   }
 
+  // Command for lowering the Climbers
   public Command LowerClimbersCommand(
     DoubleSupplier leftClimber,
     DoubleSupplier rightClimber
@@ -100,12 +110,14 @@ public class Climbers extends SubsystemBase {
       });
   }
 
+  // Command for stopping the Left Arm motor
   public Command stopLeftArmCommand() {
     return this.run(() -> {
         stopLeftArm();
       });
   }
 
+  // Command for stopping the right Arm motor
   public Command stopRightArmCommand() {
     return this.run(() -> {
         stopRightArm();

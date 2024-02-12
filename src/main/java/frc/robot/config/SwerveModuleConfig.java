@@ -11,17 +11,14 @@ public class SwerveModuleConfig {
   public int DriveMotorCanId;
   public int SteeringMotorCanId;
   public int CANCoderCanId;
-
   public double StartingOffset;
-  public boolean DriveInverted;
-  public boolean SteerInverted;
-
   public double ModuleLocationXMeters;
   public double ModuleLocationYMeters;
-
   public double DriveGearRatio;
   public double DriveWheelDiameterMeters;
   public double DriveWheelCircumferenceMeters;
+  public boolean DriveInverted;
+  public boolean SteerInverted;
 
   public ClosedLoopRampsConfigs DriveClosedLoopRampConfiguration = new ClosedLoopRampsConfigs()
     .withTorqueClosedLoopRampPeriod(0.5)

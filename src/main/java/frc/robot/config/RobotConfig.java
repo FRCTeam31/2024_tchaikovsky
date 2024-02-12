@@ -13,11 +13,12 @@ public class RobotConfig {
   public SwerveModuleConfig RearRightSwerveModule;
   public SwerveModuleConfig RearLeftSwerveModule;
 
-  public final int m_intakeRollerSparkMaxCanID = 16;
   public final int m_intakeAngleSparkMaxLeftCanID = 14;
+  public final int m_intakeRollerSparkMaxCanID = 16;
   public final int m_intakeAngleSparkMaxRightCanID = 15;
   public final int m_climbersVictorSPXRightCanID = 17;
   public final int m_climbersVictorSPXLeftCanID = 18;
+  public final int m_shooterVictorSPXCanID = 19;
   public final int m_shooterTalonFXCanID = 20;
 
   // Encoder Values are inverted because they inverted the position of the NEO's.
