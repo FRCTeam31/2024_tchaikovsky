@@ -51,7 +51,7 @@ public class Robot extends TimedRobot {
       .withPosition(0, 0);
 
     // Build an auto chooser. This will use Commands.none() as the default option.
-    m_autoChooser = AutoBuilder.buildAutoChooser("New Auto");
+    m_autoChooser = AutoBuilder.buildAutoChooser("Speaker Auto 1");
     d_robotTab
       .add(m_autoChooser)
       .withWidget(BuiltInWidgets.kComboBoxChooser)
@@ -84,7 +84,7 @@ public class Robot extends TimedRobot {
 
     m_robotContainer.m_drivetrain.resetGyro();
     m_robotContainer.m_drivetrain.resetOdometry(
-      new Pose2d(1.5, 5.5, Rotation2d.fromDegrees(270))
+      new Pose2d(0, 0, Rotation2d.fromDegrees(270))
     );
 
     // ENABLE THIS CODE TO USE THE AUTO CHOOSER
