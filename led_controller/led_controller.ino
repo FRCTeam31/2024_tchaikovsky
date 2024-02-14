@@ -82,19 +82,21 @@ class LEDSection {
     }
 };
 
-#define PIN 3 // D1
+#define PIN1 4 // D2
+#define PIN2 5 // D3
 #define NUMPIXELS 6 
 #define SECTION_COUNT 3
 #define LEDS_PER_SECTION 2
 
-Adafruit_NeoPixel strip(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
-LEDSection sectionDataBuffer[SECTION_COUNT] = {
+Adafruit_NeoPixel strip1(NUMPIXELS, PIN1, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip2(NUMPIXELS, PIN2, NEO_GRB + NEO_KHZ800);
+LEDSection sectionStateBuffer[SECTION_COUNT] = {
   // Section, R, G, B, Pattern, Speed, Direction
   LEDSection(255, 0, 0, Pulse, 1000 / 25, 1),
   LEDSection(0, 255, 0, Blink, 1000, 0),
   LEDSection(0, 0, 255, Pulse, 1000 / 25, 0),
 };
-LEDSection SECTION_COUNTtates[SECTION_COUNT] = {
+LEDSection sectionStates[SECTION_COUNT] = {
   // Section, R, G, B, Pattern, Speed, Direction
   LEDSection(),
   LEDSection(),
@@ -144,7 +146,7 @@ void loop() {
       // Direction (1 byte)
       packet.direction = Serial.read();
       
-      sectionDataBuffer[sectionNum] = packet;
+      sectionStateBuffer[sectionNum] = packet;
     }
 
     // Clear any extra data lying in the serial buffer
@@ -162,14 +164,14 @@ void loop() {
 
 void updateSection(int section) {
   // If the new data is different from the current state, update the LED strip
-  if (sectionDataBuffer[section] != SECTION_COUNTtates[section]) {
+  if (sectionStateBuffer[section] != sectionStates[section]) {
     // Update the LED strip
-    switch (sectionDataBuffer[section].pattern) {
+    switch (sectionStateBuffer[section].pattern) {
       case Solid:
-        setSolid(section, sectionDataBuffer[section].color);
+        setSolid(section, sectionStateBuffer[section].color);
         break;
       case Blink:
-        setBlink(section, sectionDataBuffer[section]);
+        setBlink(section, sectionStateBuffer[section]);
         break;
       case RaceForward:
         // setRaceForward(section, sectionDataBuffer[section]);
@@ -178,17 +180,17 @@ void updateSection(int section) {
         // setRaceBackward(section, sectionDataBuffer[section]);
         break;
       case Pulse:
-        setPulse(section, sectionDataBuffer[section]);
+        setPulse(section, sectionStateBuffer[section]);
         break;
     }
 
     // Update the current state in memory from the buffer
-    SECTION_COUNTtates[section] = sectionDataBuffer[section];
+    sectionStates[section] = sectionStateBuffer[section];
   } else {
     // No change, update the section's pattern
-    switch (SECTION_COUNTtates[section].pattern) {
+    switch (sectionStates[section].pattern) {
       case Blink:
-        updateBlink(section, sectionDataBuffer[section]);
+        updateBlink(section, sectionStateBuffer[section]);
         break;
       case RaceForward:
         // updateRaceForward(section, sectionDataBuffer[section]);
@@ -197,7 +199,7 @@ void updateSection(int section) {
         // updateRaceBackward(section, sectionDataBuffer[section]);
         break;
       case Pulse:
-        updatePulse(section, sectionDataBuffer[section]);
+        updatePulse(section, sectionStateBuffer[section]);
         break;
     }
   }
@@ -207,22 +209,26 @@ void setSolid(int section, uint32_t color) {
   // Set the color of each pixel in the section
   int sectionIndex = section * LEDS_PER_SECTION;
   for (int i = 0; i < LEDS_PER_SECTION; i++) {
-    strip.setPixelColor(sectionIndex + i, color);
+    strip1.setPixelColor(sectionIndex + i, color);
+    strip2.setPixelColor(sectionIndex + i, color);
   }
 
   // Show the changes on the LED strip
-  strip.show();
+  strip1.show();
+  strip2.show();
 }
 
 void setSolid(int section, byte r, byte g, byte b) {
   // Set the color of each pixel in the section
   int sectionIndex = section * LEDS_PER_SECTION;
   for (int i = 0; i < LEDS_PER_SECTION; i++) {
-    strip.setPixelColor(sectionIndex + i, r, g, b);
+    strip1.setPixelColor(sectionIndex + i, r, g, b);
+    strip2.setPixelColor(sectionIndex + i, r, g, b);
   }
 
   // Show the changes on the LED strip
-  strip.show();
+  strip1.show();
+  strip2.show();
 }
 
 #pragma region Blink Pattern
