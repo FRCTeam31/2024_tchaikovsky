@@ -26,11 +26,6 @@ public class Intake extends SubsystemBase {
   private LazyCANSparkMax m_intakeAngleSparkMaxRight;
   private PIDController m_intakeAnglePid;
 
-  LazyCANSparkMax m_rollers;
-  LazyCANSparkMax m_neoLeft;
-  LazyCANSparkMax m_neoRight;
-  SparkMaxPIDController m_intakeAnglePid;
-
   /**
    * Creates a new Intake subsystem
    * @param robotConfig
@@ -45,15 +40,15 @@ public class Intake extends SubsystemBase {
         m_robotConfig.m_intakeRollerSparkMaxCanID,
         MotorType.kBrushless
       );
-    m_rollers.restoreFactoryDefaults();
+    m_intakeRollerSparkMax.restoreFactoryDefaults();
 
-    m_neoLeft =
+    m_intakeAngleSparkMaxLeft =
       new LazyCANSparkMax(
         m_robotConfig.m_intakeAngleSparkMaxLeftCanID,
         MotorType.kBrushless
       );
-    m_neoLeft.restoreFactoryDefaults();
-    m_neoRight =
+    m_intakeAngleSparkMaxLeft.restoreFactoryDefaults();
+    m_intakeAngleSparkMaxRight =
       new LazyCANSparkMax(
         m_robotConfig.m_intakeAngleSparkMaxRightCanID,
         MotorType.kBrushless
@@ -95,7 +90,7 @@ public class Intake extends SubsystemBase {
    * @param speed
    */
   public void runIntakeRollers(double speed) {
-    m_rollers.set(speed);
+    m_intakeRollerSparkMax.set(speed);
   }
 
   // Gives the motors used for chnaging the Intake Angle a speed
@@ -165,9 +160,9 @@ public class Intake extends SubsystemBase {
   // Command for stopping the Intake Motors
   public Command stopAllMotorsCommand() {
     return this.run(() -> {
-        m_neoLeft.stopMotor();
-        m_neoRight.stopMotor();
-        m_rollers.stopMotor();
+        m_intakeAngleSparkMaxLeft.stopMotor();
+        m_intakeAngleSparkMaxRight.stopMotor();
+        m_intakeRollerSparkMax.stopMotor();
       });
   }
   //#endregion
