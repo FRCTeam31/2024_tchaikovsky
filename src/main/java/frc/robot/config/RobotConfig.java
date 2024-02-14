@@ -12,6 +12,7 @@ public class RobotConfig {
   public SwerveModuleConfig FrontRightSwerveModule;
   public SwerveModuleConfig RearRightSwerveModule;
   public SwerveModuleConfig RearLeftSwerveModule;
+  public IntakeConfig Intake;
 
   public final int m_intakeAngleSparkMaxLeftCanID = 14;
   public final int m_intakeRollerSparkMaxCanID = 16;
@@ -127,6 +128,19 @@ public class RobotConfig {
         ),
         6.75,
         0.102
+      );
+
+    config.Intake =
+      new IntakeConfig(
+        16,
+        15,
+        14,
+        false,
+        false,
+        true,
+        new PrimePIDConstants(0.1, 0, 0),
+        1,
+        9
       );
 
     return config;

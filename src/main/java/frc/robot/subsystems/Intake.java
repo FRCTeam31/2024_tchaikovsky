@@ -9,14 +9,14 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.config.RobotConfig;
+import frc.robot.config.IntakeConfig;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
 import prime.movers.LazyCANSparkMax;
 
 public class Intake extends SubsystemBase {
 
-  private RobotConfig m_robotConfig;
+  private IntakeConfig m_config;
   private ShuffleboardTab d_intakeTab;
   private GenericEntry d_intakePositionEntry;
   private GenericEntry d_intakePidOutputEntry;
@@ -30,30 +30,24 @@ public class Intake extends SubsystemBase {
    * Creates a new Intake subsystem
    * @param robotConfig
    */
-  public Intake(RobotConfig robotConfig) {
-    m_robotConfig = robotConfig;
+  public Intake(IntakeConfig config) {
+    m_config = config;
     setName("Intake");
     d_intakeTab = Shuffleboard.getTab(getName());
 
     m_intakeRollerSparkMax =
-      new LazyCANSparkMax(
-        m_robotConfig.m_intakeRollerSparkMaxCanID,
-        MotorType.kBrushless
-      );
+      new LazyCANSparkMax(m_config.RollersCanId, MotorType.kBrushless);
     m_intakeRollerSparkMax.restoreFactoryDefaults();
+    m_intakeRollerSparkMax.setInverted(m_config.RollersInverted);
 
     m_intakeAngleSparkMaxLeft =
-      new LazyCANSparkMax(
-        m_robotConfig.m_intakeAngleSparkMaxLeftCanID,
-        MotorType.kBrushless
-      );
+      new LazyCANSparkMax(m_config.NeoLeftCanId, MotorType.kBrushless);
     m_intakeAngleSparkMaxLeft.restoreFactoryDefaults();
+    m_intakeAngleSparkMaxLeft.setInverted(m_config.NeoLeftInverted);
+
     m_intakeAngleSparkMaxRight =
-      new LazyCANSparkMax(
-        m_robotConfig.m_intakeAngleSparkMaxRightCanID,
-        MotorType.kBrushless
-      );
-    m_intakeAngleSparkMaxRight.setInverted(true);
+      new LazyCANSparkMax(m_config.NeoRightCanId, MotorType.kBrushless);
+    m_intakeAngleSparkMaxRight.setInverted(m_config.NeoRightInverted);
 
     d_intakePositionEntry =
       d_intakeTab
@@ -100,18 +94,15 @@ public class Intake extends SubsystemBase {
   }
 
   // Method for setting a rotational setpoint for the intake motors to seek
-  public void setIntakeRotation(RobotConfig robotConfig) {
-    var pidOutput = m_intakeAnglePid.calculate(
-      getPosition(),
-      robotConfig.m_positionSetpoint
-    );
+  public void setIntakeRotation(double positionSetpoint) {
+    var pidOutput = m_intakeAnglePid.calculate(getPosition(), positionSetpoint);
 
     d_intakePidOutputEntry.setDouble(pidOutput);
 
     var currentPosition = getPosition();
-    if (currentPosition < RobotConfig.m_upperLimit && pidOutput > 0) {
+    if (currentPosition < m_config.AngleMaximum && pidOutput > 0) {
       setAngleMotorSpeed(MathUtil.clamp(pidOutput, 0, 0.2));
-    } else if (currentPosition > RobotConfig.m_lowerLimit && pidOutput < 0) {
+    } else if (currentPosition > m_config.AngleMinimum && pidOutput < 0) {
       setAngleMotorSpeed(MathUtil.clamp(pidOutput, -0.2, 0));
     } else {
       setAngleMotorSpeed(0);
@@ -136,18 +127,10 @@ public class Intake extends SubsystemBase {
   }
 
   // Command for changing the angle of the Position
-  public Command setIntakeAngleCommand(
-    double position,
-    RobotConfig robotConfig
-  ) {
+  public Command setIntakeAngleCommand(double position) {
     return this.runOnce(() -> {
-        robotConfig.m_positionSetpoint = position;
+        setIntakeRotation(position);
       });
-  }
-
-  // I forgor
-  public Command runIntakeAnglePid() {
-    return this.run(() -> setIntakeRotation(m_robotConfig));
   }
 
   // Command for setting the Intake Angle
