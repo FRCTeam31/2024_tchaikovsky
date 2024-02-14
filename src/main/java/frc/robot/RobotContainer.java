@@ -40,13 +40,14 @@ public class RobotContainer {
       // if (m_drivetrain != null) m_drivetrain.close();
       if (m_shooter != null) m_shooter.close();
       if (m_intake != null) m_intake.close();
+      if (m_climbers != null) m_climbers.close();
 
       // Save new config
       m_config = config;
 
       // Create new subsystems
       // m_drivetrain = new Drivetrain(m_config);
-      m_shooter = new Shooter(m_config);
+      // m_shooter = new Shooter(m_config);
       m_intake = new Intake(m_config.Intake);
       // m_climbers = new Climbers(m_config);
 

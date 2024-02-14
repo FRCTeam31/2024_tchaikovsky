@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.RobotConfig;
 import java.util.function.DoubleSupplier;
 
-public class Climbers extends SubsystemBase {
+public class Climbers extends SubsystemBase implements AutoCloseable {
 
   private ShuffleboardTab d_tab = Shuffleboard.getTab("Climbers");
   private GenericEntry d_leftClimberEntry = d_tab
@@ -162,5 +162,14 @@ public class Climbers extends SubsystemBase {
         stopRightArm();
       });
   }
+
   //#endregion
+
+  @Override
+  public void close() {
+    m_leftVictorSPX.DestroyObject();
+    m_rightVictorSPX.DestroyObject();
+    m_leftLimitSwitch.close();
+    m_rightLimitSwitch.close();
+  }
 }
