@@ -11,20 +11,33 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.IntakeConfig;
 import java.util.Map;
-import java.util.function.DoubleSupplier;
 import prime.movers.LazyCANSparkMax;
 
 public class Intake extends SubsystemBase {
 
   private IntakeConfig m_config;
-  private ShuffleboardTab d_intakeTab;
-  private GenericEntry d_intakePositionEntry;
-  private GenericEntry d_intakePidOutputEntry;
 
-  private LazyCANSparkMax m_intakeRollerSparkMax;
-  private LazyCANSparkMax m_intakeAngleSparkMaxLeft;
-  private LazyCANSparkMax m_intakeAngleSparkMaxRight;
-  private PIDController m_intakeAnglePid;
+  private LazyCANSparkMax m_rollers;
+  private LazyCANSparkMax m_angleLeft;
+  private LazyCANSparkMax m_angleRight;
+  private PIDController m_anglePid;
+
+  private ShuffleboardTab d_intakeTab = Shuffleboard.getTab("Intake");
+  private GenericEntry d_positionLeftEntry = d_intakeTab
+    .add("Position R (rotations)", 0)
+    .withWidget(BuiltInWidgets.kNumberBar)
+    .withProperties(Map.of("Max", 50, "Min", -50))
+    .getEntry();
+  private GenericEntry d_positionRightEntry = d_intakeTab
+    .add("Position R (rotations)", 0)
+    .withWidget(BuiltInWidgets.kNumberBar)
+    .withProperties(Map.of("Max", 50, "Min", -50))
+    .getEntry();
+  private GenericEntry d_pidOutputEntry = d_intakeTab
+    .add("PID output", 0)
+    .withWidget(BuiltInWidgets.kNumberBar)
+    .withProperties(Map.of("Max", 2, "Min", -2))
+    .getEntry();
 
   /**
    * Creates a new Intake subsystem
@@ -33,50 +46,43 @@ public class Intake extends SubsystemBase {
   public Intake(IntakeConfig config) {
     m_config = config;
     setName("Intake");
-    d_intakeTab = Shuffleboard.getTab(getName());
 
-    m_intakeRollerSparkMax =
+    m_rollers =
       new LazyCANSparkMax(m_config.RollersCanId, MotorType.kBrushless);
-    m_intakeRollerSparkMax.restoreFactoryDefaults();
-    m_intakeRollerSparkMax.setInverted(m_config.RollersInverted);
+    m_rollers.restoreFactoryDefaults();
+    m_rollers.setInverted(m_config.RollersInverted);
 
-    m_intakeAngleSparkMaxLeft =
+    m_angleLeft =
       new LazyCANSparkMax(m_config.NeoLeftCanId, MotorType.kBrushless);
-    m_intakeAngleSparkMaxLeft.restoreFactoryDefaults();
-    m_intakeAngleSparkMaxLeft.setInverted(m_config.NeoLeftInverted);
+    m_angleLeft.restoreFactoryDefaults();
+    m_angleLeft.setInverted(m_config.NeoLeftInverted);
 
-    m_intakeAngleSparkMaxRight =
+    m_angleRight =
       new LazyCANSparkMax(m_config.NeoRightCanId, MotorType.kBrushless);
-    m_intakeAngleSparkMaxRight.setInverted(m_config.NeoRightInverted);
+    m_angleRight.setInverted(m_config.NeoRightInverted);
 
-    d_intakePositionEntry =
-      d_intakeTab
-        .add("Position (rotations)", 0)
-        .withWidget(BuiltInWidgets.kNumberBar)
-        .withProperties(Map.of("Max", 15, "Min", -5))
-        .getEntry();
-
-    m_intakeAnglePid = new PIDController(0.1, 0, 0, 0.02);
+    m_anglePid = new PIDController(0.1, 0, 0, 0.02);
     d_intakeTab
-      .add("Steering PID", m_intakeAnglePid)
+      .add("Steering PID", m_anglePid)
       .withWidget(BuiltInWidgets.kPIDController);
-    d_intakePidOutputEntry =
-      d_intakeTab
-        .add("PID output", 0)
-        .withWidget(BuiltInWidgets.kNumberBar)
-        .withProperties(Map.of("Max", 2, "Min", -2))
-        .getEntry();
   }
 
-  //#region Methods
-  @Override
-  public void periodic() {
-    d_intakePositionEntry.setDouble(getPosition());
+  //#region Control Methods
+
+  /**
+   * Gets the current position of the Intake Angle from the right NEO's encoder
+   * @return
+   */
+  public double getPositionRight() {
+    return m_angleRight.getEncoder().getPosition();
   }
 
-  // Gets the position of the Intake using the Encoder
-  public double getPosition() {
-    return m_intakeAngleSparkMaxRight.getEncoder().getPosition();
+  /**
+   * Gets the current position of the Intake Angle from the left NEO's encoder
+   * @return
+   */
+  public double getPositionLeft() {
+    return m_angleLeft.getEncoder().getPosition();
   }
 
   /**
@@ -84,69 +90,100 @@ public class Intake extends SubsystemBase {
    * @param speed
    */
   public void runIntakeRollers(double speed) {
-    m_intakeRollerSparkMax.set(speed);
+    m_rollers.set(speed);
   }
 
-  // Gives the motors used for chnaging the Intake Angle a speed
+  /**
+   * Sets the speed of the Intake Angle Motors
+   * @param speed
+   */
   public void setAngleMotorSpeed(double speed) {
-    m_intakeAngleSparkMaxLeft.set(-speed);
-    m_intakeAngleSparkMaxRight.set(speed);
+    m_angleLeft.set(-speed);
+    m_angleRight.set(speed);
   }
 
-  // Method for setting a rotational setpoint for the intake motors to seek
+  /**
+   * Sets the Intake Angle to a given position in rotations of the motor shaft
+   * @param positionSetpoint
+   */
   public void setIntakeRotation(double positionSetpoint) {
-    var pidOutput = m_intakeAnglePid.calculate(getPosition(), positionSetpoint);
+    var currentPosition = getPositionRight();
+    var pidOutput = m_anglePid.calculate(currentPosition, positionSetpoint);
 
-    d_intakePidOutputEntry.setDouble(pidOutput);
+    d_pidOutputEntry.setDouble(pidOutput);
 
-    var currentPosition = getPosition();
-    if (currentPosition < m_config.AngleMaximum && pidOutput > 0) {
+    if (currentPosition < m_config.PositionMaximum && pidOutput > 0) {
       setAngleMotorSpeed(MathUtil.clamp(pidOutput, 0, 0.2));
-    } else if (currentPosition > m_config.AngleMinimum && pidOutput < 0) {
+    } else if (currentPosition > m_config.PositionMinimum && pidOutput < 0) {
       setAngleMotorSpeed(MathUtil.clamp(pidOutput, -0.2, 0));
     } else {
       setAngleMotorSpeed(0);
     }
   }
 
-  public void close() {
-    m_intakeAngleSparkMaxLeft.close();
-    m_intakeAngleSparkMaxRight.close();
-    m_intakeRollerSparkMax.close();
-    m_intakeAnglePid.close();
-  }
-
   //#endregion
 
+  @Override
+  public void periodic() {
+    d_positionLeftEntry.setDouble(getPositionLeft());
+    d_positionRightEntry.setDouble(getPositionRight());
+  }
+
   //#region Commands
-  // Command for running the Intake to Intake a Note
-  public Command runIntakeCommand(DoubleSupplier speed) {
-    return this.run(() -> {
-        runIntakeRollers(speed.getAsDouble());
-      });
+
+  /**
+   *  Command for running the Intake to Intake a Note
+   */
+  public Command intakeNoteCommand() {
+    return this.run(() -> runIntakeRollers(0.5));
   }
 
-  // Command for changing the angle of the Position
+  /**
+   * Command for running the Intake to Eject a Note
+   */
+  public Command ejectNoteCommand() {
+    return this.run(() -> runIntakeRollers(-0.5));
+  }
+
+  /**
+   * Command for setting the position of the intake
+   */
   public Command setIntakeAngleCommand(double position) {
-    return this.runOnce(() -> {
-        setIntakeRotation(position);
-      });
+    return this.runOnce(() -> setIntakeRotation(position));
   }
 
-  // Command for setting the Intake Angle
-  public Command setIntakeAngleSpeed(DoubleSupplier speed) {
-    return this.run(() -> {
-        setAngleMotorSpeed(speed.getAsDouble());
-      });
+  /**
+   * Command for setting the intake angle into pickup position
+   */
+  public Command setIntakeOutCommand() {
+    return this.runOnce(() -> setIntakeRotation(m_config.PositionMinimum));
+  }
+
+  /**
+   * Command for setting the intake angle into loading position
+   */
+  public Command setIntakeInCommand() {
+    return this.runOnce(() -> setIntakeRotation(m_config.PositionMaximum));
   }
 
   // Command for stopping the Intake Motors
   public Command stopAllMotorsCommand() {
     return this.run(() -> {
-        m_intakeAngleSparkMaxLeft.stopMotor();
-        m_intakeAngleSparkMaxRight.stopMotor();
-        m_intakeRollerSparkMax.stopMotor();
+        m_angleLeft.stopMotor();
+        m_angleRight.stopMotor();
+        m_rollers.stopMotor();
       });
   }
+
   //#endregion
+
+  /**
+   * Closes the Intake
+   */
+  public void close() {
+    m_angleLeft.close();
+    m_angleRight.close();
+    m_rollers.close();
+    m_anglePid.close();
+  }
 }

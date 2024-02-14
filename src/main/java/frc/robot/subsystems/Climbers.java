@@ -9,17 +9,26 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.config.RobotConfig;
+import frc.robot.config.ClimbersConfig;
 import java.util.function.DoubleSupplier;
 
 public class Climbers extends SubsystemBase implements AutoCloseable {
 
+  private ClimbersConfig m_config;
+
+  private VictorSPX m_leftVictorSPX;
+  private VictorSPX m_rightVictorSPX;
+  private DigitalInput m_leftLimitSwitch;
+  private DigitalInput m_rightLimitSwitch;
+
+  private boolean m_climbControlsEnabled = false;
+
   private ShuffleboardTab d_tab = Shuffleboard.getTab("Climbers");
-  private GenericEntry d_leftClimberEntry = d_tab
+  private GenericEntry d_leftLimitEntry = d_tab
     .add("Left Climber Limit Switch", false)
     .withWidget(BuiltInWidgets.kBooleanBox)
     .getEntry();
-  private GenericEntry d_rightClimberEntry = d_tab
+  private GenericEntry d_rightLimitEntry = d_tab
     .add("Right Climber Limit Switch", false)
     .withWidget(BuiltInWidgets.kBooleanBox)
     .getEntry();
@@ -28,68 +37,85 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
     .withWidget(BuiltInWidgets.kBooleanBox)
     .getEntry();
 
-  private VictorSPX m_leftVictorSPX;
-  private VictorSPX m_rightVictorSPX;
-  private DigitalInput m_leftLimitSwitch;
-  private DigitalInput m_rightLimitSwitch;
+  /**
+   * Creates a new Climbers subsystem
+   * @param config
+   */
+  public Climbers(ClimbersConfig config) {
+    m_config = config;
 
-  private boolean m_toggleClimber = false;
+    m_leftVictorSPX = new VictorSPX(config.VictorSPXLeftCanID);
+    m_leftVictorSPX.configFactoryDefault();
+    m_leftVictorSPX.setInverted(config.LeftInverted);
 
-  // Creates the Climbers
-  public Climbers(RobotConfig robotConfig) {
-    m_leftVictorSPX = new VictorSPX(robotConfig.m_climbersVictorSPXLeftCanID);
-    m_rightVictorSPX = new VictorSPX(robotConfig.m_climbersVictorSPXRightCanID);
-    m_leftLimitSwitch = new DigitalInput(0);
-    m_leftLimitSwitch = new DigitalInput(1);
+    m_rightVictorSPX = new VictorSPX(config.VictorSPXRightCanID);
+    m_rightVictorSPX.configFactoryDefault();
+    m_rightVictorSPX.setInverted(config.RightInverted);
+
+    m_leftLimitSwitch = new DigitalInput(config.LeftLimitSwitchDIOChannel);
+    m_rightLimitSwitch = new DigitalInput(config.RightLimitSwitchDIOChannel);
   }
 
-  //#region Methods
-  // Raises the Left Climber
+  //#region Control Methods
+
+  /**
+   * Raises the Left Climber
+   */
   public void raiseLeftArm() {
     if (!m_leftLimitSwitch.get()) {
       m_leftVictorSPX.set(
         VictorSPXControlMode.PercentOutput,
-        RobotConfig.m_climbSpeed
+        m_config.ClimbersSpeed
       );
     } else {
       stopLeftArm();
     }
   }
 
-  // Raises the Right Climber
+  /**
+   * Raises the Right Climber
+   */
   public void raiseRightArm() {
     if (!m_rightLimitSwitch.get()) {
       m_rightVictorSPX.set(
         VictorSPXControlMode.PercentOutput,
-        RobotConfig.m_climbSpeed
+        m_config.ClimbersSpeed
       );
     } else {
       stopRightArm();
     }
   }
 
-  // Lowers the Left Climber
+  /**
+   * Lowers the Left Climber
+   */
   public void lowerLeftArm() {
     m_leftVictorSPX.set(
       VictorSPXControlMode.PercentOutput,
-      -RobotConfig.m_climbSpeed
+      -m_config.ClimbersSpeed
     );
   }
 
-  // Lowers the Right Climber
+  /**
+   * Lowers the Right Climber
+   */
   public void lowerRightArm() {
     m_rightVictorSPX.set(
       VictorSPXControlMode.PercentOutput,
-      -RobotConfig.m_climbSpeed
+      -m_config.ClimbersSpeed
     );
   }
 
-  // Stops the Right CLimber Motor
+  /**
+   * Stops the Left Climber Motor
+   */
   public void stopLeftArm() {
     m_leftVictorSPX.set(VictorSPXControlMode.PercentOutput, 0);
   }
 
-  // Stops the Left Climber Motor
+  /**
+   * Stops the Right Climber Motor
+   */
   public void stopRightArm() {
     m_rightVictorSPX.set(VictorSPXControlMode.PercentOutput, 0);
   }
@@ -98,48 +124,81 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
 
   @Override
   public void periodic() {
-    d_leftClimberEntry.setBoolean(m_leftLimitSwitch.get());
-    d_rightClimberEntry.setBoolean(m_rightLimitSwitch.get());
-    d_climbControlsActiveEntry.setBoolean(m_toggleClimber);
+    d_leftLimitEntry.setBoolean(m_leftLimitSwitch.get());
+    d_rightLimitEntry.setBoolean(m_rightLimitSwitch.get());
+    d_climbControlsActiveEntry.setBoolean(m_climbControlsEnabled);
   }
 
   //#region Commands
-  // Command for toggling the climbers on and off
+
+  /**
+   * Toggles the Climbers Controls
+   * @return
+   */
   public Command toggleClimbersCommand() {
     return this.runOnce(() -> {
-        if (!m_toggleClimber) {
-          m_toggleClimber = true;
-        } else {
-          m_toggleClimber = false;
-        }
+        m_climbControlsEnabled = !m_climbControlsEnabled;
       });
   }
 
-  // Command for raising the Left Arm
+  /**
+   * Command for raising the Left Arm
+   * @return
+   */
   public Command raiseLeftArmCommand() {
     return this.run(() -> {
-        if (m_toggleClimber) {
+        if (m_climbControlsEnabled) {
           raiseLeftArm();
         }
       });
   }
 
-  // Command  for raising the Right Arm
+  /**
+   * Command for raising the Right Arm
+   * @return
+   */
   public Command raiseRightArmCommand() {
     return this.run(() -> {
-        if (m_toggleClimber) {
+        if (m_climbControlsEnabled) {
           raiseRightArm();
         }
       });
   }
 
-  // Command for lowering the Climbers
+  /**
+   * Command for lowering the left climber
+   * @return
+   */
+  public Command lowerLeftArmCommand() {
+    return this.run(() -> {
+        if (m_climbControlsEnabled) {
+          lowerLeftArm();
+        }
+      });
+  }
+
+  /**
+   * Command for lowering the right climber
+   * @return
+   */
+  public Command lowerRightArmCommand() {
+    return this.run(() -> {
+        if (m_climbControlsEnabled) {
+          lowerRightArm();
+        }
+      });
+  }
+
+  /**
+   * Command for lowering both climbers
+   * @return
+   */
   public Command LowerClimbersCommand(
     DoubleSupplier leftClimber,
     DoubleSupplier rightClimber
   ) {
     return this.run(() -> {
-        if (m_toggleClimber) {
+        if (m_climbControlsEnabled) {
           if (leftClimber.getAsDouble() > 0.5) {
             lowerLeftArm();
           } else if (rightClimber.getAsDouble() > 0.5) {
@@ -149,14 +208,20 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
       });
   }
 
-  // Command for stopping the Left Arm motor
+  /**
+   * Command for stopping the left Arm motor
+   * @return
+   */
   public Command stopLeftArmCommand() {
     return this.run(() -> {
         stopLeftArm();
       });
   }
 
-  // Command for stopping the right Arm motor
+  /**
+   * Command for stopping the right Arm motor
+   * @return
+   */
   public Command stopRightArmCommand() {
     return this.run(() -> {
         stopRightArm();
