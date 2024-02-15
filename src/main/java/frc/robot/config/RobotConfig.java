@@ -1,5 +1,6 @@
 package frc.robot.config;
 
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import prime.control.PrimePIDConstants;
@@ -15,15 +16,7 @@ public class RobotConfig {
   public IntakeConfig Intake;
   public ShooterConfig Shooter;
   public ClimbersConfig Climbers;
-
-  public final int m_climbersVictorSPXRightCanID = 17;
-  public final int m_climbersVictorSPXLeftCanID = 18;
-  public final int m_shooterVictorSPXCanID = 19;
-  public final int m_shooterTalonFXCanID = 20;
-
-  // Encoder Values are inverted because they inverted the position of the NEO's.
-  public double m_positionSetpoint = 1;
-  public static double m_climbSpeed = 0.2;
+  public Pose3d LimelightPose;
 
   public RobotConfig() {
     Name = "[none]";
@@ -139,6 +132,12 @@ public class RobotConfig {
         1,
         9
       );
+
+    config.Shooter = new ShooterConfig(20, 19, false, false, 0, 0, 1, 1, 4);
+
+    config.Climbers = new ClimbersConfig(18, 17, false, false, 0.2, 2, 3);
+
+    config.LimelightPose = new Pose3d(); // TODO: Find out what the pose (translation & rotation) of the camera lens is from the robot center -- ask Arseni to get it from the CAD model
 
     return config;
   }

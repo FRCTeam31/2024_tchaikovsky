@@ -10,6 +10,7 @@ import frc.robot.config.RobotConfig;
 import frc.robot.subsystems.Climbers;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Shooter;
 import prime.control.Controls;
 import prime.control.PrimeXboxController;
@@ -18,10 +19,11 @@ public class RobotContainer {
 
   public RobotConfig m_config;
   public PrimeXboxController m_driverController;
+  public Drivetrain m_drivetrain;
   public Shooter m_shooter;
   public Intake m_intake;
   public Climbers m_climbers;
-  public Drivetrain m_drivetrain;
+  public Limelight m_limelight;
 
   public RobotContainer(RobotConfig config) {
     reconfigure(config);
@@ -47,9 +49,10 @@ public class RobotContainer {
 
       // Create new subsystems
       // m_drivetrain = new Drivetrain(m_config);
-      // m_shooter = new Shooter(m_config);
+      // m_shooter = new Shooter(m_config.Shooter);
       m_intake = new Intake(m_config.Intake);
-      // m_climbers = new Climbers(m_config);
+      // m_climbers = new Climbers(m_config.Climbers);
+      // m_limelight = new Limelight(m_config.LimelightPose);
 
       // Reconfigure bindings
       configureTeleopControls();
