@@ -71,12 +71,12 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
 
     m_leftLinearActuator =
       new LinearActuator(
-        m_config.LeftLinearActuatorControlChannel,
+        m_config.LeftLinearActuatorCanID,
         m_config.LeftLinearActuatorAnalogChannel
       );
     m_rightLinearActuator =
       new LinearActuator(
-        m_config.RightLinearActuatorControlChannel,
+        m_config.RightLinearActuatorCanID,
         m_config.RightLinearActuatorAnalogChannel
       );
 

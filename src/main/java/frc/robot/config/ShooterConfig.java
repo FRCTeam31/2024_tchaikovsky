@@ -8,9 +8,9 @@ public class ShooterConfig {
   public boolean TalonFXInverted;
   public boolean VictorSPXInverted;
 
-  public int LeftLinearActuatorControlChannel;
+  public int LeftLinearActuatorCanID;
   public int LeftLinearActuatorAnalogChannel;
-  public int RightLinearActuatorControlChannel;
+  public int RightLinearActuatorCanID;
   public int RightLinearActuatorAnalogChannel;
 
   public int NoteDetectorDIOChannel;
@@ -20,9 +20,9 @@ public class ShooterConfig {
     int shooterVictorSPXCanID,
     boolean shooterTalonFXInverted,
     boolean shooterVictorSPXInverted,
-    int leftLinearActuatorControlChannel,
+    int leftLinearActuatorCanID,
     int leftLinearActuatorAnalogChannel,
-    int rightLinearActuatorControlChannel,
+    int rightLinearActuatorCanID,
     int rightLinearActuatorAnalogChannel,
     int noteDetectorDIOChannel
   ) {
@@ -32,11 +32,10 @@ public class ShooterConfig {
     TalonFXInverted = shooterTalonFXInverted;
     VictorSPXInverted = shooterVictorSPXInverted;
 
-    LeftLinearActuatorControlChannel = leftLinearActuatorControlChannel;
+    LeftLinearActuatorCanID = leftLinearActuatorCanID;
     LeftLinearActuatorAnalogChannel = leftLinearActuatorAnalogChannel;
-    RightLinearActuatorControlChannel = rightLinearActuatorControlChannel;
+    RightLinearActuatorCanID = rightLinearActuatorCanID;
     RightLinearActuatorAnalogChannel = rightLinearActuatorAnalogChannel;
-
     NoteDetectorDIOChannel = noteDetectorDIOChannel;
   }
 }

@@ -1,31 +1,30 @@
 package prime.movers;
 
+import com.ctre.phoenix.motorcontrol.VictorSPXControlMode;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.Relay;
 
 public class LinearActuator {
 
-  private Relay relay;
   private AnalogInput potentiometer;
   private final double MAX_VOLTAGE = 5.0;
+  VictorSPX m_linearActuatorVictorSPX;
 
-  public LinearActuator(int relayChannel, int potentiometerAnalogChannel) {
-    relay = new Relay(relayChannel, Relay.Direction.kBoth);
+  public LinearActuator(int victorCanID, int potentiometerAnalogChannel) {
     potentiometer = new AnalogInput(potentiometerAnalogChannel);
+    m_linearActuatorVictorSPX = new VictorSPX(victorCanID);
   }
 
   public void runForward() {
-    relay.setDirection(Relay.Direction.kForward);
-    relay.set(Relay.Value.kOn);
+    m_linearActuatorVictorSPX.set(VictorSPXControlMode.PercentOutput, 1);
   }
 
   public void runReverse() {
-    relay.setDirection(Relay.Direction.kReverse);
-    relay.set(Relay.Value.kOn);
+    m_linearActuatorVictorSPX.set(VictorSPXControlMode.PercentOutput, -1);
   }
 
   public void stop() {
-    relay.set(Relay.Value.kOff);
+    m_linearActuatorVictorSPX.set(VictorSPXControlMode.PercentOutput, 0);
   }
 
   public double getPosition() {
