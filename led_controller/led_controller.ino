@@ -82,11 +82,11 @@ class LEDSection {
     }
 };
 
-#define PIN1 4 // D2
-#define PIN2 5 // D3
-#define NUMPIXELS 6 
-#define SECTION_COUNT 3
-#define LEDS_PER_SECTION 2
+#define PIN1 3 // D1
+#define PIN2 4 // D2
+#define NUMPIXELS 38
+#define SECTION_COUNT 2
+#define LEDS_PER_SECTION 19
 
 Adafruit_NeoPixel strip1(NUMPIXELS, PIN1, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel strip2(NUMPIXELS, PIN2, NEO_GRB + NEO_KHZ800);
@@ -94,13 +94,13 @@ LEDSection sectionStateBuffer[SECTION_COUNT] = {
   // Section, R, G, B, Pattern, Speed, Direction
   LEDSection(255, 0, 0, Pulse, 1000 / 25, 1),
   LEDSection(0, 255, 0, Blink, 1000, 0),
-  LEDSection(0, 0, 255, Pulse, 1000 / 25, 0),
+  // LEDSection(0, 0, 255, Pulse, 1000 / 25, 0),
 };
 LEDSection sectionStates[SECTION_COUNT] = {
   // Section, R, G, B, Pattern, Speed, Direction
   LEDSection(),
   LEDSection(),
-  LEDSection(),
+  // LEDSection(),
 };
 
 void setup() {
@@ -108,13 +108,15 @@ void setup() {
   Serial.begin(115200);
 
   // Set up LED strip
-  strip.begin();
+  strip1.begin();
+  strip2.begin();
 }
 
 void loop() {
   // If we have serial data in the buffer, read 1 or more 8-byte packets, one packet per section.
   if (Serial.available() > 7) {
     while (Serial.available() > 7) {
+      Serial.println("Detected packet");
       LEDSection packet;
 
       byte sectionNum = Serial.read(); // Section (1 byte)
@@ -124,7 +126,7 @@ void loop() {
         Serial.println("Received packet for invalid section " + sectionNum);
 
         // Skip the rest of the packet
-        for (int i = 1; i < 8; i++) {
+        for (int i = 1; i < 7; i++) {
           Serial.read();
         }
       }
@@ -138,10 +140,9 @@ void loop() {
       // Pattern (1 byte)
       packet.pattern = (LEDPattern)Serial.read(); 
 
-      // Speed (2 bytes)
-      byte speed1 = Serial.read();
-      byte speed2 = Serial.read();
-      packet.speed = (static_cast<uint16_t>(speed1) << 8) | speed2;
+      // Speed (1 bytes)
+      byte speed = Serial.read();
+      packet.speed = map(speed, 0, 255, 0, 2550);
 
       // Direction (1 byte)
       packet.direction = Serial.read();
