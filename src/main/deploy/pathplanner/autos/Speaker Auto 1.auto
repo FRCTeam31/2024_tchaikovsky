@@ -14,7 +14,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Speaker Path 1"
+            "pathName": "Speaker To Note"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Note To Speaker"
           }
         }
       ]
