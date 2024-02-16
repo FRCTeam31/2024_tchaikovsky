@@ -37,19 +37,18 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
   private GenericEntry d_driveVelocityEntry;
   private GenericEntry d_driveVoltageEntry;
   private GenericEntry d_moduleHeadingEntry;
+  private GenericEntry d_actualAngle;
+  private GenericEntry d_desiredAngle;
+  private GenericEntry d_inputInverted;
+  private GenericEntry d_distNonInverted;
+  private GenericEntry d_distToInverted;
+  private GenericEntry d_optimized;
 
   // Devices
   private LazyCANSparkMax m_SteeringMotor;
   private TalonFX m_driveMotor;
   private CANcoder m_encoder;
   private PIDController m_steeringPidController;
-
-
-      private actualAngle = getEncoderHeading();
-    private desiredAngle = desiredState.angle.getDegrees();
-    private inputInverted = (desiredAngle + 180) % 360;
-    private distNonInverted = Math.abs(actualAngle - desiredAngle);
-    private distToInverted = Math.abs(actualAngle - inputInverted);
 
   /* Start at velocity 0, no feed forward, use slot 0 */
   private final VelocityVoltage m_voltageVelocity = new VelocityVoltage(
@@ -107,7 +106,37 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
         .withProperties(Map.of("major tick spacing", 15, "starting angle", 0))
         .getEntry();
 
+    d_desiredAngle =
+      d_moduleTab
+        .add("desired angle", 0)
+        .withWidget(BuiltInWidgets.kGyro)
+        .withProperties(Map.of("major tick spacing", 15, "starting angle", 0))
+        .getEntry();
 
+    d_inputInverted =
+      d_moduleTab
+        .add("Input Inverted", 0)
+        .withWidget(BuiltInWidgets.kGyro)
+        .withProperties(Map.of("major tick spacing", 15, "starting angle", 0))
+        .getEntry();
+
+    d_distNonInverted =
+      d_moduleTab
+        .add("Distance Non inverted", 0)
+        .withWidget(BuiltInWidgets.kTextView)
+        .getEntry();
+
+    d_distToInverted =
+      d_moduleTab
+        .add("Distance to Inverted", 0)
+        .withWidget(BuiltInWidgets.kTextView)
+        .getEntry();
+
+    d_optimized =
+      d_moduleTab
+        .add("Optimized", false)
+        .withWidget(BuiltInWidgets.kBooleanBox)
+        .getEntry();
   }
 
   /**
@@ -198,7 +227,6 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
    */
   public void setDesiredState(SwerveModuleState desiredState) {
     desiredState = optimize(desiredState);
-    // SwerveModuleState.optimize(desiredState, getEncoderHeadingRotation2d());
     setDesiredSpeed(
       CTREConverter.metersToRotations(
         desiredState.speedMetersPerSecond,
@@ -249,26 +277,16 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
     m_driveMotor.setVoltage(voltage);
   }
 
-  /**
-   * Optimizes the module state to minimize the distance the module needs to
-   * travel
-   *
-   * @param desiredState The desired state of the module
-   * @return The optimized state of the module
-   */
   private SwerveModuleState optimize(SwerveModuleState desiredState) {
-    double actualAngle = getEncoderHeading();
-    double desiredAngle = desiredState.angle.getDegrees();
-    double inputInverted = (desiredAngle + 180) % 360;
-    double distNonInverted = Math.abs(actualAngle - desiredAngle);
-    double distToInverted = Math.abs(actualAngle - inputInverted);
-
-    if (distToInverted < distNonInverted) {
+    Rotation2d currentAngle = getEncoderHeadingRotation2d();
+    var delta = desiredState.angle.minus(currentAngle);
+    if (Math.abs(delta.getDegrees()) > 90.0) {
       return new SwerveModuleState(
         -desiredState.speedMetersPerSecond,
-        Rotation2d.fromDegrees(inputInverted)
+        desiredState.angle.rotateBy(Rotation2d.fromDegrees(180.0))
       );
     } else {
+      // return new SwerveModuleState(desiredState.speedMetersPerSecond, desiredState.angle;
       return desiredState;
     }
   }
