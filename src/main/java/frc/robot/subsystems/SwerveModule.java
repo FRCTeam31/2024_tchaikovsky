@@ -44,6 +44,13 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
   private CANcoder m_encoder;
   private PIDController m_steeringPidController;
 
+
+      private actualAngle = getEncoderHeading();
+    private desiredAngle = desiredState.angle.getDegrees();
+    private inputInverted = (desiredAngle + 180) % 360;
+    private distNonInverted = Math.abs(actualAngle - desiredAngle);
+    private distToInverted = Math.abs(actualAngle - inputInverted);
+
   /* Start at velocity 0, no feed forward, use slot 0 */
   private final VelocityVoltage m_voltageVelocity = new VelocityVoltage(
     0,
@@ -99,6 +106,8 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
         .withWidget(BuiltInWidgets.kGyro)
         .withProperties(Map.of("major tick spacing", 15, "starting angle", 0))
         .getEntry();
+
+
   }
 
   /**
@@ -188,7 +197,8 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
    *                     period
    */
   public void setDesiredState(SwerveModuleState desiredState) {
-    // desiredState = optimize(desiredState);
+    desiredState = optimize(desiredState);
+    // SwerveModuleState.optimize(desiredState, getEncoderHeadingRotation2d());
     setDesiredSpeed(
       CTREConverter.metersToRotations(
         desiredState.speedMetersPerSecond,
