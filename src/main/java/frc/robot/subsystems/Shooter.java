@@ -106,7 +106,7 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
    * Raises the shooter until it reaches the top
    */
   public void raiseElevationActuators() {
-    if (m_leftLinearActuator.getPosition() <= 90) {
+    if (m_leftLinearActuator.getPosition() <= 0.9) {
       m_leftLinearActuator.runForward();
       m_rightLinearActuator.runForward();
     }
@@ -116,7 +116,7 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
    * Lowers the shooter until it reaches the bottom
    */
   public void lowerElevationActuators() {
-    if (m_leftLinearActuator.getPosition() >= 10) {
+    if (m_leftLinearActuator.getPosition() >= 0.1) {
       m_leftLinearActuator.runReverse();
       m_rightLinearActuator.runReverse();
     }

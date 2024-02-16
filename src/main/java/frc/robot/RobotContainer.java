@@ -49,8 +49,8 @@ public class RobotContainer {
 
       // Create new subsystems
       // m_drivetrain = new Drivetrain(m_config);
-      // m_shooter = new Shooter(m_config.Shooter);
-      m_intake = new Intake(m_config.Intake);
+      m_shooter = new Shooter(m_config.Shooter);
+      // m_intake = new Intake(m_config.Intake);
       // m_climbers = new Climbers(m_config.Climbers);
       // m_limelight = new Limelight(m_config.LimelightPose);
 
