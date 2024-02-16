@@ -181,7 +181,7 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
    * @return
    */
   public Command stopActuatorsCommand() {
-    return this.run(() -> stopElevationActuators());
+    return this.runOnce(() -> stopElevationActuators());
   }
 
   //#endregion
