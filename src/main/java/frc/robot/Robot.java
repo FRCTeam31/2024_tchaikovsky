@@ -26,10 +26,11 @@ public class Robot extends TimedRobot {
   public ShuffleboardTab d_robotTab = Shuffleboard.getTab("Robot");
   public boolean autoEnabled = false;
 
-  private SendableChooser<String> m_configChooser;
   private final String m_defaultConfigName = "swerve_test_bot.json";
+  private SendableChooser<String> m_configChooser;
   private String m_selectedConfigName = m_defaultConfigName;
 
+  private final String m_defaultAutoName = "Speaker Auto 1";
   public static SendableChooser<Command> m_autoChooser;
   private Command m_autonomousCommand;
 
@@ -51,7 +52,7 @@ public class Robot extends TimedRobot {
       .withPosition(0, 0);
 
     // Build an auto chooser. This will use Commands.none() as the default option.
-    m_autoChooser = AutoBuilder.buildAutoChooser("Speaker Auto 1");
+    m_autoChooser = AutoBuilder.buildAutoChooser(m_defaultAutoName);
 
     d_robotTab
       .add(m_autoChooser)
@@ -83,16 +84,16 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     autoEnabled = true;
 
-    m_robotContainer.m_drivetrain.resetGyro();
-    m_robotContainer.m_drivetrain.resetOdometry(
-      new Pose2d(1.4, 5.5, Rotation2d.fromDegrees(270))
-    );
-
-    // ENABLE THIS CODE TO USE THE AUTO CHOOSER
+    Pose2d startingPose;
     if (m_autoChooser != null) {
       m_autonomousCommand = m_autoChooser.getSelected();
+      startingPose =
+        PathPlannerAuto.getStaringPoseFromAutoFile(
+          m_autonomousCommand.getName()
+        );
     } else {
-      m_autonomousCommand = new PathPlannerAuto("line 1m");
+      m_autonomousCommand = new PathPlannerAuto(m_defaultAutoName);
+      startingPose = new Pose2d(1.4, 5.5, Rotation2d.fromDegrees(270));
     }
 
     // Exit without scheduling an auto command if none is selected
@@ -101,6 +102,8 @@ public class Robot extends TimedRobot {
       return;
     }
 
+    m_robotContainer.m_drivetrain.resetGyro();
+    m_robotContainer.m_drivetrain.resetOdometry(startingPose);
     m_autonomousCommand.schedule();
   }
 
