@@ -2,8 +2,8 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.4,
-      "y": 5.5
+      "x": 5.626410450815889,
+      "y": 2.7878688338830315
     },
     "rotation": -90.0
   },
@@ -14,7 +14,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Speaker To Note"
+            "pathName": "test curve"
           }
         },
         {
@@ -26,7 +26,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Note To Speaker"
+            "pathName": "test curve 2"
           }
         }
       ]

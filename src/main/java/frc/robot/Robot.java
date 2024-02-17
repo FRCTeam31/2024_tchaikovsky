@@ -30,7 +30,7 @@ public class Robot extends TimedRobot {
   private SendableChooser<String> m_configChooser;
   private String m_selectedConfigName = m_defaultConfigName;
 
-  private final String m_defaultAutoName = "Speaker Auto 1";
+  private final String m_defaultAutoName = "test curve auto";
   public static SendableChooser<Command> m_autoChooser;
   private Command m_autonomousCommand;
 
