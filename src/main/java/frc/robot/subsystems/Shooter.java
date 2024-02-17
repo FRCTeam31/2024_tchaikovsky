@@ -63,11 +63,10 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
 
     m_talonFX = new TalonFX(m_config.TalonFXCanID);
     m_talonFX.getConfigurator().apply(new TalonFXConfiguration());
-    m_talonFX.setInverted(m_config.TalonFXInverted);
+    m_talonFX.setInverted(true);
 
     m_victorSPX = new VictorSPX(m_config.VictorSPXCanID);
     m_victorSPX.configFactoryDefault();
-    m_victorSPX.setInverted(m_config.VictorSPXInverted);
 
     m_leftLinearActuator =
       new LinearActuator(
@@ -106,7 +105,7 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
    * Raises the shooter until it reaches the top
    */
   public void raiseElevationActuators() {
-    if (m_leftLinearActuator.getPosition() <= 0.9) {
+    if (m_leftLinearActuator.getPosition() <= 0.75) {
       m_leftLinearActuator.runForward();
       m_rightLinearActuator.runForward();
     }

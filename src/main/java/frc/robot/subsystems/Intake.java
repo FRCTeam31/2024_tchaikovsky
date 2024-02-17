@@ -23,8 +23,9 @@ public class Intake extends SubsystemBase {
   private PIDController m_anglePid;
 
   private ShuffleboardTab d_intakeTab = Shuffleboard.getTab("Intake");
+
   private GenericEntry d_positionLeftEntry = d_intakeTab
-    .add("Position R (rotations)", 0)
+    .add("Position L (rotations)", 0)
     .withWidget(BuiltInWidgets.kNumberBar)
     .withProperties(Map.of("Max", 50, "Min", -50))
     .getEntry();

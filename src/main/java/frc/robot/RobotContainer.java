@@ -19,6 +19,7 @@ public class RobotContainer {
 
   public RobotConfig m_config;
   public PrimeXboxController m_driverController;
+  public PrimeXboxController m_ShooterController;
   public Drivetrain m_drivetrain;
   public Shooter m_shooter;
   public Intake m_intake;
@@ -49,8 +50,8 @@ public class RobotContainer {
 
       // Create new subsystems
       // m_drivetrain = new Drivetrain(m_config);
-      m_shooter = new Shooter(m_config.Shooter);
-      // m_intake = new Intake(m_config.Intake);
+      // m_shooter = new Shooter(m_config.Shooter);
+      m_intake = new Intake(m_config.Intake);
       // m_climbers = new Climbers(m_config.Climbers);
       // m_limelight = new Limelight(m_config.LimelightPose);
 
@@ -123,34 +124,33 @@ public class RobotContainer {
     // );
 
     // Runs the shooter when the Right Trigger is pressed
-    m_shooter.setDefaultCommand(
-      m_shooter.runMotorsCommand(() -> m_driverController.getRightTriggerAxis())
-    );
-    m_driverController
-      .button(Controls.A)
-      .whileTrue(m_shooter.RaiseActuatorsCommand())
-      .onFalse(m_shooter.stopActuatorsCommand());
-    m_driverController
-      .button(Controls.B)
-      .whileTrue(m_shooter.LowerActuatorsCommand())
-      .onFalse(m_shooter.stopActuatorsCommand());
+    // m_shooter.setDefaultCommand(
+    //   m_shooter.runMotorsCommand(() -> m_driverController.getRightTriggerAxis())
+    // );
+
+    // Linear Actuators
+    // m_driverController
+    //   .button(Controls.A)
+    //   .whileTrue(m_shooter.RaiseActuatorsCommand())
+    //   .onFalse(m_shooter.stopActuatorsCommand());
+    // m_driverController
+    //   .button(Controls.B)
+    //   .whileTrue(m_shooter.LowerActuatorsCommand())
+    //   .onFalse(m_shooter.stopActuatorsCommand());
+
     // Load/Shoot
     // m_driverController
     //   .leftBumper()
     //   .whileTrue(
     //     m_shooter
     //       .runMotorsCommand(() -> m_driverController.getRightTriggerAxis())
-    //       .alongWith(
-    //         m_intake.RunIntakeCommand(() ->
-    //           -m_driverController.getRightTriggerAxis()
-    //         )
-    //       )
+    //       .alongWith(m_intake.ejectNoteCommand())
     //   );
 
-    //   m_intake.setDefaultCommand(m_intake.runIntakeAnglePid());
-    //   m_driverController
-    //     .y()
-    //     .onTrue(m_intake.setIntakeAngleCommand(m_intake.m_upperLimit / 2));
-    //   m_driverController.a().onTrue(m_intake.setIntakeAngleCommand(1));
+    // Set Intake angles
+    m_driverController.button(Controls.X).onTrue(m_intake.setIntakeInCommand());
+    m_driverController
+      .button(Controls.Y)
+      .onTrue(m_intake.setIntakeOutCommand());
   }
 }
