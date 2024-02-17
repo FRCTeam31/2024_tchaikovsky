@@ -64,7 +64,6 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
     m_talonFX = new TalonFX(m_config.TalonFXCanID);
     m_talonFX.getConfigurator().apply(new TalonFXConfiguration());
     m_talonFX.setInverted(true);
-
     m_victorSPX = new VictorSPX(m_config.VictorSPXCanID);
     m_victorSPX.configFactoryDefault();
 

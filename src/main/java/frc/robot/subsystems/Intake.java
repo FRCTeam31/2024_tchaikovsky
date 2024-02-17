@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.IntakeConfig;
 import java.util.Map;
-import prime.control.Controls;
 import prime.movers.LazyCANSparkMax;
 
 public class Intake extends SubsystemBase {

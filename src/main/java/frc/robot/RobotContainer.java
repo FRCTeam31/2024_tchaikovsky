@@ -52,12 +52,11 @@ public class RobotContainer {
       // Create new subsystems
       // m_drivetrain = new Drivetrain(m_config);
       // m_shooter = new Shooter(m_config.Shooter);
-      m_intake = new Intake(m_config.Intake);
-      // m_climbers = new Climbers(m_config.Climbers);
+      // m_intake = new Intake(m_config.Intake);
+      m_climbers = new Climbers(m_config.Climbers);
       // m_limelight = new Limelight(m_config.LimelightPose);
 
       // Reconfigure bindings
-      configureTeleopControls();
     } catch (Exception e) {
       DriverStation.reportError(
         "[ERROR] >> Failed to reconfigure robot: " + e.getMessage(),
@@ -108,27 +107,25 @@ public class RobotContainer {
     //   .button(Controls.B)
     //   .onTrue(m_drivetrain.toggleShifterCommand());ta
 
-    // m_driverController
-    //   .button(Controls.Y)
-    //   .onTrue(m_climbers.toggleClimbersCommand());
-    // m_driverController
-    //   .button(Controls.LB)
-    //   .onTrue(m_climbers.raiseLeftArmCommand());
-    // m_driverController
-    //   .button(Controls.RB)
-    //   .onTrue(m_climbers.raiseRightArmCommand());
-    // m_climbers.setDefaultCommand(
-    //   m_climbers.LowerClimbersCommand(
-    //     () -> m_driverController.getRawAxis(Controls.LEFT_TRIGGER),
-    //     () -> m_driverController.getRawAxis(Controls.RIGHT_TRIGGER)
-    //   )
-    // );
+    // Climbers
+    m_driverController.y().onTrue(m_climbers.toggleClimbControlsCommand());
+    m_driverController
+      .leftBumper()
+      .whileTrue(m_climbers.raiseLeftArmCommand())
+      .onFalse(m_climbers.stopLeftArmCommand());
+    m_driverController
+      .rightBumper()
+      .whileTrue(m_climbers.raiseRightArmCommand())
+      .onFalse(m_climbers.stopRightArmCommand());
 
-    // Runs the shooter when the Right Trigger is pressed
-    // m_shooter.setDefaultCommand(
-    //   m_shooter.runMotorsCommand(() -> m_driverController.getRightTriggerAxis())
-    // );
-
+    m_driverController
+      .leftTrigger(0.5)
+      .whileTrue(m_climbers.lowerLeftArmCommand())
+      .onFalse(m_climbers.stopLeftArmCommand());
+    m_driverController
+      .rightTrigger(0.5)
+      .whileTrue(m_climbers.lowerRightArmCommand())
+      .onFalse(m_climbers.stopRightArmCommand());
     // Linear Actuators
     // m_driverController
     //   .button(Controls.A)
@@ -138,6 +135,11 @@ public class RobotContainer {
     //   .button(Controls.B)
     //   .whileTrue(m_shooter.LowerActuatorsCommand())
     //   .onFalse(m_shooter.stopActuatorsCommand());
+
+    // Runs the shooter when the Right Trigger is pressed
+    // m_shooter.setDefaultCommand(
+    //   m_shooter.runMotorsCommand(() -> m_driverController.getRightTriggerAxis())
+    // );
 
     // Load/Shoot
     // m_driverController
@@ -149,11 +151,11 @@ public class RobotContainer {
     //   );
 
     // Set Intake angles
-    m_intake.setDefaultCommand(m_intake.seekAngleSetpointCommand());
-    m_driverController.button(Controls.X).onTrue(m_intake.setIntakeInCommand());
-    m_driverController
-      .button(Controls.Y)
-      .onTrue(m_intake.setIntakeOutCommand());
+    // m_intake.setDefaultCommand(m_intake.seekAngleSetpointCommand());
+    // m_driverController.button(Controls.X).onTrue(m_intake.setIntakeInCommand());
+    // m_driverController
+    //   .button(Controls.Y)
+    //   .onTrue(m_intake.setIntakeOutCommand());
     // m_intake.setDefaultCommand(
     //   Commands.run(
     //     () ->

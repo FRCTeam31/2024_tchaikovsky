@@ -8,26 +8,42 @@ public class ClimbersConfig {
   public boolean LeftInverted;
   public boolean RightInverted;
 
-  public double ClimbersSpeed;
+  public double ClimberUpSpeed;
+  public double ClimberDownSpeed;
 
   public int LeftLimitSwitchDIOChannel;
   public int RightLimitSwitchDIOChannel;
+
+  public int LeftServoChannel;
+  public int RightServoChannel;
+  public int ServoLockAngle;
+  public int ServoUnlockAngle;
 
   public ClimbersConfig(
     int victorSPXLeftCanID,
     int victorSPXRightCanID,
     boolean leftInverted,
     boolean rightInverted,
-    double climberSpeed,
+    double climberUpSpeed,
+    int climberDownSpeed,
     int leftLimitSwitchDIOChannel,
-    int rightLimitSwitchDIOChannel
+    int rightLimitSwitchDIOChannel,
+    int leftServoChannel,
+    int rightServoChannel,
+    int servoLockAngle,
+    int servoUnlockAngle
   ) {
     VictorSPXLeftCanID = victorSPXLeftCanID;
     VictorSPXRightCanID = victorSPXRightCanID;
     LeftInverted = leftInverted;
     RightInverted = rightInverted;
-    ClimbersSpeed = climberSpeed;
+    ClimberUpSpeed = climberUpSpeed;
+    ClimberDownSpeed = climberDownSpeed;
     LeftLimitSwitchDIOChannel = leftLimitSwitchDIOChannel;
     RightLimitSwitchDIOChannel = rightLimitSwitchDIOChannel;
+    LeftServoChannel = leftServoChannel;
+    RightServoChannel = rightServoChannel;
+    ServoLockAngle = servoLockAngle;
+    ServoUnlockAngle = servoUnlockAngle;
   }
 }
