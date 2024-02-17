@@ -92,16 +92,16 @@ public class RobotContainer {
     // m_intake.setDefaultCommand(m_intake.IntakeAngleCommand(null));
     m_driverController
       .pov(Controls.up)
-      .onTrue(m_drivetrain.driveWithSnapToAngleCommand(Math.toRadians(0)));
-    m_driverController
-      .pov(Controls.left)
-      .onTrue(m_drivetrain.driveWithSnapToAngleCommand(Math.toRadians(90)));
-    m_driverController
-      .pov(Controls.down)
       .onTrue(m_drivetrain.driveWithSnapToAngleCommand(Math.toRadians(180)));
     m_driverController
-      .pov(Controls.right)
+      .pov(Controls.left)
       .onTrue(m_drivetrain.driveWithSnapToAngleCommand(Math.toRadians(270)));
+    m_driverController
+      .pov(Controls.down)
+      .onTrue(m_drivetrain.driveWithSnapToAngleCommand(Math.toRadians(0)));
+    m_driverController
+      .pov(Controls.right)
+      .onTrue(m_drivetrain.driveWithSnapToAngleCommand(Math.toRadians(90)));
 
     m_driverController
       .button(Controls.A)
@@ -109,6 +109,10 @@ public class RobotContainer {
     m_driverController
       .button(Controls.B)
       .onTrue(m_drivetrain.toggleShifterCommand());
+
+    m_driverController
+      .button(Controls.Y)
+      .onTrue(m_drivetrain.setSnapToGyroControlCommand(false));
   }
 
   /**

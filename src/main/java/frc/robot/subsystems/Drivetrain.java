@@ -4,6 +4,7 @@ import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -122,6 +123,7 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     d_driveTab.add("Field", m_field).withWidget(BuiltInWidgets.kField);
 
     // Configure snap-to PID
+
     m_snapToRotationController =
       new PIDController(
         m_config.Drivetrain.SnapToPID.kP,
@@ -129,6 +131,12 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
         m_config.Drivetrain.SnapToPID.kD,
         0.02
       );
+
+    // m_snapToRotationController.setTolerance(
+    //   Math.toRadians(30),
+    //   Math.toRadians(30)
+    // );
+
     m_snapToRotationController.enableContinuousInput(-Math.PI, Math.PI);
     m_snapToRotationController.setSetpoint(0);
     d_driveTab
@@ -246,7 +254,7 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
 
     if (m_snapToGyroEnabled) {
       m_lastSnapToCalculatedPIDOutput =
-        m_snapToRotationController.calculate(
+        -m_snapToRotationController.calculate(
           MathUtil.angleModulus(m_gyro.getRotation2d().getRadians())
         );
       desiredChassisSpeeds.omegaRadiansPerSecond =
@@ -265,11 +273,6 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
   public void drive(ChassisSpeeds desiredChassisSpeeds) {
     // var xSpeed = desiredChassisSpeeds.vxMetersPerSecond;
     // var ySpeed = desiredChassisSpeeds.vyMetersPerSecond;
-
-    desiredChassisSpeeds.vxMetersPerSecond =
-      desiredChassisSpeeds.vxMetersPerSecond;
-    desiredChassisSpeeds.vyMetersPerSecond =
-      desiredChassisSpeeds.vyMetersPerSecond;
 
     var swerveModuleStates = m_kinematics.toSwerveModuleStates(
       desiredChassisSpeeds
@@ -391,7 +394,7 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
    */
   public void toggleSnapToGyroControl() {
     m_snapToGyroEnabled = !m_snapToGyroEnabled;
-    m_snapToRotationController.setSetpoint(0);
+    m_snapToRotationController.close();
   }
 
   /**
