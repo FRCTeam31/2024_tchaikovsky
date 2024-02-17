@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.ClimbersConfig;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 public class Climbers extends SubsystemBase implements AutoCloseable {
@@ -173,6 +174,8 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
           m_leftClimberServo.setAngle(m_config.ServoUnlockAngle);
           m_leftServoLocked = false;
           raiseLeftArm();
+        } else {
+          stopLeftArm();
         }
       });
   }
@@ -187,6 +190,8 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
           m_rightClimberServo.setAngle(m_config.ServoUnlockAngle);
           m_rightServoLocked = false;
           raiseRightArm();
+        } else {
+          stopRightArm();
         }
       });
   }
@@ -224,7 +229,7 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
    * @return
    */
   public Command stopLeftArmCommand() {
-    return this.run(() -> {
+    return this.runOnce(() -> {
         stopLeftArm();
       });
   }
@@ -234,8 +239,43 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
    * @return
    */
   public Command stopRightArmCommand() {
-    return this.run(() -> {
+    return this.runOnce(() -> {
         stopRightArm();
+      });
+  }
+
+  public Command defaultClimbingCommand(
+    BooleanSupplier raiseRightArm,
+    BooleanSupplier raiseLeftArm
+    // BooleanSupplier lowerRightArm,
+    // BooleanSupplier lowerLeftArm
+  ) {
+    return this.run(() -> {
+        if (raiseRightArm.getAsBoolean()) {
+          m_rightClimberServo.setAngle(m_config.ServoUnlockAngle);
+          m_rightServoLocked = false;
+          raiseRightArm();
+        } else {
+          stopRightArm();
+        }
+        if (raiseLeftArm.getAsBoolean()) {
+          m_leftClimberServo.setAngle(m_config.ServoUnlockAngle);
+          m_leftServoLocked = false;
+          raiseLeftArm();
+        } else {
+          stopLeftArm();
+        }
+        // if (lowerLeftArm.getAsBoolean()) {
+        //   lowerLeftArm();
+        // } else {
+        //   stopLeftArm();
+        // }
+
+        // if (lowerRightArm.getAsBoolean()) {
+        //   lowerRightArm();
+        // } else {
+        //   stopRightArm();
+        // }
       });
   }
 
