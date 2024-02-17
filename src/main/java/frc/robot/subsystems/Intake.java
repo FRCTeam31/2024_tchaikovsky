@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.IntakeConfig;
 import java.util.Map;
+import prime.control.Controls;
 import prime.movers.LazyCANSparkMax;
 
 public class Intake extends SubsystemBase {
@@ -21,6 +22,7 @@ public class Intake extends SubsystemBase {
   private LazyCANSparkMax m_angleLeft;
   private LazyCANSparkMax m_angleRight;
   private PIDController m_anglePid;
+  private double m_angleSetpoint;
 
   private ShuffleboardTab d_intakeTab = Shuffleboard.getTab("Intake");
 
@@ -62,7 +64,15 @@ public class Intake extends SubsystemBase {
       new LazyCANSparkMax(m_config.NeoRightCanId, MotorType.kBrushless);
     m_angleRight.setInverted(m_config.NeoRightInverted);
 
-    m_anglePid = new PIDController(0.1, 0, 0, 0.02);
+    m_anglePid =
+      new PIDController(
+        m_config.IntakeAnglePid.kP,
+        m_config.IntakeAnglePid.kI,
+        m_config.IntakeAnglePid.kD,
+        0.02
+      );
+    m_angleSetpoint = m_config.PositionMaximum;
+    m_anglePid.setSetpoint(m_angleSetpoint);
     d_intakeTab
       .add("Steering PID", m_anglePid)
       .withWidget(BuiltInWidgets.kPIDController);
@@ -110,13 +120,14 @@ public class Intake extends SubsystemBase {
   public void setIntakeRotation(double positionSetpoint) {
     var currentPosition = getPositionRight();
     var pidOutput = m_anglePid.calculate(currentPosition, positionSetpoint);
+    // pidOutput = Controls.linearScaledDeadband(pidOutput, 0.01);
 
     d_pidOutputEntry.setDouble(pidOutput);
 
     if (currentPosition < m_config.PositionMaximum && pidOutput > 0) {
-      setAngleMotorSpeed(MathUtil.clamp(pidOutput, 0, 0.2));
+      setAngleMotorSpeed(MathUtil.clamp(pidOutput, 0, 0.5));
     } else if (currentPosition > m_config.PositionMinimum && pidOutput < 0) {
-      setAngleMotorSpeed(MathUtil.clamp(pidOutput, -0.2, 0));
+      setAngleMotorSpeed(MathUtil.clamp(pidOutput, -0.5, 0));
     } else {
       setAngleMotorSpeed(0);
     }
@@ -146,25 +157,22 @@ public class Intake extends SubsystemBase {
     return this.run(() -> runIntakeRollers(-0.5));
   }
 
-  /**
-   * Command for setting the position of the intake
-   */
-  public Command setIntakeAngleCommand(double position) {
-    return this.runOnce(() -> setIntakeRotation(position));
+  public Command seekAngleSetpointCommand() {
+    return this.run(() -> setIntakeRotation(m_angleSetpoint));
   }
 
   /**
    * Command for setting the intake angle into pickup position
    */
   public Command setIntakeOutCommand() {
-    return this.runOnce(() -> setIntakeRotation(m_config.PositionMinimum));
+    return this.runOnce(() -> m_angleSetpoint = m_config.PositionMinimum);
   }
 
   /**
    * Command for setting the intake angle into loading position
    */
   public Command setIntakeInCommand() {
-    return this.runOnce(() -> setIntakeRotation(m_config.PositionMaximum));
+    return this.runOnce(() -> m_angleSetpoint = m_config.PositionMaximum);
   }
 
   // Command for stopping the Intake Motors

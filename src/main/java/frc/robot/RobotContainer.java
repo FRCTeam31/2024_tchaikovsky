@@ -6,6 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.config.RobotConfig;
 import frc.robot.subsystems.Climbers;
 import frc.robot.subsystems.Drivetrain;
@@ -148,9 +149,19 @@ public class RobotContainer {
     //   );
 
     // Set Intake angles
+    m_intake.setDefaultCommand(m_intake.seekAngleSetpointCommand());
     m_driverController.button(Controls.X).onTrue(m_intake.setIntakeInCommand());
     m_driverController
       .button(Controls.Y)
       .onTrue(m_intake.setIntakeOutCommand());
+    // m_intake.setDefaultCommand(
+    //   Commands.run(
+    //     () ->
+    //       m_intake.setAngleMotorSpeed(
+    //         Controls.linearScaledDeadband(m_driverController.getLeftY(), 0.15)
+    //       ),
+    //     m_intake
+    //   )
+    // );
   }
 }
