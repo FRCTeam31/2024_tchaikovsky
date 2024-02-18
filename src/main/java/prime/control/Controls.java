@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package prime.config;
+package prime.control;
 
 /** Add your docs here. */
 public class Controls {
@@ -64,12 +64,16 @@ public class Controls {
   }
 
   /**
-   * @param input The original input value. Range: -1 to 1
-   * @param cutoff The deadband cutoff
-   * @param weight The weight of the cubic curve
+   * @param input The original input value (-1 - 1)
+   * @param cutoff The deadband cutoff (0 - 1)
+   * @param weight The weight of the cubic curve (0 - 1)
    * @return Cubic-scaled input without a cutoff jump
    */
-  public static double cubicScaledDeadband(double input, double cutoff, double weight) {
+  public static double cubicScaledDeadband(
+    double input,
+    double cutoff,
+    double weight
+  ) {
     var abs = Math.abs(input);
     var cubicInput = scaleCubic(input, weight);
     var cubicCutoff = scaleCubic(cutoff, weight);
