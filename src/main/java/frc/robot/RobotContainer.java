@@ -52,8 +52,8 @@ public class RobotContainer {
 
       // Create new subsystems
       // m_drivetrain = new Drivetrain(m_config);
-      m_shooter = new Shooter(m_config.Shooter);
-      m_intake = new Intake(m_config.Intake);
+      // m_shooter = new Shooter(m_config.Shooter);
+      // m_intake = new Intake(m_config.Intake);
       m_climbers = new Climbers(m_config.Climbers);
       // m_limelight = new Limelight(m_config.LimelightPose);
 
@@ -72,7 +72,6 @@ public class RobotContainer {
   public void configureTeleopControls() {
     m_driverController = new PrimeXboxController(Controls.DRIVER_PORT);
     m_operatorController = new PrimeXboxController(Controls.OPERATOR_PORT);
-    // m_operatorController = new PrimeXboxController(Controls.OPERATOR_PORT);
 
     // m_drivetrain.setDefaultCommand(
     //   m_drivetrain.defaultDriveCommand(
@@ -119,49 +118,48 @@ public class RobotContainer {
         () -> m_driverController.getRawAxis(Controls.LEFT_TRIGGER)
       )
     );
-
     // Linear Actuators
-    m_operatorController
-      .button(Controls.A)
-      .whileTrue(m_shooter.RaiseActuatorsCommand())
-      .onFalse(m_shooter.stopActuatorsCommand());
-    m_operatorController
-      .button(Controls.B)
-      .whileTrue(m_shooter.LowerActuatorsCommand())
-      .onFalse(m_shooter.stopActuatorsCommand());
+    // m_operatorController
+    //   .button(Controls.A)
+    //   .whileTrue(m_shooter.RaiseActuatorsCommand())
+    //   .onFalse(m_shooter.stopActuatorsCommand());
+    // m_operatorController
+    //   .button(Controls.B)
+    //   .whileTrue(m_shooter.LowerActuatorsCommand())
+    //   .onFalse(m_shooter.stopActuatorsCommand());
 
-    // Runs the shooter when the Right Trigger is pressed
-    m_shooter.setDefaultCommand(
-      m_shooter.runMotorsCommand(() ->
-        m_operatorController.getRightTriggerAxis()
-      )
-    );
+    // // Runs the shooter when the Right Trigger is pressed
+    // m_shooter.setDefaultCommand(
+    //   m_shooter.runMotorsCommand(() ->
+    //     m_operatorController.getRightTriggerAxis()
+    //   )
+    // );
 
-    // Load/Shoot
-    m_operatorController
-      .leftBumper()
-      .whileTrue(
-        m_shooter
-          .runMotorsCommand(() -> m_operatorController.getRightTriggerAxis())
-          .alongWith(m_intake.ejectNoteCommand())
-      );
+    // // Load/Shoot
+    // m_operatorController
+    //   .leftBumper()
+    //   .whileTrue(
+    //     m_shooter
+    //       .runMotorsCommand(() -> m_operatorController.getRightTriggerAxis())
+    //       .alongWith(m_intake.ejectNoteCommand())
+    //   );
 
-    // Set Intake angles
-    m_intake.setDefaultCommand(m_intake.seekAngleSetpointCommand());
-    m_operatorController
-      .button(Controls.X)
-      .onTrue(m_intake.setIntakeInCommand());
-    m_operatorController
-      .button(Controls.Y)
-      .onTrue(m_intake.setIntakeOutCommand());
-    m_intake.setDefaultCommand(
-      Commands.run(
-        () ->
-          m_intake.setAngleMotorSpeed(
-            Controls.linearScaledDeadband(m_operatorController.getLeftY(), 0.15)
-          ),
-        m_intake
-      )
-    );
+    // // Set Intake angles
+    // m_intake.setDefaultCommand(m_intake.seekAngleSetpointCommand());
+    // m_operatorController
+    //   .button(Controls.X)
+    //   .onTrue(m_intake.setIntakeInCommand());
+    // m_operatorController
+    //   .button(Controls.Y)
+    //   .onTrue(m_intake.setIntakeOutCommand());
+    // m_intake.setDefaultCommand(
+    //   Commands.run(
+    //     () ->
+    //       m_intake.setAngleMotorSpeed(
+    //         Controls.linearScaledDeadband(m_operatorController.getLeftY(), 0.15)
+    //       ),
+    //     m_intake
+    //   )
+    // );
   }
 }

@@ -90,12 +90,10 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
    * Raises the Right Climber
    */
   public void raiseRightArm() {
-    if (!m_rightLimitSwitch.get()) {
-      m_rightVictorSPX.set(
-        VictorSPXControlMode.PercentOutput,
-        m_config.ClimberUpSpeed
-      );
-    }
+    m_rightVictorSPX.set(
+      VictorSPXControlMode.PercentOutput,
+      m_config.ClimberUpSpeed
+    );
   }
 
   /**
@@ -164,13 +162,13 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
     DoubleSupplier lowerLeftArm
   ) {
     return this.run(() -> {
-        if (raiseRightArm.getAsBoolean()) {
+        if (raiseRightArm.getAsBoolean() && !m_rightLimitSwitch.get()) {
           m_rightClimberServo.setAngle(m_config.ServoUnlockAngle);
           raiseRightArm();
         } else {
           stopRightArm();
         }
-        if (raiseLeftArm.getAsBoolean()) {
+        if (raiseLeftArm.getAsBoolean() && !m_leftLimitSwitch.get()) {
           m_leftClimberServo.setAngle(m_config.ServoUnlockAngle);
           raiseLeftArm();
         } else {
