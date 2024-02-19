@@ -21,7 +21,7 @@ public class RobotContainer {
 
   public RobotConfig m_config;
   public PrimeXboxController m_driverController;
-  public PrimeXboxController m_ShooterController;
+  public PrimeXboxController m_operatorController;
   public Drivetrain m_drivetrain;
   public Shooter m_shooter;
   public Intake m_intake;
@@ -52,8 +52,8 @@ public class RobotContainer {
 
       // Create new subsystems
       // m_drivetrain = new Drivetrain(m_config);
-      // m_shooter = new Shooter(m_config.Shooter);
-      // m_intake = new Intake(m_config.Intake);
+      m_shooter = new Shooter(m_config.Shooter);
+      m_intake = new Intake(m_config.Intake);
       m_climbers = new Climbers(m_config.Climbers);
       // m_limelight = new Limelight(m_config.LimelightPose);
 
@@ -110,23 +110,15 @@ public class RobotContainer {
 
     // Climbers
     m_driverController.y().onTrue(m_climbers.toggleClimbControlsCommand());
-    m_driverController
-      .leftBumper()
-      .whileTrue(m_climbers.raiseLeftArmCommand())
-      .onFalse(m_climbers.stopLeftArmCommand());
-    m_driverController
-      .rightBumper()
-      .whileTrue(m_climbers.raiseRightArmCommand())
-      .onFalse(m_climbers.stopRightArmCommand());
 
-    m_driverController
-      .leftTrigger(0.5)
-      .whileTrue(m_climbers.lowerLeftArmCommand())
-      .onFalse(m_climbers.stopLeftArmCommand());
-    m_driverController
-      .rightTrigger(0.5)
-      .whileTrue(m_climbers.lowerRightArmCommand())
-      .onFalse(m_climbers.stopRightArmCommand());
+    m_climbers.setDefaultCommand(
+      m_climbers.defaultClimbingCommand(
+        m_driverController.button(Controls.RB),
+        m_driverController.button(Controls.LB),
+        () -> m_driverController.getRawAxis(Controls.RIGHT_TRIGGER),
+        () -> m_driverController.getRawAxis(Controls.LEFT_TRIGGER)
+      )
+    );
     // Linear Actuators
     // m_driverController
     //   .button(Controls.A)
@@ -163,15 +155,8 @@ public class RobotContainer {
     //       m_intake.setAngleMotorSpeed(
     //         Controls.linearScaledDeadband(m_driverController.getLeftY(), 0.15)
     //       ),
-    //     m_intake
+    //     m_intak
     //   )
     // );
-
-    m_climbers.setDefaultCommand(
-      m_climbers.defaultClimbingCommand(
-        m_driverController.button(Controls.LB),
-        m_driverController.button(Controls.RB)
-      )
-    );
   }
 }

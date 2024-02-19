@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.VictorSPXControlMode;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Servo;
@@ -25,8 +26,6 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
   private Servo m_leftClimberServo;
   private Servo m_rightClimberServo;
 
-  private boolean m_rightServoLocked = true;
-  private boolean m_leftServoLocked = true;
   private boolean m_climbControlsEnabled = false;
 
   private ShuffleboardTab d_tab = Shuffleboard.getTab("Climbers");
@@ -102,21 +101,15 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
   /**
    * Lowers the Left Climber
    */
-  public void lowerLeftArm() {
-    m_leftVictorSPX.set(
-      VictorSPXControlMode.PercentOutput,
-      m_config.ClimberDownSpeed
-    );
+  public void lowerLeftArm(double speed) {
+    m_leftVictorSPX.set(VictorSPXControlMode.PercentOutput, -speed);
   }
 
   /**
    * Lowers the Right Climber
    */
-  public void lowerRightArm() {
-    m_rightVictorSPX.set(
-      VictorSPXControlMode.PercentOutput,
-      m_config.ClimberDownSpeed
-    );
+  public void lowerRightArm(double speed) {
+    m_rightVictorSPX.set(VictorSPXControlMode.PercentOutput, -speed);
   }
 
   /**
@@ -164,118 +157,37 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
       });
   }
 
-  /**
-   * Command for raising the Left Arm
-   * @return
-   */
-  public Command raiseLeftArmCommand() {
-    return this.runOnce(() -> {
-        if (m_climbControlsEnabled) {
-          m_leftClimberServo.setAngle(m_config.ServoUnlockAngle);
-          m_leftServoLocked = false;
-          raiseLeftArm();
-        } else {
-          stopLeftArm();
-        }
-      });
-  }
-
-  /**
-   * Command for raising the Right Arm
-   * @return
-   */
-  public Command raiseRightArmCommand() {
-    return this.runOnce(() -> {
-        if (m_climbControlsEnabled) {
-          m_rightClimberServo.setAngle(m_config.ServoUnlockAngle);
-          m_rightServoLocked = false;
-          raiseRightArm();
-        } else {
-          stopRightArm();
-        }
-      });
-  }
-
-  /**
-   * Command for lowering the Left Arm
-   * @return
-   */
-  public Command lowerLeftArmCommand() {
-    return this.runOnce(() -> {
-        if (m_climbControlsEnabled) {
-          m_leftClimberServo.setAngle(m_config.ServoLockAngle);
-          m_leftServoLocked = true;
-          lowerLeftArm();
-        }
-      });
-  }
-
-  /**
-   * Command for raising the Right Arm
-   * @return
-   */
-  public Command lowerRightArmCommand() {
-    return this.runOnce(() -> {
-        if (m_climbControlsEnabled) {
-          m_rightClimberServo.setAngle(m_config.ServoLockAngle);
-          m_rightServoLocked = true;
-          lowerRightArm();
-        }
-      });
-  }
-
-  /**
-   * Command for stopping the left Arm motor
-   * @return
-   */
-  public Command stopLeftArmCommand() {
-    return this.runOnce(() -> {
-        stopLeftArm();
-      });
-  }
-
-  /**
-   * Command for stopping the right Arm motor
-   * @return
-   */
-  public Command stopRightArmCommand() {
-    return this.runOnce(() -> {
-        stopRightArm();
-      });
-  }
-
   public Command defaultClimbingCommand(
     BooleanSupplier raiseRightArm,
-    BooleanSupplier raiseLeftArm
-    // BooleanSupplier lowerRightArm,
-    // BooleanSupplier lowerLeftArm
+    BooleanSupplier raiseLeftArm,
+    DoubleSupplier lowerRightArm,
+    DoubleSupplier lowerLeftArm
   ) {
     return this.run(() -> {
         if (raiseRightArm.getAsBoolean()) {
           m_rightClimberServo.setAngle(m_config.ServoUnlockAngle);
-          m_rightServoLocked = false;
           raiseRightArm();
         } else {
           stopRightArm();
         }
         if (raiseLeftArm.getAsBoolean()) {
           m_leftClimberServo.setAngle(m_config.ServoUnlockAngle);
-          m_leftServoLocked = false;
           raiseLeftArm();
         } else {
           stopLeftArm();
         }
-        // if (lowerLeftArm.getAsBoolean()) {
-        //   lowerLeftArm();
-        // } else {
-        //   stopLeftArm();
-        // }
-
-        // if (lowerRightArm.getAsBoolean()) {
-        //   lowerRightArm();
-        // } else {
-        //   stopRightArm();
-        // }
+        if (!raiseRightArm.getAsBoolean() && !raiseLeftArm.getAsBoolean()) {
+          m_rightClimberServo.setAngle(m_config.ServoLockAngle);
+          lowerRightArm(
+            MathUtil.applyDeadband(lowerRightArm.getAsDouble(), 0.1)
+          );
+        }
+        if (!raiseRightArm.getAsBoolean() && !raiseLeftArm.getAsBoolean()) {
+          m_leftClimberServo.setAngle(m_config.ServoLockAngle);
+          lowerLeftArm(
+            MathUtil.applyDeadband(lowerLeftArm.getAsDouble(), 0, 1)
+          );
+        }
       });
   }
 
