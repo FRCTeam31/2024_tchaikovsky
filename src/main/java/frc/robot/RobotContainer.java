@@ -13,7 +13,6 @@ import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Shooter;
-import java.util.function.BooleanSupplier;
 import prime.control.Controls;
 import prime.control.PrimeXboxController;
 
