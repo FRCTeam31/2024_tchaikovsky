@@ -52,8 +52,8 @@ public class RobotContainer {
 
       // Create new subsystems
       // m_drivetrain = new Drivetrain(m_config);
-      // m_shooter = new Shooter(m_config.Shooter);
-      // m_intake = new Intake(m_config.Intake);
+      m_shooter = new Shooter(m_config.Shooter);
+      m_intake = new Intake(m_config.Intake);
       m_climbers = new Climbers(m_config.Climbers);
       // m_limelight = new Limelight(m_config.LimelightPose);
 
@@ -118,33 +118,34 @@ public class RobotContainer {
         () -> m_driverController.getRawAxis(Controls.LEFT_TRIGGER)
       )
     );
+
     // Linear Actuators
-    // m_operatorController
-    //   .button(Controls.A)
-    //   .whileTrue(m_shooter.RaiseActuatorsCommand())
-    //   .onFalse(m_shooter.stopActuatorsCommand());
-    // m_operatorController
-    //   .button(Controls.B)
-    //   .whileTrue(m_shooter.LowerActuatorsCommand())
-    //   .onFalse(m_shooter.stopActuatorsCommand());
+    m_operatorController
+      .button(Controls.A)
+      .whileTrue(m_shooter.RaiseActuatorsCommand())
+      .onFalse(m_shooter.stopActuatorsCommand());
+    m_operatorController
+      .button(Controls.B)
+      .whileTrue(m_shooter.LowerActuatorsCommand())
+      .onFalse(m_shooter.stopActuatorsCommand());
 
-    // // Runs the shooter when the Right Trigger is pressed
-    // m_shooter.setDefaultCommand(
-    //   m_shooter.runMotorsCommand(() ->
-    //     m_operatorController.getRightTriggerAxis()
-    //   )
-    // );
+    // Runs the shooter when the Right Trigger is pressed
+    m_shooter.setDefaultCommand(
+      m_shooter.runMotorsCommand(() ->
+        m_operatorController.getRightTriggerAxis()
+      )
+    );
 
-    // // Load/Shoot
+    // Load/Shoot
     // m_operatorController
     //   .leftBumper()
     //   .whileTrue(
     //     m_shooter
-    //       .runMotorsCommand(() -> m_operatorController.getRightTriggerAxis())
+    //       .runMotorsCommand(() -> m_operatorController.())
     //       .alongWith(m_intake.ejectNoteCommand())
     //   );
 
-    // // Set Intake angles
+    // Set Intake angles
     // m_intake.setDefaultCommand(m_intake.seekAngleSetpointCommand());
     // m_operatorController
     //   .button(Controls.X)
@@ -152,14 +153,14 @@ public class RobotContainer {
     // m_operatorController
     //   .button(Controls.Y)
     //   .onTrue(m_intake.setIntakeOutCommand());
-    // m_intake.setDefaultCommand(
-    //   Commands.run(
-    //     () ->
-    //       m_intake.setAngleMotorSpeed(
-    //         Controls.linearScaledDeadband(m_operatorController.getLeftY(), 0.15)
-    //       ),
-    //     m_intake
-    //   )
-    // );
+
+    m_intake.setDefaultCommand(
+      m_intake.defaultIntakeCommand(
+        () -> m_operatorController.getRawAxis(Controls.LEFT_TRIGGER),
+        () -> m_operatorController.getRawAxis(Controls.RIGHT_TRIGGER) > 0.5,
+        m_operatorController.button(Controls.X),
+        m_operatorController.button(Controls.Y)
+      )
+    );
   }
 }

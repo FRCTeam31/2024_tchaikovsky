@@ -11,6 +11,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.IntakeConfig;
 import java.util.Map;
+import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 import prime.movers.LazyCANSparkMax;
 
 public class Intake extends SubsystemBase {
@@ -180,6 +182,28 @@ public class Intake extends SubsystemBase {
         m_angleLeft.stopMotor();
         m_angleRight.stopMotor();
         m_rollers.stopMotor();
+      });
+  }
+
+  public Command defaultIntakeCommand(
+    DoubleSupplier intakeNote,
+    BooleanSupplier ejectNote,
+    BooleanSupplier intakeIn,
+    BooleanSupplier intakeOut
+  ) {
+    return this.run(() -> {
+        seekAngleSetpointCommand();
+        if (!ejectNote.getAsBoolean()) {
+          runIntakeRollers(intakeNote.getAsDouble());
+        } else if (ejectNote.getAsBoolean()) {
+          runIntakeRollers(1);
+        }
+
+        if (intakeIn.getAsBoolean()) {
+          setIntakeInCommand();
+        } else if (intakeOut.getAsBoolean()) {
+          setIntakeOutCommand();
+        }
       });
   }
 
