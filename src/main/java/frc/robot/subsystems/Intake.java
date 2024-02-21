@@ -147,8 +147,8 @@ public class Intake extends SubsystemBase {
   /**
    *  Command for running the Intake to Intake a Note
    */
-  public Command intakeNoteCommand() {
-    return this.run(() -> runIntakeRollers(0.5));
+  public Command setRollersSpeedCommand(DoubleSupplier speed) {
+    return this.run(() -> runIntakeRollers(speed.getAsDouble()));
   }
 
   /**
@@ -176,11 +176,36 @@ public class Intake extends SubsystemBase {
     return this.runOnce(() -> m_angleSetpoint = m_config.PositionMaximum);
   }
 
+  /**
+   * Toggles the intake angle setpoint between in/out
+   * @return
+   */
+  public Command toggleIntakeInAndOut() {
+    return this.runOnce(() -> {
+        m_angleSetpoint =
+          getPositionRight() > (m_config.PositionMaximum / 2)
+            ? m_config.PositionMinimum
+            : m_config.PositionMaximum;
+      });
+  }
+
+  public Command waitForIntakeToReachAngleSetpoint() {
+    return this.runOnce(() -> {
+        while (!m_anglePid.atSetpoint()) {}
+      });
+  }
+
   // Command for stopping the Intake Motors
   public Command stopAllMotorsCommand() {
     return this.run(() -> {
         m_angleLeft.stopMotor();
         m_angleRight.stopMotor();
+        m_rollers.stopMotor();
+      });
+  }
+
+  public Command stopRollersCommand() {
+    return this.run(() -> {
         m_rollers.stopMotor();
       });
   }
@@ -194,9 +219,9 @@ public class Intake extends SubsystemBase {
     return this.run(() -> {
         seekAngleSetpointCommand();
         if (!ejectNote.getAsBoolean()) {
-          runIntakeRollers(intakeNote.getAsDouble());
+          runIntakeRollers(-intakeNote.getAsDouble());
         } else if (ejectNote.getAsBoolean()) {
-          runIntakeRollers(1);
+          runIntakeRollers(0.6);
         }
 
         if (intakeIn.getAsBoolean()) {

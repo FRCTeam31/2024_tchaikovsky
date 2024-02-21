@@ -118,48 +118,70 @@ public class RobotContainer {
       )
     );
 
-    // Linear Actuators
-    m_operatorController
-      .button(Controls.A)
-      .whileTrue(m_shooter.RaiseActuatorsCommand())
-      .onFalse(m_shooter.stopActuatorsCommand());
-    m_operatorController
-      .button(Controls.B)
-      .whileTrue(m_shooter.LowerActuatorsCommand())
-      .onFalse(m_shooter.stopActuatorsCommand());
+    // Operator Controls =================================
 
-    // Runs the shooter when the Right Trigger is pressed
-    m_shooter.setDefaultCommand(
-      m_shooter.runMotorsCommand(() ->
-        m_operatorController.getRightTriggerAxis()
+    // Always be updating the intake angle PID
+    m_intake.setDefaultCommand(m_intake.seekAngleSetpointCommand());
+
+    m_operatorController.a().onTrue(m_intake.toggleIntakeInAndOut()); // Set intake angle in/out
+    m_operatorController // Raise intake, load note for amp score
+      .y()
+      .onTrue(
+        m_intake
+          .setIntakeInCommand()
+          .andThen(m_intake.waitForIntakeToReachAngleSetpoint())
+          .andThen(m_shooter.loadNoteForAmp())
+      );
+    m_operatorController // Raise intake, unload note from shooter into intake
+      .b()
+      .onTrue(
+        m_intake
+          .setIntakeInCommand()
+          .andThen(m_intake.waitForIntakeToReachAngleSetpoint())
       )
-    );
-
-    // Load/Shoot
-    // m_operatorController
-    //   .leftBumper()
-    //   .whileTrue(
-    //     m_shooter
-    //       .runMotorsCommand(() -> m_operatorController.())
-    //       .alongWith(m_intake.ejectNoteCommand())
-    //   );
-
-    // Set Intake angles
-    // m_intake.setDefaultCommand(m_intake.seekAngleSetpointCommand());
-    // m_operatorController
-    //   .button(Controls.X)
-    //   .onTrue(m_intake.setIntakeInCommand());
-    // m_operatorController
-    //   .button(Controls.Y)
-    //   .onTrue(m_intake.setIntakeOutCommand());
-
-    m_intake.setDefaultCommand(
-      m_intake.defaultIntakeCommand(
-        () -> m_operatorController.getRawAxis(Controls.LEFT_TRIGGER),
-        () -> m_operatorController.getRawAxis(Controls.RIGHT_TRIGGER) > 0.5,
-        m_operatorController.button(Controls.X),
-        m_operatorController.button(Controls.Y)
+      .whileTrue(
+        m_shooter
+          .unloadNoteForSpeaker()
+          .alongWith(m_intake.setRollersSpeedCommand(() -> 0.5))
       )
-    );
+      .onFalse(
+        m_shooter.stopMotorsCommand().alongWith(m_intake.stopRollersCommand())
+      );
+
+    m_operatorController // Raise shooter, score in amp
+      .rightBumper()
+      .onTrue(m_shooter.setElevationUpCommand()) // wait is integrated
+      .whileTrue(m_shooter.scoreInAmp())
+      .onFalse(
+        m_shooter
+          .stopMotorsCommand()
+          .alongWith(m_shooter.setElevationDownCommand()) // wait is integrated
+      );
+
+    m_operatorController // Shoot into Speaker with both intake and shooter
+      .leftBumper()
+      .onTrue(m_shooter.setElevationDownCommand()) // wait is integrated
+      .whileTrue(
+        m_intake
+          .setRollersSpeedCommand(() -> -1) // eject the note at full speed
+          .alongWith(m_shooter.scoreInSpeaker()) // score the note in the speaker
+      )
+      .onFalse(
+        m_intake.stopRollersCommand().alongWith(m_shooter.stopMotorsCommand()) // stop everything
+      );
+
+    m_operatorController // intake note
+      .leftTrigger(0.1)
+      .whileTrue(
+        m_intake.setRollersSpeedCommand(() ->
+          m_operatorController.getLeftTriggerAxis()
+        )
+      )
+      .onFalse(m_intake.stopRollersCommand());
+
+    m_operatorController // eject note
+      .rightTrigger(0.1)
+      .whileTrue(m_intake.ejectNoteCommand())
+      .onFalse(m_intake.stopRollersCommand());
   }
 }

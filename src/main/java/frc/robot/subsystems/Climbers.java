@@ -162,24 +162,31 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
     DoubleSupplier lowerLeftArm
   ) {
     return this.run(() -> {
+        // Raise Right
         if (raiseRightArm.getAsBoolean() && !m_rightLimitSwitch.get()) {
           m_rightClimberServo.setAngle(m_config.ServoUnlockAngle);
           raiseRightArm();
         } else {
           stopRightArm();
         }
+
+        // Raise left
         if (raiseLeftArm.getAsBoolean() && !m_leftLimitSwitch.get()) {
           m_leftClimberServo.setAngle(m_config.ServoUnlockAngle);
           raiseLeftArm();
         } else {
           stopLeftArm();
         }
+
+        // Lower Right
         if (!raiseRightArm.getAsBoolean() && !raiseLeftArm.getAsBoolean()) {
           m_rightClimberServo.setAngle(m_config.ServoLockAngle);
           lowerRightArm(
             MathUtil.applyDeadband(lowerRightArm.getAsDouble(), 0.1)
           );
         }
+
+        // Lower left
         if (!raiseRightArm.getAsBoolean() && !raiseLeftArm.getAsBoolean()) {
           m_leftClimberServo.setAngle(m_config.ServoLockAngle);
           lowerLeftArm(
