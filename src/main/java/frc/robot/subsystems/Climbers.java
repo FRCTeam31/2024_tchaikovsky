@@ -2,14 +2,17 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.VictorSPXControlMode;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.ClimbersConfig;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 public class Climbers extends SubsystemBase implements AutoCloseable {
@@ -20,6 +23,8 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
   private VictorSPX m_rightVictorSPX;
   private DigitalInput m_leftLimitSwitch;
   private DigitalInput m_rightLimitSwitch;
+  private Servo m_leftClimberServo;
+  private Servo m_rightClimberServo;
 
   private boolean m_climbControlsEnabled = false;
 
@@ -35,6 +40,14 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
   private GenericEntry d_climbControlsActiveEntry = d_tab
     .add("Climb Controls Active", false)
     .withWidget(BuiltInWidgets.kBooleanBox)
+    .getEntry();
+  private GenericEntry d_leftServoAngleEntry = d_tab
+    .add("Left Servo Angle", 0)
+    .withWidget(BuiltInWidgets.kGyro)
+    .getEntry();
+  private GenericEntry d_rightServoAngleEntry = d_tab
+    .add("Right Servo Angle", 0)
+    .withWidget(BuiltInWidgets.kGyro)
     .getEntry();
 
   /**
@@ -54,6 +67,9 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
 
     m_leftLimitSwitch = new DigitalInput(config.LeftLimitSwitchDIOChannel);
     m_rightLimitSwitch = new DigitalInput(config.RightLimitSwitchDIOChannel);
+
+    m_leftClimberServo = new Servo(config.LeftServoChannel);
+    m_rightClimberServo = new Servo(config.RightServoChannel);
   }
 
   //#region Control Methods
@@ -65,10 +81,8 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
     if (!m_leftLimitSwitch.get()) {
       m_leftVictorSPX.set(
         VictorSPXControlMode.PercentOutput,
-        m_config.ClimbersSpeed
+        m_config.ClimberUpSpeed
       );
-    } else {
-      stopLeftArm();
     }
   }
 
@@ -76,34 +90,24 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
    * Raises the Right Climber
    */
   public void raiseRightArm() {
-    if (!m_rightLimitSwitch.get()) {
-      m_rightVictorSPX.set(
-        VictorSPXControlMode.PercentOutput,
-        m_config.ClimbersSpeed
-      );
-    } else {
-      stopRightArm();
-    }
+    m_rightVictorSPX.set(
+      VictorSPXControlMode.PercentOutput,
+      m_config.ClimberUpSpeed
+    );
   }
 
   /**
    * Lowers the Left Climber
    */
-  public void lowerLeftArm() {
-    m_leftVictorSPX.set(
-      VictorSPXControlMode.PercentOutput,
-      -m_config.ClimbersSpeed
-    );
+  public void lowerLeftArm(double speed) {
+    m_leftVictorSPX.set(VictorSPXControlMode.PercentOutput, -speed);
   }
 
   /**
    * Lowers the Right Climber
    */
-  public void lowerRightArm() {
-    m_rightVictorSPX.set(
-      VictorSPXControlMode.PercentOutput,
-      -m_config.ClimbersSpeed
-    );
+  public void lowerRightArm(double speed) {
+    m_rightVictorSPX.set(VictorSPXControlMode.PercentOutput, -speed);
   }
 
   /**
@@ -120,14 +124,24 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
     m_rightVictorSPX.set(VictorSPXControlMode.PercentOutput, 0);
   }
 
-  //#endregion
+  public void setLeftServoPosition(double servoAngleDegrees) {
+    m_leftClimberServo.setAngle(servoAngleDegrees);
+  }
+
+  public void setRightServoPosition(double servoAngleDegrees) {
+    m_rightClimberServo.setAngle(servoAngleDegrees);
+  }
 
   @Override
   public void periodic() {
     d_leftLimitEntry.setBoolean(m_leftLimitSwitch.get());
     d_rightLimitEntry.setBoolean(m_rightLimitSwitch.get());
     d_climbControlsActiveEntry.setBoolean(m_climbControlsEnabled);
+    d_leftServoAngleEntry.setDouble(m_leftClimberServo.getAngle());
+    d_rightServoAngleEntry.setDouble(m_rightClimberServo.getAngle());
   }
+
+  //#endregion
 
   //#region Commands
 
@@ -135,96 +149,50 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
    * Toggles the Climbers Controls
    * @return
    */
-  public Command toggleClimbersCommand() {
+  public Command toggleClimbControlsCommand() {
     return this.runOnce(() -> {
         m_climbControlsEnabled = !m_climbControlsEnabled;
       });
   }
 
-  /**
-   * Command for raising the Left Arm
-   * @return
-   */
-  public Command raiseLeftArmCommand() {
-    return this.run(() -> {
-        if (m_climbControlsEnabled) {
-          raiseLeftArm();
-        }
-      });
-  }
-
-  /**
-   * Command for raising the Right Arm
-   * @return
-   */
-  public Command raiseRightArmCommand() {
-    return this.run(() -> {
-        if (m_climbControlsEnabled) {
-          raiseRightArm();
-        }
-      });
-  }
-
-  /**
-   * Command for lowering the left climber
-   * @return
-   */
-  public Command lowerLeftArmCommand() {
-    return this.run(() -> {
-        if (m_climbControlsEnabled) {
-          lowerLeftArm();
-        }
-      });
-  }
-
-  /**
-   * Command for lowering the right climber
-   * @return
-   */
-  public Command lowerRightArmCommand() {
-    return this.run(() -> {
-        if (m_climbControlsEnabled) {
-          lowerRightArm();
-        }
-      });
-  }
-
-  /**
-   * Command for lowering both climbers
-   * @return
-   */
-  public Command LowerClimbersCommand(
-    DoubleSupplier leftClimber,
-    DoubleSupplier rightClimber
+  public Command defaultClimbingCommand(
+    BooleanSupplier raiseRightArm,
+    BooleanSupplier raiseLeftArm,
+    DoubleSupplier lowerRightArm,
+    DoubleSupplier lowerLeftArm
   ) {
     return this.run(() -> {
-        if (m_climbControlsEnabled) {
-          if (leftClimber.getAsDouble() > 0.5) {
-            lowerLeftArm();
-          } else if (rightClimber.getAsDouble() > 0.5) {
-            lowerRightArm();
-          }
+        // Raise Right
+        if (raiseRightArm.getAsBoolean() && !m_rightLimitSwitch.get()) {
+          m_rightClimberServo.setAngle(m_config.ServoUnlockAngle);
+          raiseRightArm();
+        } else {
+          stopRightArm();
         }
-      });
-  }
 
-  /**
-   * Command for stopping the left Arm motor
-   * @return
-   */
-  public Command stopLeftArmCommand() {
-    return this.run(() -> {
-        stopLeftArm();
-      });
-  }
+        // Raise left
+        if (raiseLeftArm.getAsBoolean() && !m_leftLimitSwitch.get()) {
+          m_leftClimberServo.setAngle(m_config.ServoUnlockAngle);
+          raiseLeftArm();
+        } else {
+          stopLeftArm();
+        }
 
-  /**
-   * Command for stopping the right Arm motor
-   * @return
-   */
-  public Command stopRightArmCommand() {
-    return this.run(() -> {
-        stopRightArm();
+        // Lower Right
+        if (!raiseRightArm.getAsBoolean() && !raiseLeftArm.getAsBoolean()) {
+          m_rightClimberServo.setAngle(m_config.ServoLockAngle);
+          lowerRightArm(
+            MathUtil.applyDeadband(lowerRightArm.getAsDouble(), 0.1)
+          );
+        }
+
+        // Lower left
+        if (!raiseRightArm.getAsBoolean() && !raiseLeftArm.getAsBoolean()) {
+          m_leftClimberServo.setAngle(m_config.ServoLockAngle);
+          lowerLeftArm(
+            MathUtil.applyDeadband(lowerLeftArm.getAsDouble(), 0, 1)
+          );
+        }
       });
   }
 

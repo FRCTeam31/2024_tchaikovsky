@@ -63,11 +63,9 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
 
     m_talonFX = new TalonFX(m_config.TalonFXCanID);
     m_talonFX.getConfigurator().apply(new TalonFXConfiguration());
-    m_talonFX.setInverted(m_config.TalonFXInverted);
-
+    m_talonFX.setInverted(true);
     m_victorSPX = new VictorSPX(m_config.VictorSPXCanID);
     m_victorSPX.configFactoryDefault();
-    m_victorSPX.setInverted(m_config.VictorSPXInverted);
 
     m_leftLinearActuator =
       new LinearActuator(
@@ -103,10 +101,46 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Gets the position of the right linear actuator
+   */
+  public double getRightActuatorPosition() {
+    return m_rightLinearActuator.getPosition();
+  }
+
+  /**
+   * Gets a boolean indicating whether a note is blocking the beam sensor
+   * @return
+   */
+  public boolean isNoteLoaded() {
+    return m_noteDetector.get();
+  }
+
+  /**
+   * Sets the elevation of the shooter
+   * @param percentRaised How far, in percentage, the shooter should be raised
+   */
+  public void setElevationActuators(double percentRaised) {
+    if (percentRaised > getRightActuatorPosition()) {
+      while (getRightActuatorPosition() < percentRaised) {
+        m_leftLinearActuator.runForward();
+        m_rightLinearActuator.runForward();
+      }
+    } else if (percentRaised < getRightActuatorPosition()) {
+      while (getRightActuatorPosition() > percentRaised) {
+        m_leftLinearActuator.runReverse();
+        m_rightLinearActuator.runReverse();
+      }
+    }
+
+    m_leftLinearActuator.stop();
+    m_rightLinearActuator.stop();
+  }
+
+  /**
    * Raises the shooter until it reaches the top
    */
   public void raiseElevationActuators() {
-    if (m_leftLinearActuator.getPosition() <= 0.9) {
+    if (m_leftLinearActuator.getPosition() <= 0.75) {
       m_leftLinearActuator.runForward();
       m_rightLinearActuator.runForward();
     }
@@ -138,7 +172,7 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
     d_victorSPXSpeed.setDouble(m_victorSPX.getMotorOutputPercent());
     d_leftLinearActuator.setDouble(m_leftLinearActuator.getPosition());
     d_rightLinearActuator.setDouble(m_rightLinearActuator.getPosition());
-    d_noteDetector.setBoolean(m_noteDetector.get());
+    d_noteDetector.setBoolean(isNoteLoaded());
   }
 
   //#region Shooter Commands
@@ -161,6 +195,22 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Shootes a note at half speed
+   * @return
+   */
+  public Command scoreInAmp() {
+    return this.run(() -> runShooter(0.5));
+  }
+
+  /**
+   * Shootes a note at full speed
+   * @return
+   */
+  public Command scoreInSpeaker() {
+    return this.run(() -> runShooter(1));
+  }
+
+  /**
    * Raises the elevation actuators
    * @return
    */
@@ -177,11 +227,51 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Sets the elevation of the shooter all the way up
+   * @return
+   */
+  public Command setElevationUpCommand() {
+    return this.runOnce(() -> setElevationActuators(1));
+  }
+
+  /**
+   * Sets the elevation of the shooter all the way down
+   * @return
+   */
+  public Command setElevationDownCommand() {
+    return this.runOnce(() -> setElevationActuators(0));
+  }
+
+  /**
    * Stops the elevation actuators
    * @return
    */
   public Command stopActuatorsCommand() {
     return this.runOnce(() -> stopElevationActuators());
+  }
+
+  /**
+   * Loads a note into the shooter for dropping into the amp
+   */
+  public Command loadNoteForAmp() {
+    return this.runOnce(() -> {
+        while (!isNoteLoaded()) {
+          runShooter(0.5);
+        }
+        stopMotors();
+      });
+  }
+
+  /**
+   * Unloads a note from the shooter for shooting into the Speaker
+   */
+  public Command unloadNoteForSpeaker() {
+    return this.runOnce(() -> {
+        while (!isNoteLoaded()) {
+          runShooter(0.5);
+        }
+        stopMotors();
+      });
   }
 
   //#endregion

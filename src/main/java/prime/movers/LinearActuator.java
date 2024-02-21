@@ -1,5 +1,6 @@
 package prime.movers;
 
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.VictorSPXControlMode;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import edu.wpi.first.wpilibj.AnalogInput;
@@ -12,7 +13,10 @@ public class LinearActuator {
 
   public LinearActuator(int victorCanID, int potentiometerAnalogChannel) {
     potentiometer = new AnalogInput(potentiometerAnalogChannel);
+
     m_linearActuatorVictorSPX = new VictorSPX(victorCanID);
+    m_linearActuatorVictorSPX.configFactoryDefault();
+    m_linearActuatorVictorSPX.setNeutralMode(NeutralMode.Brake);
   }
 
   public void runForward() {
