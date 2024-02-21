@@ -14,9 +14,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.ShooterConfig;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
+import prime.movers.IPlannable;
 import prime.movers.LinearActuator;
 
-public class Shooter extends SubsystemBase implements AutoCloseable {
+public class Shooter extends SubsystemBase implements IPlannable {
 
   private ShooterConfig m_config;
 
@@ -272,6 +273,12 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
         }
         stopMotors();
       });
+  }
+
+  public Map<String, Command> getNamedCommands() {
+    return Map.of(
+      // "Example_Command", exampleCommand(),
+    );
   }
 
   //#endregion

@@ -32,8 +32,9 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import frc.robot.config.RobotConfig;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
+import prime.movers.IPlannable;
 
-public class Drivetrain extends SubsystemBase implements AutoCloseable {
+public class Drivetrain extends SubsystemBase implements IPlannable {
 
   // Container for robot configuration
   private RobotConfig m_config;
@@ -478,6 +479,12 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
         setSnapToGyroControl(true);
         m_snapToRotationController.setSetpoint(angle);
       });
+  }
+
+  public Map<String, Command> getNamedCommands() {
+    return Map.of(
+      // "Example_Command", exampleCommand(),
+    );
   }
 
   //#endregion

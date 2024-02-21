@@ -13,9 +13,10 @@ import frc.robot.config.IntakeConfig;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
+import prime.movers.IPlannable;
 import prime.movers.LazyCANSparkMax;
 
-public class Intake extends SubsystemBase {
+public class Intake extends SubsystemBase implements IPlannable {
 
   private IntakeConfig m_config;
 
@@ -230,6 +231,12 @@ public class Intake extends SubsystemBase {
           setIntakeOutCommand();
         }
       });
+  }
+
+  public Map<String, Command> getNamedCommands() {
+    return Map.of(
+      // "Example_Command", exampleCommand(),
+    );
   }
 
   //#endregion

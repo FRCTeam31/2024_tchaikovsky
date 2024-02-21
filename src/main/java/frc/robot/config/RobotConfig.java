@@ -17,6 +17,7 @@ public class RobotConfig {
   public ShooterConfig Shooter;
   public ClimbersConfig Climbers;
   public Pose3d LimelightPose;
+  public LEDConfig LEDs;
 
   public RobotConfig() {
     Name = "[none]";
@@ -140,6 +141,8 @@ public class RobotConfig {
       new ClimbersConfig(18, 17, true, true, 0.2, -1, 2, 3, 0, 1, 180, 150);
 
     config.LimelightPose = new Pose3d(); // TODO: Find out what the pose (translation & rotation) of the camera lens is from the robot center -- ask Arseni to get it from the CAD model
+
+    config.LEDs = new LEDConfig(8, 9);
 
     return config;
   }

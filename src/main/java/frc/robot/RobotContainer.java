@@ -13,6 +13,7 @@ import frc.robot.config.RobotConfig;
 import frc.robot.subsystems.Climbers;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.LEDStrips;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Shooter;
 import prime.control.Controls;
@@ -28,6 +29,7 @@ public class RobotContainer {
   public Intake m_intake;
   public Climbers m_climbers;
   public Limelight m_limelight;
+  public LEDStrips m_leds;
 
   public RobotContainer(RobotConfig config) {
     reconfigure(config);
@@ -47,6 +49,7 @@ public class RobotContainer {
       if (m_shooter != null) m_shooter.close();
       if (m_intake != null) m_intake.close();
       if (m_climbers != null) m_climbers.close();
+      if (m_leds != null) m_leds.close();
 
       // Save new config
       m_config = config;
@@ -57,6 +60,7 @@ public class RobotContainer {
       m_intake = new Intake(m_config.Intake);
       m_climbers = new Climbers(m_config.Climbers);
       m_limelight = new Limelight(m_config.LimelightPose);
+      m_leds = new LEDStrips(m_config.LEDs);
 
       // Reconfigure bindings
       configureTeleopControls();

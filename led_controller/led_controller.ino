@@ -145,7 +145,7 @@ void setup() {
 
   // Setup I2C
   Wire.begin(8);  // Set the device address to 8
-//   Wire.begin(10);  // Set the device address to 10
+//   Wire.begin(9);  // Set the device address to 10
   Wire.onReceive(receiveData);
 
   // Set up LED strip
