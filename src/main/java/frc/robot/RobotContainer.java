@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -59,9 +60,14 @@ public class RobotContainer {
 
       // Reconfigure bindings
       configureTeleopControls();
+
+      // Register the named commands from each subsystem that may be used in PathPlanner
+      NamedCommands.registerCommands(m_drivetrain.getNamedCommands());
+      NamedCommands.registerCommands(m_shooter.getNamedCommands());
+      NamedCommands.registerCommands(m_intake.getNamedCommands());
     } catch (Exception e) {
       DriverStation.reportError(
-        "[ERROR] >> Failed to reconfigure robot: " + e.getMessage(),
+        "[ERROR] >> Failed to configure robot: " + e.getMessage(),
         e.getStackTrace()
       );
     }

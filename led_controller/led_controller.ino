@@ -1,13 +1,14 @@
 #include <Adafruit_NeoPixel.h>
+#include <Wire.h>
 
 // #define DEBUG_BLINK
 // #define DEBUG_PULSE
+// #define DEBUG_RACE
 
 enum LEDPattern {
   Solid,
   Blink,
-  RaceForward,
-  RaceBackward,
+  Race,
   Pulse,
 };
 
@@ -21,7 +22,7 @@ class LEDSection {
       return color;
     }
 
-    LEDSection(byte r, byte g, byte b, LEDPattern pattern, uint16_t speed, byte direction) {
+    LEDSection(byte r, byte g, byte b, LEDPattern pattern, uint16_t speed, bool direction) {
       color = packColor(r, g, b);
 
       this->pattern = pattern;
@@ -29,11 +30,9 @@ class LEDSection {
       this->direction = direction;
     }
 
-    LEDSection(byte r, byte g, byte b, LEDPattern pattern, uint16_t speed, byte direction, byte frame) {
+    LEDSection(byte r, byte g, byte b, LEDPattern pattern, uint16_t speed, bool direction, byte frame) {
       // pack color into a single 32-bit integer
-      color |= ((uint32_t)r << 16);
-      color |= ((uint32_t)g << 8);
-      color |= b;
+      color = packColor(r, g, b);
 
       this->pattern = pattern;
       this->speed = speed;
@@ -46,7 +45,7 @@ class LEDSection {
     uint32_t color = 0;
     LEDPattern pattern = Solid;
     uint16_t speed = 0;
-    byte direction = 0;
+    bool direction = 0;
 
     // Pattern state machine
     byte frame = 0;
@@ -83,79 +82,77 @@ class LEDSection {
 };
 
 #define PIN1 3 // D1
-#define PIN2 4 // D2
-#define NUMPIXELS 38
-#define SECTION_COUNT 2
-#define LEDS_PER_SECTION 19
+#define NUMPIXELS 78
+#define SECTION_COUNT 3
+#define LEDS_PER_SECTION 26
 
-Adafruit_NeoPixel strip1(NUMPIXELS, PIN1, NEO_GRB + NEO_KHZ800);
-Adafruit_NeoPixel strip2(NUMPIXELS, PIN2, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip(NUMPIXELS, PIN1, NEO_GRB + NEO_KHZ800);
 LEDSection sectionStateBuffer[SECTION_COUNT] = {
   // Section, R, G, B, Pattern, Speed, Direction
-  LEDSection(255, 0, 0, Pulse, 1000 / 25, 1),
+  LEDSection(255, 0, 0, Pulse, 1000 / 25, true),
   LEDSection(0, 255, 0, Blink, 1000, 0),
-  // LEDSection(0, 0, 255, Pulse, 1000 / 25, 0),
+  LEDSection(0, 0, 255, Pulse, 1000 / 25, false),
 };
 LEDSection sectionStates[SECTION_COUNT] = {
   // Section, R, G, B, Pattern, Speed, Direction
   LEDSection(),
   LEDSection(),
-  // LEDSection(),
+  LEDSection(),
 };
+
+void receiveData(int byteCount) {
+    Serial.println("Received " + String(byteCount) + " I2C bytes");
+
+    while (Wire.available() > 7) {
+      Serial.println("Received packet");
+      LEDSection packet;
+
+      byte sectionNum = Wire.read(); // Section (1 byte)
+
+      // Validate the section number
+      if (sectionNum < 0 || sectionNum >= SECTION_COUNT) {
+        Serial.println("Received packet for invalid section: " + sectionNum);
+
+        // Skip the rest of the packet
+        for (int i = 1; i < 7; i++) {
+          Wire.read();
+        }
+      }
+      
+      // Read the color (3 bytes)
+      byte r = Wire.read(); // R
+      byte g = Wire.read(); // G
+      byte b = Wire.read(); // B
+      packet.color = packet.packColor(r, g, b);
+
+      packet.pattern = (LEDPattern)Wire.read(); // Pattern (1 byte)
+      packet.speed = Wire.read() * 10; // Speed (1 bytes)
+      packet.direction = Wire.read() > 0; // Direction (1 byte)
+      
+      // Save the packet to the section buffer
+      sectionStateBuffer[sectionNum] = packet;
+    }
+
+    // Clear any extra data in the Wire buffer that isn't a full packet
+    while (Wire.available() > 0) {
+      Wire.read();
+    }
+}
 
 void setup() {
   // Set up serial comms
   Serial.begin(115200);
 
+  // Setup I2C
+  Wire.begin(8);  // Set the device address to 8
+//   Wire.begin(10);  // Set the device address to 10
+  Wire.onReceive(receiveData);
+
   // Set up LED strip
-  strip1.begin();
-  strip2.begin();
+  strip.begin();
 }
 
 void loop() {
-  // If we have serial data in the buffer, read 1 or more 8-byte packets, one packet per section.
-  if (Serial.available() > 7) {
-    while (Serial.available() > 7) {
-      Serial.println("Detected packet");
-      LEDSection packet;
-
-      byte sectionNum = Serial.read(); // Section (1 byte)
-
-      // Validate the section number
-      if (sectionNum < 0 || sectionNum >= SECTION_COUNT) {
-        Serial.println("Received packet for invalid section " + sectionNum);
-
-        // Skip the rest of the packet
-        for (int i = 1; i < 7; i++) {
-          Serial.read();
-        }
-      }
-      
-      // Read the color (3 bytes)
-      byte r = Serial.read(); // R
-      byte g = Serial.read(); // G
-      byte b = Serial.read(); // B
-      packet.color = packet.packColor(r, g, b);
-
-      // Pattern (1 byte)
-      packet.pattern = (LEDPattern)Serial.read(); 
-
-      // Speed (1 bytes)
-      byte speed = Serial.read();
-      packet.speed = map(speed, 0, 255, 0, 2550);
-
-      // Direction (1 byte)
-      packet.direction = Serial.read();
-      
-      sectionStateBuffer[sectionNum] = packet;
-    }
-
-    // Clear any extra data lying in the serial buffer
-    while (Serial.available() > 0) {
-      Serial.read();
-    }
-  }
-
   // Update each section of the LED strip
   for (int i = 0; i < SECTION_COUNT; i++) {
     updateSection(i);
@@ -164,40 +161,51 @@ void loop() {
 }
 
 void updateSection(int section) {
-  // If the new data is different from the current state, update the LED strip
+  // If the buffer data is different from the section state, set the new section pattern
   if (sectionStateBuffer[section] != sectionStates[section]) {
-    // Update the LED strip
-    switch (sectionStateBuffer[section].pattern) {
-      case Solid:
+    if (sectionStateBuffer[section].pattern == Solid) {
         setSolid(section, sectionStateBuffer[section].color);
-        break;
+        return;
+    }
+
+    // Write debug info for each pattern
+    switch (sectionStateBuffer[section].pattern) {
       case Blink:
-        setBlink(section, sectionStateBuffer[section]);
+        #ifdef DEBUG_BLINK
+            Serial.println("Starting Blink pattern for section " + String(section) + " at " + String(data.lastFrameTimestamp) + "ms");
+            Serial.println("Next update time: " + String(data.lastFrameTimestamp + data.speed) + "ms -- Current time: " + String(data.lastFrameTimestamp) + "ms");
+        #endif
         break;
-      case RaceForward:
-        // setRaceForward(section, sectionDataBuffer[section]);
-        break;
-      case RaceBackward:
-        // setRaceBackward(section, sectionDataBuffer[section]);
+      case Race:
+        #ifdef DEBUG_RACEFORWARD
+            Serial.println("Starting Race pattern for section " + String(section) + " at " + String(data.lastFrameTimestamp) + "ms");
+            Serial.println("Next update time: " + String(data.lastFrameTimestamp + data.speed) + "ms -- Current time: " + String(data.lastFrameTimestamp) + "ms");
+        #endif
         break;
       case Pulse:
-        setPulse(section, sectionStateBuffer[section]);
+        #ifdef DEBUG_PULSE
+            Serial.println("Starting Pulse pattern for section " + String(section) + " at " + String(data.lastFrameTimestamp) + "ms");
+            Serial.println("Next update time: " + String(data.lastFrameTimestamp + data.speed) + "ms -- Current time: " + String(data.lastFrameTimestamp) + "ms");
+        #endif
         break;
     }
 
-    // Update the current state in memory from the buffer
+    // Move the buffer to the current state
     sectionStates[section] = sectionStateBuffer[section];
+
+    // Set section to frame 0: LEDs off
+    // Save the timestamp
+    setSolid(section, 0);
+    sectionStates[section].frame = 0;
+    sectionStates[section].lastFrameTimestamp = millis();
   } else {
     // No change, update the section's pattern
     switch (sectionStates[section].pattern) {
       case Blink:
         updateBlink(section, sectionStateBuffer[section]);
         break;
-      case RaceForward:
-        // updateRaceForward(section, sectionDataBuffer[section]);
-        break;
-      case RaceBackward:
-        // updateRaceBackward(section, sectionDataBuffer[section]);
+      case Race:
+        updateRace(section, sectionStateBuffer[section]);
         break;
       case Pulse:
         updatePulse(section, sectionStateBuffer[section]);
@@ -210,42 +218,25 @@ void setSolid(int section, uint32_t color) {
   // Set the color of each pixel in the section
   int sectionIndex = section * LEDS_PER_SECTION;
   for (int i = 0; i < LEDS_PER_SECTION; i++) {
-    strip1.setPixelColor(sectionIndex + i, color);
-    strip2.setPixelColor(sectionIndex + i, color);
+    strip.setPixelColor(sectionIndex + i, color);
   }
 
   // Show the changes on the LED strip
-  strip1.show();
-  strip2.show();
+  strip.show();
 }
 
 void setSolid(int section, byte r, byte g, byte b) {
   // Set the color of each pixel in the section
   int sectionIndex = section * LEDS_PER_SECTION;
   for (int i = 0; i < LEDS_PER_SECTION; i++) {
-    strip1.setPixelColor(sectionIndex + i, r, g, b);
-    strip2.setPixelColor(sectionIndex + i, r, g, b);
+    strip.setPixelColor(sectionIndex + i, r, g, b);
   }
 
   // Show the changes on the LED strip
-  strip1.show();
-  strip2.show();
+  strip.show();
 }
 
-#pragma region Blink Pattern
-void setBlink(int section, LEDSection& data) {
-  // Set blink pattern
-  // Set section to frame 0: LEDs off
-  // Save the timestamp
-  setSolid(section, 0);
-  data.frame = 0;
-  data.lastFrameTimestamp = millis();
-  #ifdef DEBUG_BLINK
-    Serial.println("Starting blink pattern for section " + String(section) + " at " + String(data.lastFrameTimestamp) + "ms");
-    Serial.println("Next update time: " + String(data.lastFrameTimestamp + data.speed) + "ms -- Current time: " + String(data.lastFrameTimestamp) + "ms");
-  #endif
-}
-
+// Blink pattern
 void updateBlink(int section, LEDSection& data) {
   long currentTime = millis();
 
@@ -270,24 +261,10 @@ void updateBlink(int section, LEDSection& data) {
     data.lastFrameTimestamp = currentTime;
   }
 }
-#pragma endregion
 
-#pragma region Pulse Pattern
+// Pulse pattern
 const byte PULSE_FRAMES = 25;
 const byte MAX_BRIGHTNESS = 250;
-void setPulse(int section, LEDSection& data) {
-  // Set pulse pattern
-  // Set section to frame 0: LEDs off
-  // Save the timestamp
-  setSolid(section, 0);
-  data.frame = 0;
-  data.lastFrameTimestamp = millis();
-  #ifdef DEBUG_PULSE
-    Serial.println("Starting pulse pattern for section " + String(section) + " at " + String(data.lastFrameTimestamp) + "ms");
-    Serial.println("Next update time: " + String(data.lastFrameTimestamp + data.speed) + "ms -- Current time: " + String(data.lastFrameTimestamp) + "ms");
-  #endif
-}
-
 void updatePulse(int section, LEDSection& data) {
   long currentTime = millis();
 
@@ -304,7 +281,8 @@ void updatePulse(int section, LEDSection& data) {
     // Calculate brightness multiplier (0-25 frames, 0-1 brightness)
     float frameBrightness = (float)data.frame / (float)PULSE_FRAMES;
 
-    if (data.direction == 1) {
+    // If the direction is reversed, invert the brightness
+    if (!data.direction) {
       frameBrightness = 1 - frameBrightness;
     }
 
@@ -315,4 +293,49 @@ void updatePulse(int section, LEDSection& data) {
     data.lastFrameTimestamp = millis();
   }
 }
-#pragma endregion
+
+// Race pattern
+const int RACE_LED_COUNT = 4;
+const int RACE_FRAME_COUNT = LEDS_PER_SECTION + RACE_LED_COUNT;
+void updateRace(int section, LEDSection& data) {
+  long currentTime = millis();
+
+  // If the current time is > the last frame timestamp + speed, update the section
+  if (currentTime - data.lastFrameTimestamp >= data.speed) {
+    if (data.direction == 1) {
+        // Move the illuminated LEDs forward by 2 pixels per frame
+        data.frame += 2;
+
+        // If the frame exceeds the number of LEDs + RACE_LED_COUNT, reset to frame 0
+        if (data.frame >= RACE_FRAME_COUNT) {
+            data.frame = 0;
+        }
+    } else {
+        // Move the illuminated LEDs backward by 2 pixels per frame
+        data.frame -= 2;
+
+        // If the frame exceeds the number of LEDs + RACE_LED_COUNT, reset to frame 0
+        if (data.frame <= 0) {
+            data.frame = RACE_FRAME_COUNT;
+        }
+    }
+
+    // Move 4 LEDs forward by 2 pixels per frame using the color specified in the data
+    int sectionIndex = section * LEDS_PER_SECTION;
+    for (int i = 0; i < LEDS_PER_SECTION; i++) {
+        int illuminatedUpperLimit = data.frame;
+        int illuminatedLowerLimit = illuminatedUpperLimit - RACE_LED_COUNT;
+        
+        if (i <= illuminatedUpperLimit && i > illuminatedLowerLimit) {
+          strip.setPixelColor(sectionIndex + i, data.color);
+        } else {
+          strip.setPixelColor(sectionIndex + i, 0);
+        }
+    }
+
+    strip.show();
+
+    // Save the timestamp
+    data.lastFrameTimestamp = currentTime;
+  }
+}
