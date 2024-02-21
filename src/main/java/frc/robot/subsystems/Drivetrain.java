@@ -11,16 +11,24 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import frc.robot.config.RobotConfig;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
@@ -31,7 +39,10 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
   private RobotConfig m_config;
 
   // Shuffleboard configuration
-  private final StructArrayPublisher<SwerveModuleState> publisher;
+  private final StructArrayPublisher<SwerveModuleState> m_measuredSwerveStatesPublisher;
+  private final StructArrayPublisher<SwerveModuleState> m_desiredSwerveStatesPublisher;
+  private final DoublePublisher m_gyroPublisher;
+
   private ShuffleboardTab d_driveTab = Shuffleboard.getTab("Drivetrain");
   private GenericEntry d_snapToEnabledEntry = d_driveTab
     .add("SnapTo Enabled", false)
@@ -52,7 +63,9 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
   private boolean m_inHighGear = true;
 
   // Swerve Modules, in CCW order from FL to FR
-  SwerveModule m_frontLeftModule, m_rearLeftModule, m_rearRightModule, m_frontRightModule;
+  // SwerveModule m_frontLeftModule, m_rearLeftModule, m_rearRightModule, m_frontRightModule;
+  SwerveModule m_frontLeftModule, m_frontRightModule, m_rearLeftModule, m_rearRightModule;
+
   public SwerveModule[] m_swerveModules;
   public SwerveModulePosition[] m_swerveModulePositions = new SwerveModulePosition[4];
 
@@ -77,19 +90,27 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     m_gyro = new Pigeon2(config.Drivetrain.PigeonId);
 
     // Create swerve modules, kinematics, and odometry
-    publisher =
+    m_measuredSwerveStatesPublisher =
       NetworkTableInstance
         .getDefault()
         .getStructArrayTopic("/SwerveStates", SwerveModuleState.struct)
         .publish();
 
+    m_desiredSwerveStatesPublisher =
+      NetworkTableInstance
+        .getDefault()
+        .getStructArrayTopic("/DesiredSwerveStates", SwerveModuleState.struct)
+        .publish();
+
+    m_gyroPublisher =
+      NetworkTableInstance.getDefault().getDoubleTopic("/Gyro").publish();
+
     m_kinematics =
       new SwerveDriveKinematics(
-        // in CCW order from FL to FR
         m_config.FrontLeftSwerveModule.getModuleLocation(),
+        m_config.FrontRightSwerveModule.getModuleLocation(),
         m_config.RearLeftSwerveModule.getModuleLocation(),
-        m_config.RearRightSwerveModule.getModuleLocation(),
-        m_config.FrontRightSwerveModule.getModuleLocation()
+        m_config.RearRightSwerveModule.getModuleLocation()
       );
     createSwerveModulesAndOdometry();
     m_inHighGear = config.Drivetrain.StartInHighGear;
@@ -99,6 +120,7 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     d_driveTab.add("Field", m_field).withWidget(BuiltInWidgets.kField);
 
     // Configure snap-to PID
+
     m_snapToRotationController =
       new PIDController(
         m_config.Drivetrain.SnapToPID.kP,
@@ -106,6 +128,12 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
         m_config.Drivetrain.SnapToPID.kD,
         0.02
       );
+
+    // m_snapToRotationController.setTolerance(
+    //   Math.toRadians(30),
+    //   Math.toRadians(30)
+    // );
+
     m_snapToRotationController.enableContinuousInput(-Math.PI, Math.PI);
     m_snapToRotationController.setSetpoint(0);
     d_driveTab
@@ -166,9 +194,9 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     m_swerveModules =
       new SwerveModule[] {
         m_frontLeftModule,
+        m_frontLeftModule,
         m_rearLeftModule,
         m_rearRightModule,
-        m_frontLeftModule,
       };
   }
 
@@ -220,7 +248,7 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
 
     if (m_snapToGyroEnabled) {
       m_lastSnapToCalculatedPIDOutput =
-        m_snapToRotationController.calculate(
+        -m_snapToRotationController.calculate(
           MathUtil.angleModulus(m_gyro.getRotation2d().getRadians())
         );
       desiredChassisSpeeds.omegaRadiansPerSecond =
@@ -237,6 +265,9 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
    * @param desiredChassisSpeeds
    */
   public void drive(ChassisSpeeds desiredChassisSpeeds) {
+    // var xSpeed = desiredChassisSpeeds.vxMetersPerSecond;
+    // var ySpeed = desiredChassisSpeeds.vyMetersPerSecond;
+
     var swerveModuleStates = m_kinematics.toSwerveModuleStates(
       desiredChassisSpeeds
     );
@@ -245,17 +276,12 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
       m_config.Drivetrain.MaxSpeedMetersPerSecond
     );
 
-    if (DriverStation.isAutonomous()) {
-      m_frontLeftModule.setDesiredState(swerveModuleStates[0]);
-      m_rearLeftModule.setDesiredState(swerveModuleStates[1]);
-      m_rearRightModule.setDesiredState(swerveModuleStates[3]);
-      m_frontRightModule.setDesiredState(swerveModuleStates[2]);
-    } else {
-      m_frontLeftModule.setDesiredState(swerveModuleStates[0]);
-      m_rearLeftModule.setDesiredState(swerveModuleStates[1]);
-      m_rearRightModule.setDesiredState(swerveModuleStates[2]);
-      m_frontRightModule.setDesiredState(swerveModuleStates[3]);
-    }
+    m_desiredSwerveStatesPublisher.set(swerveModuleStates);
+
+    m_frontLeftModule.setDesiredState(swerveModuleStates[0]);
+    m_frontRightModule.setDesiredState(swerveModuleStates[1]);
+    m_rearLeftModule.setDesiredState(swerveModuleStates[2]);
+    m_rearRightModule.setDesiredState(swerveModuleStates[3]);
   }
 
   // Gets the current pose of the drivetrain from odometry
@@ -266,9 +292,9 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
   // Resets the position of odometry to the current position, minus 90
   public void resetOdometry(Pose2d pose) {
     m_swerveModulePositions[0] = m_frontLeftModule.getPosition();
-    m_swerveModulePositions[1] = m_rearLeftModule.getPosition();
-    m_swerveModulePositions[2] = m_rearRightModule.getPosition();
-    m_swerveModulePositions[3] = m_frontRightModule.getPosition();
+    m_swerveModulePositions[1] = m_frontRightModule.getPosition();
+    m_swerveModulePositions[2] = m_rearLeftModule.getPosition();
+    m_swerveModulePositions[3] = m_rearRightModule.getPosition();
 
     m_odometry.resetPosition(
       m_gyro.getRotation2d(),
@@ -295,55 +321,71 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
   // Stops all drivetrain motors
   public void stopMotors() {
     m_frontLeftModule.stopMotors();
+    m_frontRightModule.stopMotors();
     m_rearLeftModule.stopMotors();
     m_rearRightModule.stopMotors();
-    m_frontRightModule.stopMotors();
   }
 
   // Sets the modules all to a single heading
   public void setWheelAngles(Rotation2d angle) {
     m_frontLeftModule.setDesiredAngle(angle);
+    m_frontRightModule.setDesiredAngle(angle);
     m_rearLeftModule.setDesiredAngle(angle);
     m_rearRightModule.setDesiredAngle(angle);
-    m_frontRightModule.setDesiredAngle(angle);
   }
 
   /**
-   * Gets the module positions as an array ordered in standard CCW order
+   * Sets the drive voltage of all modules. Used for SysID routines
+   *
+   * @param voltage
+   */
+  public void setModuleDriveVoltages(Measure<Voltage> voltage) {
+    // Lock the wheels facing forward
+    setWheelAngles(Rotation2d.fromDegrees(0));
+
+    m_frontLeftModule.setDriveVoltage(voltage.magnitude());
+    m_frontRightModule.setDriveVoltage(voltage.magnitude());
+    m_rearLeftModule.setDriveVoltage(voltage.magnitude());
+    m_rearRightModule.setDriveVoltage(voltage.magnitude());
+  }
+
+  /**
+   * Gets the module positions as an array
    * @return
    */
   public SwerveModulePosition[] getModulePositions() {
     return new SwerveModulePosition[] {
       m_frontLeftModule.getPosition(),
+      m_frontRightModule.getPosition(),
       m_rearLeftModule.getPosition(),
       m_rearRightModule.getPosition(),
-      m_frontRightModule.getPosition(),
     };
   }
 
-  // Enables the Snap-To Controls
-  public void enableSnapToGyroControl() {
-    m_snapToGyroEnabled = true;
+  /**
+   * Enabled/disables snap-to gyro control
+   */
+  public void setSnapToGyroControl(boolean enabled) {
+    m_snapToGyroEnabled = enabled;
   }
 
-  // Disables the Snap-To Controls
-  public void disableSnapToGyroControl() {
-    m_snapToGyroEnabled = false;
-  }
-
-  // Toggles the Snap-To Controls
+  /**
+   * Toggles snap-to gyro control
+   */
   public void toggleSnapToGyroControl() {
     m_snapToGyroEnabled = !m_snapToGyroEnabled;
-    m_snapToRotationController.setSetpoint(0);
+    m_snapToRotationController.close();
   }
 
-  // Method for getting Swerve Module States
+  /**
+   * Gets the current chassis speeds of the robot
+   */
   public ChassisSpeeds getChassisSpeeds() {
     return m_kinematics.toChassisSpeeds(
       m_frontLeftModule.getModuleState(),
+      m_frontRightModule.getModuleState(),
       m_rearLeftModule.getModuleState(),
-      m_rearRightModule.getModuleState(),
-      m_frontRightModule.getModuleState()
+      m_rearRightModule.getModuleState()
     );
   }
 
@@ -353,13 +395,14 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     // Update odometry
     var gyroAngle = m_gyro.getRotation2d();
     d_gyroAngle.setDouble(gyroAngle.getDegrees());
+    m_gyroPublisher.set(gyroAngle.getRadians());
 
-    publisher.set(
+    m_measuredSwerveStatesPublisher.set(
       new SwerveModuleState[] {
         m_frontLeftModule.getModuleState(),
+        m_frontRightModule.getModuleState(),
         m_rearLeftModule.getModuleState(),
         m_rearRightModule.getModuleState(),
-        m_frontRightModule.getModuleState(),
       }
     );
     var robotPose = m_odometry.update(gyroAngle, getModulePositions());
@@ -382,11 +425,13 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
   ) {
     return this.run(() -> {
         var strafeX =
-          xSupplier.getAsDouble() * m_config.Drivetrain.MaxSpeedMetersPerSecond;
+          -xSupplier.getAsDouble() *
+          m_config.Drivetrain.MaxSpeedMetersPerSecond;
         var forwardY =
-          ySupplier.getAsDouble() * m_config.Drivetrain.MaxSpeedMetersPerSecond;
+          -ySupplier.getAsDouble() *
+          m_config.Drivetrain.MaxSpeedMetersPerSecond;
         var rotation =
-          rotationSupplier.getAsDouble() *
+          -rotationSupplier.getAsDouble() *
           m_config.Drivetrain.MaxAngularSpeedRadians;
 
         driveFromCartesianSpeeds(-strafeX, forwardY, rotation, fieldRelative);
@@ -413,9 +458,11 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     return this.runOnce(() -> setWheelAngles(angle));
   }
 
-  // Command for enabling Snap-To controls
-  public Command enableSnapToGyroControlCommand() {
-    return this.runOnce(() -> enableSnapToGyroControl());
+  /**
+   * Creates a command that enables snap to gyro control
+   */
+  public Command setSnapToGyroControlCommand(boolean enabled) {
+    return this.runOnce(() -> setSnapToGyroControl(enabled));
   }
 
   // Command for toggling Snap-To controls
@@ -428,9 +475,110 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
   // Command for driving with Snap-To controls enabled
   public Command driveWithSnapToAngleCommand(double angle) {
     return this.runOnce(() -> {
-        enableSnapToGyroControl();
+        setSnapToGyroControl(true);
         m_snapToRotationController.setSetpoint(angle);
       });
+  }
+
+  //#endregion
+
+  //#region SysID Routines
+
+  /**
+   * Factory method for creating a quasistatic SysID routine for the drivetrain
+   * @param direction
+   */
+  public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return generateSysIdRoutine().quasistatic(direction);
+  }
+
+  /**
+   * Factory method for creating a dynamic SysID routine for the drivetrain
+   * @param direction
+   */
+  public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+    return generateSysIdRoutine().dynamic(direction);
+  }
+
+  /**
+   * Generates a SysID routine for the drivetrain
+   * @return
+   */
+  public SysIdRoutine generateSysIdRoutine() {
+    var config = new SysIdRoutine.Config(
+      Units.Volts.per(Units.Second).of(1),
+      Units.Volts.of(5),
+      Units.Seconds.of(15),
+      state -> {
+        SmartDashboard.putString(
+          "Drive/SysID Current Routine",
+          state.toString()
+        );
+      }
+    );
+
+    var mechanism = new Mechanism(
+      this::setModuleDriveVoltages,
+      this::logMotors,
+      this,
+      getName()
+    );
+
+    return new SysIdRoutine(config, mechanism);
+  }
+
+  /**
+   * Logs the voltage, distance, and velocity of each swerve module to SysID
+   * @param log
+   */
+  private void logMotors(SysIdRoutineLog log) {
+    log
+      .motor(m_frontLeftModule.getName())
+      .voltage(Units.Volts.of(m_frontLeftModule.getDriveVoltage()))
+      .linearPosition(
+        Units.Meters.of(m_frontLeftModule.getPosition().distanceMeters)
+      )
+      .linearVelocity(
+        Units.MetersPerSecond.of(
+          m_frontLeftModule.getModuleState().speedMetersPerSecond
+        )
+      );
+
+    log
+      .motor(m_frontRightModule.getName())
+      .voltage(Units.Volts.of(m_frontRightModule.getDriveVoltage()))
+      .linearPosition(
+        Units.Meters.of(m_frontRightModule.getPosition().distanceMeters)
+      )
+      .linearVelocity(
+        Units.MetersPerSecond.of(
+          m_frontRightModule.getModuleState().speedMetersPerSecond
+        )
+      );
+
+    log
+      .motor(m_rearLeftModule.getName())
+      .voltage(Units.Volts.of(m_rearLeftModule.getDriveVoltage()))
+      .linearPosition(
+        Units.Meters.of(m_rearLeftModule.getPosition().distanceMeters)
+      )
+      .linearVelocity(
+        Units.MetersPerSecond.of(
+          m_rearLeftModule.getModuleState().speedMetersPerSecond
+        )
+      );
+
+    log
+      .motor(m_rearRightModule.getName())
+      .voltage(Units.Volts.of(m_rearRightModule.getDriveVoltage()))
+      .linearPosition(
+        Units.Meters.of(m_rearRightModule.getPosition().distanceMeters)
+      )
+      .linearVelocity(
+        Units.MetersPerSecond.of(
+          m_rearRightModule.getModuleState().speedMetersPerSecond
+        )
+      );
   }
 
   //#endregion
@@ -442,9 +590,9 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     // close all physical resources
     m_gyro.close();
     m_frontLeftModule.close();
+    m_frontRightModule.close();
     m_rearLeftModule.close();
     m_rearRightModule.close();
-    m_frontRightModule.close();
     m_snapToRotationController.close();
 
     // release memory resources

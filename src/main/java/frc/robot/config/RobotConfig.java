@@ -43,11 +43,12 @@ public class RobotConfig {
         Math.PI * 2, // Max Angular Speed in Radians
         0.5,
         false,
-        new PrimePIDConstants(0.019, 0, 0, 0, 0.122), // Drive PID
+        new PrimePIDConstants(0.019, 0, 0, 0, 0.138, 0, 0.05), // Drive PID
         new PrimePIDConstants(2, 0, 0), // Steering PID
-        new PrimePIDConstants(0, 0, 0), // SnapTo PID,
-        new PrimePIDConstants(0.001, 0, 0), // Pathing Translation PID
-        new PrimePIDConstants(1, 0, 0), // Pathing Rotation PID
+        new PrimePIDConstants(4, 0, 0), // SnapTo PID,
+        new PrimePIDConstants(4, 0, 0), // Pathing Translation PID
+        // new PrimePIDConstants(0.0425, 0, 0.004)
+        new PrimePIDConstants(2.5, 0, 0), // Pathing Rotation PID$
         0.15,
         0.5
       );
@@ -58,15 +59,15 @@ public class RobotConfig {
         2,
         3,
         4,
-        0.164551,
-        true,
+        0.164551 - 0.25,
+        false,
         true,
         new Translation2d(
-          -config.Drivetrain.TrackWidthMeters / 2,
+          -(config.Drivetrain.TrackWidthMeters / 2),
           config.Drivetrain.WheelBaseMeters / 2
         ),
         6.75,
-        0.102
+        0.1
       );
 
     config.FrontRightSwerveModule =
@@ -75,15 +76,15 @@ public class RobotConfig {
         5,
         6,
         7,
-        0.350098,
-        false,
+        0.350098 - 0.25,
+        true,
         true,
         new Translation2d(
           config.Drivetrain.TrackWidthMeters / 2,
           config.Drivetrain.WheelBaseMeters / 2
         ),
         6.75,
-        0.102
+        0.1
       );
 
     config.RearRightSwerveModule =
@@ -92,15 +93,15 @@ public class RobotConfig {
         8,
         9,
         10,
-        0.717773,
-        false,
+        0.717773 - 0.25,
+        true,
         true,
         new Translation2d(
           config.Drivetrain.TrackWidthMeters / 2,
-          -config.Drivetrain.WheelBaseMeters / 2
+          -(config.Drivetrain.WheelBaseMeters / 2)
         ),
         6.75,
-        0.102
+        0.1
       );
 
     config.RearLeftSwerveModule =
@@ -109,15 +110,15 @@ public class RobotConfig {
         11,
         12,
         13,
-        0.181152,
-        true,
+        0.181152 - 0.25,
+        false,
         true,
         new Translation2d(
-          -config.Drivetrain.TrackWidthMeters / 2,
-          -config.Drivetrain.WheelBaseMeters / 2
+          -(config.Drivetrain.TrackWidthMeters / 2),
+          -(config.Drivetrain.WheelBaseMeters / 2)
         ),
         6.75,
-        0.102
+        0.1
       );
 
     config.Intake =

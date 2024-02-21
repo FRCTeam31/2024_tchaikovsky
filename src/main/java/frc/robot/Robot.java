@@ -4,6 +4,11 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -12,20 +17,24 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.config.RobotConfig;
 import prime.config.PrimeConfigurator;
 
 public class Robot extends TimedRobot {
 
   public ShuffleboardTab d_robotTab = Shuffleboard.getTab("Robot");
+  public boolean autoEnabled = false;
 
   private final String m_defaultConfigName = "swerve_test_bot.json";
-  private String m_selectedConfigName = m_defaultConfigName;
-  private RobotContainer m_robotContainer;
-
   private SendableChooser<String> m_configChooser;
+  private String m_selectedConfigName = m_defaultConfigName;
+
+  private final String m_defaultAutoName = "test curve auto";
   public static SendableChooser<Command> m_autoChooser;
   private Command m_autonomousCommand;
+
+  private RobotContainer m_robotContainer;
 
   @Override
   public void robotInit() {
@@ -36,10 +45,20 @@ public class Robot extends TimedRobot {
 
     // Set up configuration selection
     m_configChooser = PrimeConfigurator.buildConfigChooser(m_defaultConfigName);
-    d_robotTab.add(m_configChooser).withWidget(BuiltInWidgets.kComboBoxChooser);
+    d_robotTab
+      .add(m_configChooser)
+      .withWidget(BuiltInWidgets.kComboBoxChooser)
+      .withSize(2, 1)
+      .withPosition(0, 0);
+
     // Build an auto chooser. This will use Commands.none() as the default option.
-    // m_autoChooser = AutoBuilder.buildAutoChooser("1m Auto");
-    // d_robotTab.add(m_autoChooser).withWidget(BuiltInWidgets.kComboBoxChooser);
+    m_autoChooser = AutoBuilder.buildAutoChooser(m_defaultAutoName);
+
+    d_robotTab
+      .add(m_autoChooser)
+      .withWidget(BuiltInWidgets.kComboBoxChooser)
+      .withSize(2, 1)
+      .withPosition(0, 1);
   }
 
   /**
@@ -63,26 +82,29 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    // ENABLE THIS CODE TO USE THE AUTO CHOOSER
-    //    // m_autonomousCommand = m_autoChooser.getSelected();
-    // m_robotContainer.m_drivetrain.resetGyro();
-    // m_robotContainer.m_drivetrain.resetOdometry(
-    //   new Pose2d(1, 5, Rotation2d.fromDegrees(0))
-    // );
-    // m_autonomousCommand = new PathPlannerAuto("1m Auto reversed");
-    // // // Exit without scheduling an auto command if none is selected
-    // // if (m_autonomousCommand == null || m_autonomousCommand == Commands.none()) {
-    // //   DriverStation.reportError("[ERROR] >> No auto command selected", false);
-    // //   return;
-    // // }
+    autoEnabled = true;
 
-    // // // Reset the gyro and the starting Pose of the drive.
-    // // m_robotContainer.m_drivetrain.resetGyro();
-    // // m_robotContainer.m_drivetrain.m_field.setRobotPose(
-    // //   new Pose2d(0, 0, new Rotation2d(0))
-    // // );
+    Pose2d startingPose;
+    if (m_autoChooser != null) {
+      m_autonomousCommand = m_autoChooser.getSelected();
+      startingPose =
+        PathPlannerAuto.getStaringPoseFromAutoFile(
+          m_autonomousCommand.getName()
+        );
+    } else {
+      m_autonomousCommand = new PathPlannerAuto(m_defaultAutoName);
+      startingPose = new Pose2d(1.4, 5.5, Rotation2d.fromDegrees(270));
+    }
 
-    // m_autonomousCommand.schedule();
+    // Exit without scheduling an auto command if none is selected
+    if (m_autonomousCommand == null || m_autonomousCommand == Commands.none()) {
+      DriverStation.reportError("[ERROR] >> No auto command selected", false);
+      return;
+    }
+
+    m_robotContainer.m_drivetrain.resetGyro();
+    m_robotContainer.m_drivetrain.resetOdometry(startingPose);
+    m_autonomousCommand.schedule();
   }
 
   /**
@@ -94,6 +116,10 @@ public class Robot extends TimedRobot {
       m_autonomousCommand.cancel();
     }
 
+    m_robotContainer.m_drivetrain.resetGyro();
+    m_robotContainer.m_drivetrain.resetOdometry(
+      new Pose2d(0, 0, Rotation2d.fromDegrees(0))
+    );
     m_robotContainer.configureTeleopControls();
   }
 
@@ -103,7 +129,16 @@ public class Robot extends TimedRobot {
   @Override
   public void testInit() {
     CommandScheduler.getInstance().cancelAll();
-    // Configure test controls
+
+    m_robotContainer.m_drivetrain.resetGyro();
+    m_robotContainer.m_drivetrain.resetOdometry(
+      new Pose2d(0, 0, Rotation2d.fromDegrees(0))
+    );
+    m_robotContainer.configureTestControls();
+
+    // Start the data logger
+    DataLogManager.start();
+    DriverStation.startDataLog(DataLogManager.getLog());
   }
 
   /**

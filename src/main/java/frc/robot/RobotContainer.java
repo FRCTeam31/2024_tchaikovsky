@@ -6,6 +6,8 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.config.RobotConfig;
 import frc.robot.subsystems.Climbers;
 import frc.robot.subsystems.Drivetrain;
@@ -40,7 +42,7 @@ public class RobotContainer {
       CommandScheduler.getInstance().cancelAll();
 
       // Close subsystems before reconfiguring
-      // if (m_drivetrain != null) m_drivetrain.close();
+      if (m_drivetrain != null) m_drivetrain.close();
       if (m_shooter != null) m_shooter.close();
       if (m_intake != null) m_intake.close();
       if (m_climbers != null) m_climbers.close();
@@ -49,13 +51,14 @@ public class RobotContainer {
       m_config = config;
 
       // Create new subsystems
-      // m_drivetrain = new Drivetrain(m_config);
+      m_drivetrain = new Drivetrain(m_config);
       m_shooter = new Shooter(m_config.Shooter);
       m_intake = new Intake(m_config.Intake);
       m_climbers = new Climbers(m_config.Climbers);
-      // m_limelight = new Limelight(m_config.LimelightPose);
+      m_limelight = new Limelight(m_config.LimelightPose);
 
       // Reconfigure bindings
+      configureTeleopControls();
     } catch (Exception e) {
       DriverStation.reportError(
         "[ERROR] >> Failed to reconfigure robot: " + e.getMessage(),
@@ -71,40 +74,40 @@ public class RobotContainer {
     m_driverController = new PrimeXboxController(Controls.DRIVER_PORT);
     m_operatorController = new PrimeXboxController(Controls.OPERATOR_PORT);
 
-    // m_drivetrain.setDefaultCommand(
-    //   m_drivetrain.defaultDriveCommand(
-    //     m_driverController.getLeftStickYSupplier(
-    //       m_config.Drivetrain.DriveDeadband,
-    //       m_config.Drivetrain.DeadbandCurveWeight
-    //     ),
-    //     m_driverController.getLeftStickXSupplier(
-    //       m_config.Drivetrain.DriveDeadband,
-    //       m_config.Drivetrain.DeadbandCurveWeight
-    //     ),
-    //     m_driverController.getTriggerSupplier(),
-    //     true
-    //   )
-    // );
+    m_drivetrain.setDefaultCommand(
+      m_drivetrain.defaultDriveCommand(
+        m_driverController.getLeftStickYSupplier(
+          m_config.Drivetrain.DriveDeadband,
+          m_config.Drivetrain.DeadbandCurveWeight
+        ),
+        m_driverController.getLeftStickXSupplier(
+          m_config.Drivetrain.DriveDeadband,
+          m_config.Drivetrain.DeadbandCurveWeight
+        ),
+        m_driverController.getTriggerSupplier(),
+        true
+      )
+    );
 
-    // m_driverController
-    //   .pov(Controls.up)
-    //   .onTrue(m_drivetrain.driveWithSnapToAngleCommand(Math.toRadians(0)));
-    // m_driverController
-    //   .pov(Controls.left)
-    //   .onTrue(m_drivetrain.driveWithSnapToAngleCommand(Math.toRadians(90)));
-    // m_driverController
-    //   .pov(Controls.down)
-    //   .onTrue(m_drivetrain.driveWithSnapToAngleCommand(Math.toRadians(180)));
-    // m_driverController
-    //   .pov(Controls.right)
-    //   .onTrue(m_drivetrain.driveWithSnapToAngleCommand(Math.toRadians(270)));
+    m_driverController
+      .pov(Controls.up)
+      .onTrue(m_drivetrain.driveWithSnapToAngleCommand(Math.toRadians(0)));
+    m_driverController
+      .pov(Controls.left)
+      .onTrue(m_drivetrain.driveWithSnapToAngleCommand(Math.toRadians(90)));
+    m_driverController
+      .pov(Controls.down)
+      .onTrue(m_drivetrain.driveWithSnapToAngleCommand(Math.toRadians(180)));
+    m_driverController
+      .pov(Controls.right)
+      .onTrue(m_drivetrain.driveWithSnapToAngleCommand(Math.toRadians(270)));
 
-    // m_driverController
-    //   .button(Controls.A)
-    //   .onTrue(m_drivetrain.resetGyroCommand());
-    // m_driverController
-    //   .button(Controls.B)
-    //   .onTrue(m_drivetrain.toggleShifterCommand());ta
+    m_driverController
+      .button(Controls.A)
+      .onTrue(m_drivetrain.resetGyroCommand());
+    m_driverController
+      .button(Controls.B)
+      .onTrue(m_drivetrain.toggleShifterCommand());
 
     // Climbers
     m_driverController.y().onTrue(m_climbers.toggleClimbControlsCommand());
@@ -182,5 +185,32 @@ public class RobotContainer {
       .rightTrigger(0.1)
       .whileTrue(m_intake.ejectNoteCommand())
       .onFalse(m_intake.stopRollersCommand());
+  }
+
+  /**
+   * Configures the controllers and binds test & SysID commands to buttons
+   */
+  public void configureTestControls() {
+    m_driverController = new PrimeXboxController(Controls.DRIVER_PORT);
+
+    m_driverController
+      .start()
+      .whileTrue(m_drivetrain.sysIdQuasistatic(Direction.kForward))
+      .onFalse(Commands.runOnce(() -> m_drivetrain.stopMotors(), m_drivetrain));
+
+    m_driverController
+      .back()
+      .whileTrue(m_drivetrain.sysIdQuasistatic(Direction.kReverse))
+      .onFalse(Commands.runOnce(() -> m_drivetrain.stopMotors(), m_drivetrain));
+
+    m_driverController
+      .rightBumper()
+      .whileTrue(m_drivetrain.sysIdDynamic(Direction.kForward))
+      .onFalse(Commands.runOnce(() -> m_drivetrain.stopMotors(), m_drivetrain));
+
+    m_driverController
+      .leftBumper()
+      .whileTrue(m_drivetrain.sysIdDynamic(Direction.kReverse))
+      .onFalse(Commands.runOnce(() -> m_drivetrain.stopMotors(), m_drivetrain));
   }
 }

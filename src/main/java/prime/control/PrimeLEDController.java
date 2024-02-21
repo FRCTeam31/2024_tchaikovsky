@@ -1,16 +1,20 @@
-package prime.can;
+package prime.control;
 
-import edu.wpi.first.wpilibj.CAN;
+import edu.wpi.first.wpilibj.SerialPort;
 
-public class PrimeCANLEDController extends CAN {
+public class PrimeLEDController {
 
-  private enum APIIDs {
-    ACK,
-    SetState,
-    SetBrightness,
-    SetColor,
-    SetSpeed,
-    SetPattern,
+  public class Color {
+
+    public byte r;
+    public byte g;
+    public byte b;
+
+    public Color(byte r, byte g, byte b) {
+      this.r = r;
+      this.g = g;
+      this.b = b;
+    }
   }
 
   public enum LEDPattern {
@@ -21,10 +25,12 @@ public class PrimeCANLEDController extends CAN {
     Pulse,
   }
 
-  private byte[][] m_lastPackets = new byte[4][];
+  private SerialPort m_serialPort;
+  private byte[][] m_lastPackets;
 
-  public PrimeCANLEDController(int deviceId) {
-    super(deviceId);
+  public PrimeLEDController(int sectionCount) {
+    m_serialPort = new SerialPort(115200, SerialPort.Port.kUSB);
+    m_lastPackets = new byte[sectionCount][];
   }
 
   /**
@@ -44,21 +50,31 @@ public class PrimeCANLEDController extends CAN {
     byte b,
     byte brightness,
     byte pattern,
-    byte speed
+    byte speed,
+    byte direction
   ) {
     if (stripNum < 0 || stripNum > 3) {
       System.out.println("Invalid strip number");
       return;
     }
 
-    var packet = new byte[] { stripNum, r, g, b, brightness, pattern, speed };
+    var packet = new byte[] {
+      stripNum,
+      r,
+      g,
+      b,
+      brightness,
+      pattern,
+      speed,
+      direction,
+    };
 
     // Write the data packet to the controller
-    writePacket(packet, APIIDs.SetState.ordinal());
+    m_serialPort.write(packet, packet.length);
 
     // Verify that the controller acknowledged the packet
-    if (!readPacketTimeout(APIIDs.ACK.ordinal(), 20, null)) {
-      System.out.println("LED Controller did not respond to SetState");
+    if (m_serialPort.readString(3) != "ACK") {
+      System.out.println("LED Controller did not acknowledge SetState command");
     } else {
       // Save the last packet sent for this strip
       m_lastPackets[stripNum] = packet;
@@ -80,7 +96,8 @@ public class PrimeCANLEDController extends CAN {
       b,
       m_lastPackets[strip][4],
       m_lastPackets[strip][5],
-      m_lastPackets[strip][6]
+      m_lastPackets[strip][6],
+      m_lastPackets[strip][7]
     );
   }
 
@@ -106,7 +123,8 @@ public class PrimeCANLEDController extends CAN {
       m_lastPackets[strip][3],
       brightness,
       m_lastPackets[strip][5],
-      m_lastPackets[strip][6]
+      m_lastPackets[strip][6],
+      m_lastPackets[strip][7]
     );
   }
 
@@ -123,7 +141,8 @@ public class PrimeCANLEDController extends CAN {
       m_lastPackets[strip][3],
       m_lastPackets[strip][4],
       (byte) pattern.ordinal(),
-      m_lastPackets[strip][6]
+      m_lastPackets[strip][6],
+      m_lastPackets[strip][7]
     );
   }
 
@@ -140,7 +159,8 @@ public class PrimeCANLEDController extends CAN {
       m_lastPackets[strip][3],
       m_lastPackets[strip][4],
       m_lastPackets[strip][5],
-      speed
+      speed,
+      m_lastPackets[strip][7]
     );
   }
 }
