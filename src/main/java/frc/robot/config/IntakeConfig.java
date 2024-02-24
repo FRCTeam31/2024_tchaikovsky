@@ -13,8 +13,7 @@ public class IntakeConfig {
   public boolean NeoRightInverted;
 
   public PrimePIDConstants IntakeAnglePid;
-  public double PositionMinimum;
-  public double PositionMaximum;
+  public double PositionDelta;
 
   public IntakeConfig(
     int rollersCanId,
@@ -24,8 +23,7 @@ public class IntakeConfig {
     boolean neoLeftInverted,
     boolean neoRightInverted,
     PrimePIDConstants intakeAnglePid,
-    double positionMinimum,
-    double positionMaximum
+    double positionDelta
   ) {
     RollersCanId = rollersCanId;
     NeoLeftCanId = neoLeftCanId;
@@ -34,7 +32,6 @@ public class IntakeConfig {
     NeoLeftInverted = neoLeftInverted;
     NeoRightInverted = neoRightInverted;
     IntakeAnglePid = intakeAnglePid;
-    PositionMinimum = positionMinimum;
-    PositionMaximum = positionMaximum;
+    PositionDelta = positionDelta;
   }
 }

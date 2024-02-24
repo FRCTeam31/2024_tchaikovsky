@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -23,7 +24,12 @@ public class Intake extends SubsystemBase implements IPlannable {
   private LazyCANSparkMax m_angleLeft;
   private LazyCANSparkMax m_angleRight;
   private PIDController m_anglePid;
-  private double m_angleSetpoint;
+  private double m_angleStartPoint;
+  private boolean m_angleToggledIn;
+  private Debouncer m_angleToggleDebouncer = new Debouncer(
+    0.1,
+    Debouncer.DebounceType.kBoth
+  );
 
   // #region ShuffleBoard
   private ShuffleboardTab d_intakeTab = Shuffleboard.getTab("Intake");
@@ -42,6 +48,11 @@ public class Intake extends SubsystemBase implements IPlannable {
     .add("PID output", 0)
     .withWidget(BuiltInWidgets.kNumberBar)
     .withProperties(Map.of("Max", 2, "Min", -2))
+    .getEntry();
+
+  private GenericEntry d_intakeSetpoint = d_intakeTab
+    .add("Angle Toggled In", true)
+    .withWidget(BuiltInWidgets.kBooleanBox)
     .getEntry();
 
   // #endregion
@@ -75,10 +86,11 @@ public class Intake extends SubsystemBase implements IPlannable {
         m_config.IntakeAnglePid.kD,
         0.02
       );
-    m_angleSetpoint = m_config.PositionMaximum;
-    m_anglePid.setSetpoint(m_angleSetpoint);
+    m_angleStartPoint = getPositionRight();
+    m_angleToggledIn = true;
+    m_anglePid.setSetpoint(m_angleStartPoint);
     d_intakeTab
-      .add("Steering PID", m_anglePid)
+      .add("Angle PID", m_anglePid)
       .withWidget(BuiltInWidgets.kPIDController);
   }
 
@@ -121,16 +133,23 @@ public class Intake extends SubsystemBase implements IPlannable {
    * Sets the Intake Angle to a given position in rotations of the motor shaft
    * @param positionSetpoint
    */
-  public void setIntakeRotation(double positionSetpoint) {
+  public void setIntakeRotation() {
     var currentPosition = getPositionRight();
-    var pidOutput = m_anglePid.calculate(currentPosition, positionSetpoint);
-    // pidOutput = Controls.linearScaledDeadband(pidOutput, 0.01);
+
+    var setpoint = m_angleToggledIn
+      ? m_angleStartPoint
+      : (m_angleStartPoint - m_config.PositionDelta);
+
+    var pidOutput = m_anglePid.calculate(currentPosition, setpoint);
 
     d_pidOutputEntry.setDouble(pidOutput);
-
-    if (currentPosition < m_config.PositionMaximum && pidOutput > 0) {
+    // artificial limits
+    if (currentPosition < m_angleStartPoint && pidOutput > 0) {
       setAngleMotorSpeed(MathUtil.clamp(pidOutput, 0, 0.5));
-    } else if (currentPosition > m_config.PositionMinimum && pidOutput < 0) {
+    } else if (
+      currentPosition > (m_angleStartPoint - m_config.PositionDelta) &&
+      pidOutput < 0
+    ) {
       setAngleMotorSpeed(MathUtil.clamp(pidOutput, -0.5, 0));
     } else {
       setAngleMotorSpeed(0);
@@ -143,6 +162,7 @@ public class Intake extends SubsystemBase implements IPlannable {
   public void periodic() {
     d_positionLeftEntry.setDouble(getPositionLeft());
     d_positionRightEntry.setDouble(getPositionRight());
+    d_intakeSetpoint.setBoolean(m_angleToggledIn);
   }
 
   //#region Commands
@@ -151,7 +171,7 @@ public class Intake extends SubsystemBase implements IPlannable {
    * Command for running the Intake to Intake a Note
    */
   public Command setRollersSpeedCommand(DoubleSupplier speed) {
-    return this.run(() -> runIntakeRollers(speed.getAsDouble()));
+    return this.run(() -> runIntakeRollers(speed.getAsDouble() / 2));
   }
 
   /**
@@ -163,14 +183,14 @@ public class Intake extends SubsystemBase implements IPlannable {
 
   // Seeks an Angle Setpoint
   public Command seekAngleSetpointCommand() {
-    return this.run(() -> setIntakeRotation(m_angleSetpoint));
+    return this.run(() -> setIntakeRotation());
   }
 
   /**
    * Command for setting the intake angle into loading position
    */
   public Command setIntakeInCommand() {
-    return this.runOnce(() -> m_angleSetpoint = m_config.PositionMaximum);
+    return this.runOnce(() -> m_angleToggledIn = true);
   }
 
   /**
@@ -178,12 +198,9 @@ public class Intake extends SubsystemBase implements IPlannable {
    * @return
    */
   public Command toggleIntakeInAndOutCommand() {
-    return this.runOnce(() -> {
-        m_angleSetpoint =
-          getPositionRight() > (m_config.PositionMaximum / 2)
-            ? m_config.PositionMinimum
-            : m_config.PositionMaximum;
-      });
+    return this.runOnce(() ->
+        m_angleToggledIn = !m_angleToggleDebouncer.calculate(m_angleToggledIn)
+      );
   }
 
   public Command waitForIntakeToReachAngleSetpointCommand() {
@@ -221,8 +238,6 @@ public class Intake extends SubsystemBase implements IPlannable {
       seekAngleSetpointCommand(),
       "Set_Intake_In",
       setIntakeInCommand(),
-      "Toggle_Intake_In_And_Out",
-      toggleIntakeInAndOutCommand(),
       "Wait_For_Intake_To_Reach_Setpoint",
       waitForIntakeToReachAngleSetpointCommand(),
       "Stop_All_Intake_Motors",
