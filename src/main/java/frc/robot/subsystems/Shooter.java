@@ -26,6 +26,8 @@ public class Shooter extends SubsystemBase implements IPlannable {
   private LinearActuator m_rightLinearActuator;
   private DigitalInput m_noteDetector;
 
+  private boolean m_shooterIsUp;
+
   // #region Shuffleboard
   // Shuffleboard configuration
   private ShuffleboardTab d_shooterTab = Shuffleboard.getTab("Shooter");
@@ -50,7 +52,11 @@ public class Shooter extends SubsystemBase implements IPlannable {
     .withProperties(Map.of("Min", 0, "Max", 1))
     .getEntry();
   private GenericEntry d_noteDetector = d_shooterTab
-    .add("Note Detected", 0)
+    .add("Note Detected", false)
+    .withWidget(BuiltInWidgets.kBooleanBox)
+    .getEntry();
+  private GenericEntry d_shooterIsUp = d_shooterTab
+    .add("Shooter is up", false)
     .withWidget(BuiltInWidgets.kBooleanBox)
     .getEntry();
 
@@ -82,6 +88,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
       );
 
     m_noteDetector = new DigitalInput(m_config.NoteDetectorDIOChannel);
+    m_shooterIsUp = false;
   }
 
   //#region Control Methods
@@ -122,27 +129,24 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * Sets the elevation of the shooter
    * @param percentRaised How far, in percentage, the shooter should be raised
    */
-  public void setElevationActuators(double percentRaised) {
-    double rightActuatorPosition = getRightActuatorPosition();
+  public void seekElevationSetpoint() {
+    double currentPosition = getRightActuatorPosition();
 
-    if (percentRaised > rightActuatorPosition) {
-      rightActuatorPosition = getRightActuatorPosition();
-      while (rightActuatorPosition < (percentRaised)) {
-        rightActuatorPosition = getRightActuatorPosition();
-        m_leftLinearActuator.runForward();
-        m_rightLinearActuator.runForward();
-      }
-    } else if (percentRaised < rightActuatorPosition) {
-      rightActuatorPosition = getRightActuatorPosition();
-      while (rightActuatorPosition > percentRaised) {
-        rightActuatorPosition = getRightActuatorPosition();
-        m_leftLinearActuator.runReverse();
-        m_rightLinearActuator.runReverse();
-      }
+    // if the shooter is up, set the setpoint to the maximum elevation
+    var setpoint = m_shooterIsUp
+      ? m_config.MaximumElevation
+      : m_config.MinimumElevation;
+
+    if (currentPosition < setpoint) {
+      // if the current position is below the setpoint, run the actuator forward
+      m_rightLinearActuator.runForward();
+    } else if (currentPosition > setpoint) {
+      // if the current position is above the setpoint, run the actuator in reverse
+      m_rightLinearActuator.runReverse();
+    } else {
+      // if the current position is at the setpoint, stop the actuator
+      m_rightLinearActuator.stop();
     }
-
-    m_leftLinearActuator.stop();
-    m_rightLinearActuator.stop();
   }
 
   //#endregion
@@ -154,6 +158,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
     d_leftLinearActuator.setDouble(m_leftLinearActuator.getPosition());
     d_rightLinearActuator.setDouble(m_rightLinearActuator.getPosition());
     d_noteDetector.setBoolean(isNoteLoaded());
+    d_shooterIsUp.setBoolean(m_shooterIsUp);
   }
 
   //#region Shooter Commands
@@ -187,7 +192,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * @return
    */
   public Command setElevationUpCommand() {
-    return this.runOnce(() -> setElevationActuators(0.87));
+    return this.runOnce(() -> m_shooterIsUp = true);
   }
 
   /**
@@ -195,7 +200,41 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * @return
    */
   public Command setElevationDownCommand() {
-    return this.runOnce(() -> setElevationActuators(0));
+    return this.runOnce(() -> m_shooterIsUp = false);
+  }
+
+  /**
+   * Toggles the elevation of the shooter up/down
+   * @return
+   */
+  public Command toggleElevationCommand() {
+    return this.runOnce(() -> m_shooterIsUp = !m_shooterIsUp);
+  }
+
+  /**
+   * Constantly seeks the elevation setpoint until cancelled
+   * @return
+   */
+  public Command seekElevationSetpointCommand() {
+    return this.run(() -> seekElevationSetpoint());
+  }
+
+  /**
+   * Waits for the elevation to reach the setpoint
+   * @return
+   */
+  public Command waitForElevationToReachSetpointCommand() {
+    return this.runOnce(() -> {
+        var setpoint = m_shooterIsUp
+          ? m_config.MaximumElevation
+          : m_config.MinimumElevation;
+
+        var delta = Math.abs(getRightActuatorPosition() - setpoint);
+
+        while (delta > 0.05) {
+          // wait for the actuator to reach the setpoint
+        }
+      });
   }
 
   /**

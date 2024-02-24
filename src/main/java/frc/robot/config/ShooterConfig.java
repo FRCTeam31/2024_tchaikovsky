@@ -15,6 +15,9 @@ public class ShooterConfig {
 
   public int NoteDetectorDIOChannel;
 
+  public double MinimumElevation;
+  public double MaximumElevation;
+
   public ShooterConfig(
     int shooterTalonFXCanID,
     int shooterVictorSPXCanID,
@@ -24,7 +27,9 @@ public class ShooterConfig {
     int leftLinearActuatorAnalogChannel,
     int rightLinearActuatorCanID,
     int rightLinearActuatorAnalogChannel,
-    int noteDetectorDIOChannel
+    int noteDetectorDIOChannel,
+    double minimumElevation,
+    double maximumElevation
   ) {
     TalonFXCanID = shooterTalonFXCanID;
     VictorSPXCanID = shooterVictorSPXCanID;
@@ -37,5 +42,8 @@ public class ShooterConfig {
     RightLinearActuatorCanID = rightLinearActuatorCanID;
     RightLinearActuatorAnalogChannel = rightLinearActuatorAnalogChannel;
     NoteDetectorDIOChannel = noteDetectorDIOChannel;
+
+    MinimumElevation = minimumElevation;
+    MaximumElevation = maximumElevation;
   }
 }
