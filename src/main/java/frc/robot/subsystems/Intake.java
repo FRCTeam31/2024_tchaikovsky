@@ -94,9 +94,8 @@ public class Intake extends SubsystemBase implements IPlannable {
     d_intakeTab
       .add("Angle PID", m_anglePid)
       .withWidget(BuiltInWidgets.kPIDController);
-
-    m_bottomLimitSwitch = new DigitalInput(config.BottomLimitSwitchChannel);
-    m_topLimitSwitch = new DigitalInput(config.TopLimitSwitchChannel);
+    // m_bottomLimitSwitch = new DigitalInput(config.BottomLimitSwitchChannel);
+    // m_topLimitSwitch = new DigitalInput(config.TopLimitSwitchChannel);
   }
 
   //#region Control Methods
@@ -150,16 +149,16 @@ public class Intake extends SubsystemBase implements IPlannable {
     d_pidOutputEntry.setDouble(pidOutput);
     // artificial limits
     if (currentPosition < m_angleStartPoint && pidOutput > 0) {
-      if (!m_bottomLimitSwitch.get()) {
-        setAngleMotorSpeed(MathUtil.clamp(pidOutput, 0, 0.5));
-      }
+      // if (!m_bottomLimitSwitch.get()) {
+      setAngleMotorSpeed(MathUtil.clamp(pidOutput, 0, 0.5));
+      // }
     } else if (
       currentPosition > (m_angleStartPoint - m_config.PositionDelta) &&
       pidOutput < 0
     ) {
-      if (!m_topLimitSwitch.get()) {
-        setAngleMotorSpeed(MathUtil.clamp(pidOutput, -0.5, 0));
-      }
+      // if (!m_topLimitSwitch.get()) {
+      setAngleMotorSpeed(MathUtil.clamp(pidOutput, -0.5, 0));
+      // }
     } else {
       setAngleMotorSpeed(0);
     }
@@ -180,14 +179,14 @@ public class Intake extends SubsystemBase implements IPlannable {
    * Command for running the Intake to Intake a Note
    */
   public Command setRollersSpeedCommand(DoubleSupplier speed) {
-    return this.run(() -> runIntakeRollers(speed.getAsDouble() / 2));
+    return this.run(() -> runIntakeRollers(speed.getAsDouble()));
   }
 
   /**
    * Command for running the Intake to Eject a Note
    */
   public Command ejectNoteCommand() {
-    return this.run(() -> runIntakeRollers(-0.5));
+    return this.run(() -> runIntakeRollers(-1));
   }
 
   // Seeks an Angle Setpoint

@@ -123,13 +123,19 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * @param percentRaised How far, in percentage, the shooter should be raised
    */
   public void setElevationActuators(double percentRaised) {
-    if (percentRaised > getRightActuatorPosition()) {
-      while (getRightActuatorPosition() < (percentRaised - 0.05)) {
+    double rightActuatorPosition = getRightActuatorPosition();
+
+    if (percentRaised > rightActuatorPosition) {
+      rightActuatorPosition = getRightActuatorPosition();
+      while (rightActuatorPosition < (percentRaised)) {
+        rightActuatorPosition = getRightActuatorPosition();
         m_leftLinearActuator.runForward();
         m_rightLinearActuator.runForward();
       }
-    } else if (percentRaised < getRightActuatorPosition()) {
-      while (getRightActuatorPosition() > percentRaised + 0.05) {
+    } else if (percentRaised < rightActuatorPosition) {
+      rightActuatorPosition = getRightActuatorPosition();
+      while (rightActuatorPosition > percentRaised) {
+        rightActuatorPosition = getRightActuatorPosition();
         m_leftLinearActuator.runReverse();
         m_rightLinearActuator.runReverse();
       }
@@ -181,7 +187,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * @return
    */
   public Command setElevationUpCommand() {
-    return this.runOnce(() -> setElevationActuators(1));
+    return this.runOnce(() -> setElevationActuators(0.87));
   }
 
   /**

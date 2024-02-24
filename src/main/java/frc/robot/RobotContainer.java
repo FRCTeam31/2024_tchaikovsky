@@ -178,24 +178,22 @@ public class RobotContainer {
     m_operatorController // Raise shooter, score in amp
       .rightBumper()
       .onTrue(m_shooter.setElevationUpCommand()) // wait is integrated
-      .whileTrue(m_shooter.scoreInAmp())
-      .onFalse(
-        m_shooter
-          .stopMotorsCommand()
-          .andThen(m_shooter.setElevationDownCommand()) // wait is integrated
-      );
+      .onFalse(m_shooter.stopMotorsCommand());
 
     // m_operatorController // Shoot into Speaker with both intake and shooter
     //   .leftBumper()
     //   .onTrue(m_shooter.setElevationDownCommand()) // wait is integrated
     //   .whileTrue(
-    //     m_intake
-    //       .setRollersSpeedCommand(() -> -1) // eject the note at full speed
-    //       .alongWith(m_shooter.scoreInSpeaker()) // score the note in the speaker
+    //     m_intake.setRollersSpeedCommand(() -> -1) // eject the note at full speed
     //   )
     //   .onFalse(
-    //     m_intake.stopRollersCommand().alongWith(m_shooter.stopMotorsCommand()) // stop everything
+    //     m_shooter.stopMotorsCommand() // stop everything
     //   );
+
+    m_operatorController
+      .b()
+      .whileTrue(m_shooter.scoreInSpeaker())
+      .onFalse(m_shooter.stopMotorsCommand());
 
     m_operatorController // intake note
       .leftTrigger(0.1)
