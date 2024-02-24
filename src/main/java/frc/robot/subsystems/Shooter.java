@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.ShooterConfig;
 import java.util.Map;
-import java.util.function.DoubleSupplier;
 import prime.movers.IPlannable;
 import prime.movers.LinearActuator;
 
@@ -27,6 +26,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
   private LinearActuator m_rightLinearActuator;
   private DigitalInput m_noteDetector;
 
+  // #region Shuffleboard
   // Shuffleboard configuration
   private ShuffleboardTab d_shooterTab = Shuffleboard.getTab("Shooter");
   private GenericEntry d_talonFXSpeed = d_shooterTab
@@ -53,6 +53,8 @@ public class Shooter extends SubsystemBase implements IPlannable {
     .add("Note Detected", 0)
     .withWidget(BuiltInWidgets.kBooleanBox)
     .getEntry();
+
+  // #endregion
 
   /**
    * Creates a new Shooter with a given configuration
@@ -137,34 +139,6 @@ public class Shooter extends SubsystemBase implements IPlannable {
     m_rightLinearActuator.stop();
   }
 
-  /**
-   * Raises the shooter until it reaches the top
-   */
-  public void raiseElevationActuators() {
-    if (m_leftLinearActuator.getPosition() <= 0.75) {
-      m_leftLinearActuator.runForward();
-      m_rightLinearActuator.runForward();
-    }
-  }
-
-  /**
-   * Lowers the shooter until it reaches the bottom
-   */
-  public void lowerElevationActuators() {
-    if (m_leftLinearActuator.getPosition() >= 0.1) {
-      m_leftLinearActuator.runReverse();
-      m_rightLinearActuator.runReverse();
-    }
-  }
-
-  /**
-   * Stops the elevation actuators
-   */
-  public void stopElevationActuators() {
-    m_leftLinearActuator.stop();
-    m_rightLinearActuator.stop();
-  }
-
   //#endregion
 
   @Override
@@ -177,15 +151,6 @@ public class Shooter extends SubsystemBase implements IPlannable {
   }
 
   //#region Shooter Commands
-
-  /**
-   * Runs the shooter motors at a speed
-   * @param speed
-   * @return
-   */
-  public Command runMotorsCommand(DoubleSupplier speed) {
-    return this.run(() -> runShooter(speed.getAsDouble()));
-  }
 
   /**
    * Stops the shooter motors
@@ -212,22 +177,6 @@ public class Shooter extends SubsystemBase implements IPlannable {
   }
 
   /**
-   * Raises the elevation actuators
-   * @return
-   */
-  public Command RaiseActuatorsCommand() {
-    return this.run(() -> raiseElevationActuators());
-  }
-
-  /**
-   * Lowers the elevation actuators
-   * @return
-   */
-  public Command LowerActuatorsCommand() {
-    return this.run(() -> lowerElevationActuators());
-  }
-
-  /**
    * Sets the elevation of the shooter all the way up
    * @return
    */
@@ -241,14 +190,6 @@ public class Shooter extends SubsystemBase implements IPlannable {
    */
   public Command setElevationDownCommand() {
     return this.runOnce(() -> setElevationActuators(0));
-  }
-
-  /**
-   * Stops the elevation actuators
-   * @return
-   */
-  public Command stopActuatorsCommand() {
-    return this.runOnce(() -> stopElevationActuators());
   }
 
   /**
@@ -278,6 +219,20 @@ public class Shooter extends SubsystemBase implements IPlannable {
   public Map<String, Command> getNamedCommands() {
     return Map.of(
       // "Example_Command", exampleCommand(),
+      "Stop_Shooter_Motors",
+      stopMotorsCommand(),
+      "Score_In_Amp",
+      scoreInAmp(),
+      "Score_In_Speaker",
+      scoreInSpeaker(),
+      "Set_Actuators_Up",
+      setElevationUpCommand(),
+      "Set_Actuators_Down",
+      setElevationDownCommand(),
+      "Load_Amp",
+      loadNoteForAmp(),
+      "Unload_Shooter",
+      unloadNoteForSpeaker()
     );
   }
 

@@ -35,8 +35,8 @@ public class RobotConfig {
     var config = new RobotConfig("Default Config");
     config.Drivetrain =
       new DrivetrainConfig(
-        0.55,
-        0.55,
+        0.51181,
+        0.67945,
         Math.PI * 0.7778174593052, // Wheelbase Circumference
         1,
         Units.feetToMeters(15.7), // Max Speed MPS

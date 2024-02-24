@@ -24,13 +24,14 @@ import prime.config.PrimeConfigurator;
 public class Robot extends TimedRobot {
 
   public ShuffleboardTab d_robotTab = Shuffleboard.getTab("Robot");
+
   public boolean autoEnabled = false;
 
   private final String m_defaultConfigName = "swerve_test_bot.json";
   private SendableChooser<String> m_configChooser;
   private String m_selectedConfigName = m_defaultConfigName;
 
-  private final String m_defaultAutoName = "test curve auto";
+  private final String m_defaultAutoName = "Speaker Auto 1";
   public static SendableChooser<Command> m_autoChooser;
   private Command m_autonomousCommand;
 
@@ -38,9 +39,9 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
-    // Create the robot container with the default config
+    // Create the roboh the default config
     // m_robotContainer =
-    //   new RobotContainer(readConfigFromFile(m_defaultConfigName));
+    // new RobotContainer(readConfigFromFile(m_defaultConfigNt container witame));
     m_robotContainer = new RobotContainer(RobotConfig.getDefault());
 
     // Set up configuration selection
@@ -54,7 +55,7 @@ public class Robot extends TimedRobot {
     // Build an auto chooser. This will use Commands.none() as the default option.
     m_autoChooser = AutoBuilder.buildAutoChooser(m_defaultAutoName);
 
-    d_robotTab
+    m_robotContainer.d_robotTab
       .add(m_autoChooser)
       .withWidget(BuiltInWidgets.kComboBoxChooser)
       .withSize(2, 1)
@@ -68,7 +69,6 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-
     // Check the selected config name to see if it has changed
     if (m_selectedConfigName != m_configChooser.getSelected()) {
       // A new config has been selected, save the new name and reconfigure the robot

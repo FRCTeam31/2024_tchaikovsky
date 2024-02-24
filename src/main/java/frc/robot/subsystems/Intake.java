@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.IntakeConfig;
 import java.util.Map;
-import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import prime.movers.IPlannable;
 import prime.movers.LazyCANSparkMax;
@@ -26,6 +25,7 @@ public class Intake extends SubsystemBase implements IPlannable {
   private PIDController m_anglePid;
   private double m_angleSetpoint;
 
+  // #region ShuffleBoard
   private ShuffleboardTab d_intakeTab = Shuffleboard.getTab("Intake");
 
   private GenericEntry d_positionLeftEntry = d_intakeTab
@@ -43,6 +43,8 @@ public class Intake extends SubsystemBase implements IPlannable {
     .withWidget(BuiltInWidgets.kNumberBar)
     .withProperties(Map.of("Max", 2, "Min", -2))
     .getEntry();
+
+  // #endregion
 
   /**
    * Creates a new Intake subsystem
@@ -146,7 +148,7 @@ public class Intake extends SubsystemBase implements IPlannable {
   //#region Commands
 
   /**
-   *  Command for running the Intake to Intake a Note
+   * Command for running the Intake to Intake a Note
    */
   public Command setRollersSpeedCommand(DoubleSupplier speed) {
     return this.run(() -> runIntakeRollers(speed.getAsDouble()));
@@ -159,15 +161,9 @@ public class Intake extends SubsystemBase implements IPlannable {
     return this.run(() -> runIntakeRollers(-0.5));
   }
 
+  // Seeks an Angle Setpoint
   public Command seekAngleSetpointCommand() {
     return this.run(() -> setIntakeRotation(m_angleSetpoint));
-  }
-
-  /**
-   * Command for setting the intake angle into pickup position
-   */
-  public Command setIntakeOutCommand() {
-    return this.runOnce(() -> m_angleSetpoint = m_config.PositionMinimum);
   }
 
   /**
@@ -181,7 +177,7 @@ public class Intake extends SubsystemBase implements IPlannable {
    * Toggles the intake angle setpoint between in/out
    * @return
    */
-  public Command toggleIntakeInAndOut() {
+  public Command toggleIntakeInAndOutCommand() {
     return this.runOnce(() -> {
         m_angleSetpoint =
           getPositionRight() > (m_config.PositionMaximum / 2)
@@ -190,7 +186,7 @@ public class Intake extends SubsystemBase implements IPlannable {
       });
   }
 
-  public Command waitForIntakeToReachAngleSetpoint() {
+  public Command waitForIntakeToReachAngleSetpointCommand() {
     return this.runOnce(() -> {
         while (!m_anglePid.atSetpoint()) {}
       });
@@ -205,37 +201,34 @@ public class Intake extends SubsystemBase implements IPlannable {
       });
   }
 
+  // Stops the motors for the Intake Rollers
   public Command stopRollersCommand() {
     return this.run(() -> {
         m_rollers.stopMotor();
       });
   }
 
-  public Command defaultIntakeCommand(
-    DoubleSupplier intakeNote,
-    BooleanSupplier ejectNote,
-    BooleanSupplier intakeIn,
-    BooleanSupplier intakeOut
-  ) {
-    return this.run(() -> {
-        seekAngleSetpointCommand();
-        if (!ejectNote.getAsBoolean()) {
-          runIntakeRollers(-intakeNote.getAsDouble());
-        } else if (ejectNote.getAsBoolean()) {
-          runIntakeRollers(0.6);
-        }
-
-        if (intakeIn.getAsBoolean()) {
-          setIntakeInCommand();
-        } else if (intakeOut.getAsBoolean()) {
-          setIntakeOutCommand();
-        }
-      });
-  }
-
   public Map<String, Command> getNamedCommands() {
     return Map.of(
       // "Example_Command", exampleCommand(),
+      "Toggle_Intake",
+      toggleIntakeInAndOutCommand(),
+      "Set_Roller_Speed",
+      setRollersSpeedCommand(null),
+      "Eject_Note",
+      ejectNoteCommand(),
+      "Seek_Angle_Setpoint",
+      seekAngleSetpointCommand(),
+      "Set_Intake_In",
+      setIntakeInCommand(),
+      "Toggle_Intake_In_And_Out",
+      toggleIntakeInAndOutCommand(),
+      "Wait_For_Intake_To_Reach_Setpoint",
+      waitForIntakeToReachAngleSetpointCommand(),
+      "Stop_All_Intake_Motors",
+      stopAllMotorsCommand(),
+      "Stop_Intake_Rollers",
+      stopRollersCommand()
     );
   }
 
