@@ -406,6 +406,23 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
         m_rearRightModule.getModuleState(),
       }
     );
+
+    // m_desiredSwerveStatesPublisher.set(SwerveModuleState[]{
+    //     m_frontLeftModule.getModuleState(),
+    //     m_frontRightModule.getModuleState(),
+    //     m_rearLeftModule.getModuleState(),
+    //     m_rearRightModule.getModuleState(),
+
+    // });
+
+    m_desiredSwerveStatesPublisher.set(
+      new SwerveModuleState[] {
+        m_frontLeftModule.getModuleState(),
+        m_frontRightModule.getModuleState(),
+        m_rearLeftModule.getModuleState(),
+        m_rearRightModule.getModuleState(),
+      }
+    );
     var robotPose = m_odometry.update(gyroAngle, getModulePositions());
     m_field.setRobotPose(robotPose);
 
