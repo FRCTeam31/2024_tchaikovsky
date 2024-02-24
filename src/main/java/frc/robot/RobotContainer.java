@@ -31,7 +31,7 @@ public class RobotContainer {
   public PrimeXboxController m_operatorController;
   public Drivetrain m_drivetrain;
   public Shooter m_shooter;
-  public Intake m_intake;
+  // public Intake m_intake;
   public Climbers m_climbers;
   public Limelight m_limelight;
   public LEDStrips m_leds;
@@ -53,7 +53,7 @@ public class RobotContainer {
       // Close subsystems before reconfiguring
       if (m_drivetrain != null) m_drivetrain.close();
       if (m_shooter != null) m_shooter.close();
-      if (m_intake != null) m_intake.close();
+      // if (m_intake != null) m_intake.close();
       if (m_climbers != null) m_climbers.close();
       if (m_leds != null) m_leds.close();
       if (m_pdh != null) m_pdh.close();
@@ -64,8 +64,8 @@ public class RobotContainer {
       // Create new subsystems
       m_drivetrain = new Drivetrain(m_config);
       m_shooter = new Shooter(m_config.Shooter);
-      m_intake = new Intake(m_config.Intake);
-      // m_climbers = new Climbers(m_config.Climbers);
+      // m_intake = new Intake(m_config.Intake);
+      m_climbers = new Climbers(m_config.Climbers);
       m_limelight = new Limelight(m_config.LimelightPose);
       m_leds = new LEDStrips(m_config.LEDs);
       m_pdh = new PowerDistribution();
@@ -76,7 +76,7 @@ public class RobotContainer {
       // Register the named commands from each subsystem that may be used in PathPlanner
       NamedCommands.registerCommands(m_drivetrain.getNamedCommands());
       NamedCommands.registerCommands(m_shooter.getNamedCommands());
-      NamedCommands.registerCommands(m_intake.getNamedCommands());
+      // NamedCommands.registerCommands(m_intake.getNamedCommands());
     } catch (Exception e) {
       DriverStation.reportError(
         "[ERROR] >> Failed to configure robot: " + e.getMessage(),
@@ -137,81 +137,80 @@ public class RobotContainer {
       .onTrue(m_drivetrain.toggleShifterCommand());
 
     // Climbers
-    // m_driverController.y().onTrue(m_climbers.toggleClimbControlsCommand());
-    // m_climbers.setDefaultCommand(
-    //   m_climbers.defaultClimbingCommand(
-    //     m_driverController.button(Controls.RB),
-    //     m_driverController.button(Controls.LB),
-    //     () -> m_driverController.getRawAxis(Controls.RIGHT_TRIGGER),
-    //     () -> m_driverController.getRawAxis(Controls.LEFT_TRIGGER)
-    //   )
-    // );
-
+    m_driverController.y().onTrue(m_climbers.toggleClimbControlsCommand());
+    m_climbers.setDefaultCommand(
+      m_climbers.defaultClimbingCommand(
+        m_driverController.button(Controls.RB),
+        m_driverController.button(Controls.LB),
+        () -> m_driverController.getRawAxis(Controls.RIGHT_TRIGGER),
+        () -> m_driverController.getRawAxis(Controls.LEFT_TRIGGER)
+      )
+    );
     // Operator Controls =================================
 
     // Always be updating the intake angle PID
     // m_intake.setDefaultCommand(m_intake.seekAngleSetpointCommand());
 
-    m_operatorController.a().onTrue(m_intake.toggleIntakeInAndOutCommand()); // Set intake angle in/out
-    m_operatorController // Raise intake, load note for amp score
-      .y()
-      .onTrue(
-        m_intake
-          .setIntakeInCommand()
-          .andThen(m_intake.waitForIntakeToReachAngleSetpointCommand())
-          .andThen(m_shooter.loadNoteForAmp())
-      );
-    m_operatorController // Raise intake, unload note from shooter into intake
-      .b()
-      .onTrue(
-        m_intake
-          .setIntakeInCommand()
-          .andThen(m_intake.waitForIntakeToReachAngleSetpointCommand())
-      )
-      .whileTrue(
-        m_shooter
-          .unloadNoteForSpeaker()
-          .alongWith(m_intake.setRollersSpeedCommand(() -> 0.5))
-      )
-      .onFalse(
-        m_shooter.stopMotorsCommand().alongWith(m_intake.stopRollersCommand())
-      );
+    // m_operatorController.a().onTrue(m_intake.toggleIntakeInAndOutCommand()); // Set intake angle in/out
+    // m_operatorController // Raise intake, load note for amp score
+    //   .y()
+    //   .onTrue(
+    //     m_intake
+    //       .setIntakeInCommand()
+    //       .andThen(m_intake.waitForIntakeToReachAngleSetpointCommand())
+    //       .andThen(m_shooter.loadNoteForAmp())
+    //   );
+    // m_operatorController // Raise intake, unload note from shooter into intake
+    //   .b()
+    //   .onTrue(
+    //     m_intake
+    //       .setIntakeInCommand()
+    //       .andThen(m_intake.waitForIntakeToReachAngleSetpointCommand())
+    //   )
+    //   .whileTrue(
+    //     m_shooter
+    //       .unloadNoteForSpeaker()
+    //       .alongWith(m_intake.setRollersSpeedCommand(() -> 0.5))
+    //   )
+    //   .onFalse(
+    //     m_shooter.stopMotorsCommand().alongWith(m_intake.stopRollersCommand())
+    //   );
 
-    m_operatorController // Raise shooter, score in amp
-      .rightBumper()
-      .onTrue(m_shooter.setElevationUpCommand()) // wait is integrated
-      .whileTrue(m_shooter.scoreInAmp())
-      .onFalse(
-        m_shooter
-          .stopMotorsCommand()
-          .andThen(m_shooter.setElevationDownCommand()) // wait is integrated
-      );
+    // m_operatorController // Raise shooter, score in amp
+    //   .rightBumper()
+    //   .onTrue(m_shooter.setElevationUpCommand()) // wait is integrated
+    //   .whileTrue(m_shooter.scoreInAmp())
+    //   .onFalse(
+    //     m_shooter
+    //       .stopMotorsCommand()
+    //       .andThen(m_shooter.setElevationDownCommand()) // wait is integrated
+    //   );
 
-    m_operatorController // Shoot into Speaker with both intake and shooter
-      .leftBumper()
-      .onTrue(m_shooter.setElevationDownCommand()) // wait is integrated
-      .whileTrue(
-        m_intake
-          .setRollersSpeedCommand(() -> -1) // eject the note at full speed
-          .alongWith(m_shooter.scoreInSpeaker()) // score the note in the speaker
-      )
-      .onFalse(
-        m_intake.stopRollersCommand().alongWith(m_shooter.stopMotorsCommand()) // stop everything
-      );
+    // m_operatorController // Shoot into Speaker with both intake and shooter
+    //   .leftBumper()
+    //   .onTrue(m_shooter.setElevationDownCommand()) // wait is integrated
+    //   .whileTrue(
+    //     m_intake
+    //       .setRollersSpeedCommand(() -> -1) // eject the note at full speed
+    //       .alongWith(m_shooter.scoreInSpeaker()) // score the note in the speaker
+    //   )
+    //   .onFalse(
+    //     m_intake.stopRollersCommand().alongWith(m_shooter.stopMotorsCommand()) // stop everything
+    //   );
 
-    m_operatorController // intake note
-      .leftTrigger(0.1)
-      .whileTrue(
-        m_intake.setRollersSpeedCommand(() ->
-          m_operatorController.getLeftTriggerAxis()
-        )
-      )
-      .onFalse(m_intake.stopRollersCommand());
+    // m_operatorController // intake note
+    //   .leftTrigger(0.1)
+    //   .whileTrue(
+    //     m_intake.setRollersSpeedCommand(() ->
+    //       m_operatorController.getLeftTriggerAxis()
+    //     )
+    //   )
+    //   .onFalse(m_intake.stopRollersCommand());
 
-    m_operatorController // eject note
-      .rightTrigger(0.1)
-      .whileTrue(m_intake.ejectNoteCommand())
-      .onFalse(m_intake.stopRollersCommand());
+    // m_operatorController // eject note
+    //   .rightTrigger(0.1)
+    //   .whileTrue(m_intake.ejectNoteCommand())
+    //   .onFalse(m_intake.stopRollersCommand());
   }
 
   /**
