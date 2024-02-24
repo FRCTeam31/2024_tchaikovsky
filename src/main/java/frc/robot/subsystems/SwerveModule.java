@@ -37,6 +37,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
   private GenericEntry d_driveVelocityEntry;
   private GenericEntry d_driveVoltageEntry;
   private GenericEntry d_moduleHeadingEntry;
+  private GenericEntry d_desiredVelocityEntry;
 
   // Devices
   private LazyCANSparkMax m_SteeringMotor;
@@ -83,7 +84,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
     d_driveVelocityEntry =
       d_moduleTab
         .add("Velocity (MPS)", 0)
-        .withWidget(BuiltInWidgets.kDial)
+        .withWidget(BuiltInWidgets.kNumberBar)
         .withProperties(Map.of("min", 0, "max", 20))
         .getEntry();
     d_driveVoltageEntry =
@@ -96,6 +97,13 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
         .add("Heading (Degrees)", 0)
         .withWidget(BuiltInWidgets.kGyro)
         .withProperties(Map.of("major tick spacing", 15, "starting angle", 0))
+        .getEntry();
+
+    d_desiredVelocityEntry =
+      d_moduleTab
+        .add("Desired Velocity", 0)
+        .withWidget(BuiltInWidgets.kNumberBar)
+        .withProperties(Map.of("min", 0, "max", 20))
         .getEntry();
   }
 
@@ -181,6 +189,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
    */
   public void setDesiredState(SwerveModuleState desiredState) {
     desiredState = optimize(desiredState);
+    // desiredSpeed = desiredState.speedMetersPerSecond;
     setDesiredSpeed(
       CTREConverter.metersToRotations(
         desiredState.speedMetersPerSecond,
@@ -188,6 +197,8 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
         m_config.DriveGearRatio
       )
     );
+
+    d_desiredVelocityEntry.setDouble(desiredState.speedMetersPerSecond);
 
     setDesiredAngle(desiredState.angle);
   }
