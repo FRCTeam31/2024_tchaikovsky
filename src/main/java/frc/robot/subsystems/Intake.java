@@ -5,6 +5,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -19,7 +20,8 @@ import prime.movers.LazyCANSparkMax;
 public class Intake extends SubsystemBase implements IPlannable {
 
   private IntakeConfig m_config;
-
+  private DigitalInput m_topLimitSwitch;
+  private DigitalInput m_bottomLimitSwitch;
   private LazyCANSparkMax m_rollers;
   private LazyCANSparkMax m_angleLeft;
   private LazyCANSparkMax m_angleRight;
@@ -92,6 +94,9 @@ public class Intake extends SubsystemBase implements IPlannable {
     d_intakeTab
       .add("Angle PID", m_anglePid)
       .withWidget(BuiltInWidgets.kPIDController);
+
+    m_bottomLimitSwitch = new DigitalInput(config.BottomLimitSwitchChannel);
+    m_topLimitSwitch = new DigitalInput(config.TopLimitSwitchChannel);
   }
 
   //#region Control Methods
@@ -145,12 +150,16 @@ public class Intake extends SubsystemBase implements IPlannable {
     d_pidOutputEntry.setDouble(pidOutput);
     // artificial limits
     if (currentPosition < m_angleStartPoint && pidOutput > 0) {
-      setAngleMotorSpeed(MathUtil.clamp(pidOutput, 0, 0.5));
+      if (!m_bottomLimitSwitch.get()) {
+        setAngleMotorSpeed(MathUtil.clamp(pidOutput, 0, 0.5));
+      }
     } else if (
       currentPosition > (m_angleStartPoint - m_config.PositionDelta) &&
       pidOutput < 0
     ) {
-      setAngleMotorSpeed(MathUtil.clamp(pidOutput, -0.5, 0));
+      if (!m_topLimitSwitch.get()) {
+        setAngleMotorSpeed(MathUtil.clamp(pidOutput, -0.5, 0));
+      }
     } else {
       setAngleMotorSpeed(0);
     }

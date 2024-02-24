@@ -78,12 +78,12 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
    * Raises the Left Climber
    */
   public void raiseLeftArm() {
-    if (!m_leftLimitSwitch.get()) {
-      m_leftVictorSPX.set(
-        VictorSPXControlMode.PercentOutput,
-        m_config.ClimberUpSpeed
-      );
-    }
+    // if (!m_leftLimitSwitch.get()) {
+    m_leftVictorSPX.set(
+      VictorSPXControlMode.PercentOutput,
+      m_config.ClimberUpSpeed
+    );
+    // }
   }
 
   /**

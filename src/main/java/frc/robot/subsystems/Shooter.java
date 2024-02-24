@@ -124,12 +124,12 @@ public class Shooter extends SubsystemBase implements IPlannable {
    */
   public void setElevationActuators(double percentRaised) {
     if (percentRaised > getRightActuatorPosition()) {
-      while (getRightActuatorPosition() < percentRaised) {
+      while (getRightActuatorPosition() < (percentRaised - 0.05)) {
         m_leftLinearActuator.runForward();
         m_rightLinearActuator.runForward();
       }
     } else if (percentRaised < getRightActuatorPosition()) {
-      while (getRightActuatorPosition() > percentRaised) {
+      while (getRightActuatorPosition() > percentRaised + 0.05) {
         m_leftLinearActuator.runReverse();
         m_rightLinearActuator.runReverse();
       }

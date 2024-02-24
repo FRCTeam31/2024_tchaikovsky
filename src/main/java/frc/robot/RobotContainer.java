@@ -148,7 +148,7 @@ public class RobotContainer {
     // Operator Controls =================================
 
     // Always be updating the intake angle PID
-    m_intake.setDefaultCommand(m_intake.seekAngleSetpointCommand());
+    // m_intake.setDefaultCommand(m_intake.seekAngleSetpointCommand());
 
     m_operatorController.a().onTrue(m_intake.toggleIntakeInAndOutCommand()); // Set intake angle in/out
     // m_operatorController // Raise intake, load note for amp score

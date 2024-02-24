@@ -131,7 +131,9 @@ public class RobotConfig {
         false,
         true,
         new PrimePIDConstants(0.032, 0, 0),
-        48
+        48,
+        0,
+        0
       );
 
     config.Shooter = new ShooterConfig(20, 19, false, false, 21, 0, 22, 1, 9);
