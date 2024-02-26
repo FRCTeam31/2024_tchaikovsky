@@ -145,56 +145,37 @@ public class RobotContainer {
         () -> m_driverController.getRawAxis(Controls.LEFT_TRIGGER)
       )
     );
+
     // Operator Controls =================================
 
     // Always be updating the intake angle PID
-    // m_intake.setDefaultCommand(m_intake.seekAngleSetpointCommand());
+    m_intake.setDefaultCommand(m_intake.seekAngleSetpointCommand());
 
+    // Intake Controls
     m_operatorController.a().onTrue(m_intake.toggleIntakeInAndOutCommand()); // Set intake angle in/out
-    // m_operatorController // Raise intake, load note for amp score
-    //   .y()
-    //   .onTrue(
-    //     m_intake
-    //       .setIntakeInCommand()
-    //       .andThen(m_intake.waitForIntakeToReachAngleSetpointCommand())
-    //       .andThen(m_shooter.loadNoteForAmp())
-    //   );
-    // m_operatorController // Raise intake, unload note from shooter into intake
-    //   .b()
-    //   .onTrue(
-    //     m_intake
-    //       .setIntakeInCommand()
-    //       .andThen(m_intake.waitForIntakeToReachAngleSetpointCommand())
-    //   )
-    //   .whileTrue(
-    //     m_shooter
-    //       .unloadNoteForSpeaker()
-    //       .alongWith(m_intake.setRollersSpeedCommand(() -> 0.5))
-    //   )
-    //   .onFalse(
-    //     m_shooter.stopMotorsCommand().alongWith(m_intake.stopRollersCommand())
-    //   );
-
-    m_operatorController // Raise shooter, score in amp
-      .rightBumper()
-      .onTrue(m_shooter.setElevationUpCommand()) // wait is integrated
-      .onFalse(m_shooter.stopMotorsCommand());
-
-    // m_operatorController // Shoot into Speaker with both intake and shooter
-    //   .leftBumper()
-    //   .onTrue(m_shooter.setElevationDownCommand()) // wait is integrated
-    //   .whileTrue(
-    //     m_intake.setRollersSpeedCommand(() -> -1) // eject the note at full speed
-    //   )
-    //   .onFalse(
-    //     m_shooter.stopMotorsCommand() // stop everything
-    //   );
-
-    m_operatorController
+    m_operatorController // Raise intake, load note for amp score
+      .y()
+      .onTrue(
+        m_intake
+          .setIntakeInCommand()
+          .andThen(m_intake.waitForIntakeToReachAngleSetpointCommand())
+          .andThen(m_shooter.loadNoteForAmp())
+      );
+    m_operatorController // Raise intake, unload note from shooter into intake
       .b()
-      .whileTrue(m_shooter.scoreInSpeaker())
-      .onFalse(m_shooter.stopMotorsCommand());
-
+      .onTrue(
+        m_intake
+          .setIntakeInCommand()
+          .andThen(m_intake.waitForIntakeToReachAngleSetpointCommand())
+      )
+      .whileTrue(
+        m_shooter
+          .unloadNoteForSpeaker()
+          .alongWith(m_intake.setRollersSpeedCommand(() -> 0.5))
+      )
+      .onFalse(
+        m_shooter.stopMotorsCommand().alongWith(m_intake.stopRollersCommand())
+      );
     m_operatorController // intake note
       .leftTrigger(0.1)
       .whileTrue(
@@ -203,11 +184,17 @@ public class RobotContainer {
         )
       )
       .onFalse(m_intake.stopRollersCommand());
-
     m_operatorController // eject note
       .rightTrigger(0.1)
       .whileTrue(m_intake.ejectNoteCommand())
       .onFalse(m_intake.stopRollersCommand());
+
+    // Shooter  Controls
+    m_operatorController
+      .b()
+      .whileTrue(m_shooter.runShooterCommand())
+      .onFalse(m_shooter.stopMotorsCommand());
+    m_operatorController.x().onTrue(m_shooter.togglePneumaticsCommand());
   }
 
   /**

@@ -5,7 +5,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -20,8 +19,6 @@ import prime.movers.LazyCANSparkMax;
 public class Intake extends SubsystemBase implements IPlannable {
 
   private IntakeConfig m_config;
-  private DigitalInput m_topLimitSwitch;
-  private DigitalInput m_bottomLimitSwitch;
   private LazyCANSparkMax m_rollers;
   private LazyCANSparkMax m_angleLeft;
   private LazyCANSparkMax m_angleRight;

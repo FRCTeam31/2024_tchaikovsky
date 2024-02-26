@@ -6,6 +6,10 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.PneumaticsControlModule;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -14,7 +18,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.ShooterConfig;
 import java.util.Map;
 import prime.movers.IPlannable;
-import prime.movers.LinearActuator;
 
 public class Shooter extends SubsystemBase implements IPlannable {
 
@@ -22,9 +25,9 @@ public class Shooter extends SubsystemBase implements IPlannable {
 
   private TalonFX m_talonFX;
   private VictorSPX m_victorSPX;
-  private LinearActuator m_leftLinearActuator;
-  private LinearActuator m_rightLinearActuator;
   private DigitalInput m_noteDetector;
+  private DoubleSolenoid m_leftDoubleSolenoid;
+  private DoubleSolenoid m_rightDoubleSolenoid;
 
   private boolean m_shooterIsUp;
 
@@ -40,16 +43,6 @@ public class Shooter extends SubsystemBase implements IPlannable {
     .add("VictorSPX Speed", 0)
     .withWidget(BuiltInWidgets.kDial)
     .withProperties(Map.of("Min", -1, "Max", 1))
-    .getEntry();
-  private GenericEntry d_leftLinearActuator = d_shooterTab
-    .add("Left Actuator Position", 0)
-    .withWidget(BuiltInWidgets.kNumberBar)
-    .withProperties(Map.of("Min", 0, "Max", 1))
-    .getEntry();
-  private GenericEntry d_rightLinearActuator = d_shooterTab
-    .add("Right Actuator Position", 0)
-    .withWidget(BuiltInWidgets.kNumberBar)
-    .withProperties(Map.of("Min", 0, "Max", 1))
     .getEntry();
   private GenericEntry d_noteDetector = d_shooterTab
     .add("Note Detected", false)
@@ -76,19 +69,13 @@ public class Shooter extends SubsystemBase implements IPlannable {
     m_victorSPX = new VictorSPX(m_config.VictorSPXCanID);
     m_victorSPX.configFactoryDefault();
 
-    m_leftLinearActuator =
-      new LinearActuator(
-        m_config.LeftLinearActuatorCanID,
-        m_config.LeftLinearActuatorAnalogChannel
-      );
-    m_rightLinearActuator =
-      new LinearActuator(
-        m_config.RightLinearActuatorCanID,
-        m_config.RightLinearActuatorAnalogChannel
-      );
-
     m_noteDetector = new DigitalInput(m_config.NoteDetectorDIOChannel);
     m_shooterIsUp = false;
+
+    m_leftDoubleSolenoid =
+      new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 0, 0);
+    m_rightDoubleSolenoid =
+      new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 0, 0);
   }
 
   //#region Control Methods
@@ -111,13 +98,6 @@ public class Shooter extends SubsystemBase implements IPlannable {
   }
 
   /**
-   * Gets the position of the right linear actuator
-   */
-  public double getRightActuatorPosition() {
-    return m_rightLinearActuator.getPosition();
-  }
-
-  /**
    * Gets a boolean indicating whether a note is blocking the beam sensor
    * @return
    */
@@ -125,28 +105,14 @@ public class Shooter extends SubsystemBase implements IPlannable {
     return m_noteDetector.get();
   }
 
-  /**
-   * Sets the elevation of the shooter
-   * @param percentRaised How far, in percentage, the shooter should be raised
-   */
-  public void seekElevationSetpoint() {
-    double currentPosition = getRightActuatorPosition();
+  public void extendShooter() {
+    m_leftDoubleSolenoid.set(Value.kForward);
+    m_rightDoubleSolenoid.set(Value.kForward);
+  }
 
-    // if the shooter is up, set the setpoint to the maximum elevation
-    var setpoint = m_shooterIsUp
-      ? m_config.MaximumElevation
-      : m_config.MinimumElevation;
-
-    if (currentPosition < setpoint) {
-      // if the current position is below the setpoint, run the actuator forward
-      m_rightLinearActuator.runForward();
-    } else if (currentPosition > setpoint) {
-      // if the current position is above the setpoint, run the actuator in reverse
-      m_rightLinearActuator.runReverse();
-    } else {
-      // if the current position is at the setpoint, stop the actuator
-      m_rightLinearActuator.stop();
-    }
+  public void retractShooter() {
+    m_leftDoubleSolenoid.set(Value.kReverse);
+    m_rightDoubleSolenoid.set(Value.kReverse);
   }
 
   //#endregion
@@ -155,8 +121,6 @@ public class Shooter extends SubsystemBase implements IPlannable {
   public void periodic() {
     d_talonFXSpeed.setDouble(m_talonFX.get());
     d_victorSPXSpeed.setDouble(m_victorSPX.getMotorOutputPercent());
-    d_leftLinearActuator.setDouble(m_leftLinearActuator.getPosition());
-    d_rightLinearActuator.setDouble(m_rightLinearActuator.getPosition());
     d_noteDetector.setBoolean(isNoteLoaded());
     d_shooterIsUp.setBoolean(m_shooterIsUp);
   }
@@ -172,18 +136,10 @@ public class Shooter extends SubsystemBase implements IPlannable {
   }
 
   /**
-   * Shootes a note at half speed
-   * @return
-   */
-  public Command scoreInAmp() {
-    return this.run(() -> runShooter(0.5));
-  }
-
-  /**
    * Shootes a note at full speed
    * @return
    */
-  public Command scoreInSpeaker() {
+  public Command runShooterCommand() {
     return this.run(() -> runShooter(1));
   }
 
@@ -201,40 +157,6 @@ public class Shooter extends SubsystemBase implements IPlannable {
    */
   public Command setElevationDownCommand() {
     return this.runOnce(() -> m_shooterIsUp = false);
-  }
-
-  /**
-   * Toggles the elevation of the shooter up/down
-   * @return
-   */
-  public Command toggleElevationCommand() {
-    return this.runOnce(() -> m_shooterIsUp = !m_shooterIsUp);
-  }
-
-  /**
-   * Constantly seeks the elevation setpoint until cancelled
-   * @return
-   */
-  public Command seekElevationSetpointCommand() {
-    return this.run(() -> seekElevationSetpoint());
-  }
-
-  /**
-   * Waits for the elevation to reach the setpoint
-   * @return
-   */
-  public Command waitForElevationToReachSetpointCommand() {
-    return this.runOnce(() -> {
-        var setpoint = m_shooterIsUp
-          ? m_config.MaximumElevation
-          : m_config.MinimumElevation;
-
-        var delta = Math.abs(getRightActuatorPosition() - setpoint);
-
-        while (delta > 0.05) {
-          // wait for the actuator to reach the setpoint
-        }
-      });
   }
 
   /**
@@ -261,15 +183,23 @@ public class Shooter extends SubsystemBase implements IPlannable {
       });
   }
 
+  public Command togglePneumaticsCommand() {
+    return this.runOnce(() -> {
+        if (m_leftDoubleSolenoid.get() == Value.kForward) {
+          retractShooter();
+        } else if (m_leftDoubleSolenoid.get() == Value.kReverse) {
+          extendShooter();
+        }
+      });
+  }
+
   public Map<String, Command> getNamedCommands() {
     return Map.of(
       // "Example_Command", exampleCommand(),
       "Stop_Shooter_Motors",
       stopMotorsCommand(),
-      "Score_In_Amp",
-      scoreInAmp(),
-      "Score_In_Speaker",
-      scoreInSpeaker(),
+      "Run_Shooter",
+      runShooterCommand(),
       "Set_Actuators_Up",
       setElevationUpCommand(),
       "Set_Actuators_Down",
