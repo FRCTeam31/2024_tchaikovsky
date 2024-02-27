@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -126,6 +127,15 @@ public class Shooter extends SubsystemBase implements IPlannable {
 
   //#region Shooter Commands
 
+  public Command runShooterForTime(long timeInMilliseconds, int speed) {
+    return this.run(() -> {
+        long initTime = RobotController.getFPGATime();
+        while (RobotController.getFPGATime() - initTime <= timeInMilliseconds) {
+          runShooter(speed);
+        }
+      });
+  }
+
   /**
    * Stops the shooter motors
    * @return
@@ -206,7 +216,9 @@ public class Shooter extends SubsystemBase implements IPlannable {
       "Load_Amp",
       loadNoteForAmp(),
       "Unload_Shooter",
-      unloadNoteForSpeaker()
+      unloadNoteForSpeaker(),
+      "Run_Shooter_For_2_Seconds",
+      runShooterForTime(2000, 1)
     );
   }
 
