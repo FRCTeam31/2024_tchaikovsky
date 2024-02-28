@@ -6,10 +6,13 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -19,11 +22,21 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.config.RobotConfig;
+import java.util.Map;
 import prime.config.PrimeConfigurator;
 
 public class Robot extends TimedRobot {
 
-  public ShuffleboardTab d_robotTab = Shuffleboard.getTab("Robot");
+  private ShuffleboardTab d_robotTab = Shuffleboard.getTab("Robot");
+  private GenericEntry d_allianceEntry = d_robotTab
+    .add("Alliance Color", false)
+    .withSize(3, 0)
+    .withPosition(12, 0)
+    .withWidget(BuiltInWidgets.kBooleanBox)
+    .withProperties(
+      Map.of("Color when true", "#FF0000", "Color when false", "#0000FF")
+    )
+    .getEntry();
 
   public boolean autoEnabled = false;
 
@@ -39,27 +52,17 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
-    // Create the roboh the default config
-    // m_robotContainer =
-    // new RobotContainer(readConfigFromFile(m_defaultConfigNt container witame));
-    m_robotContainer = new RobotContainer(RobotConfig.getDefault());
+    CameraServer.startAutomaticCapture();
 
-    // Set up configuration selection
-    m_configChooser = PrimeConfigurator.buildConfigChooser(m_defaultConfigName);
-    d_robotTab
-      .add(m_configChooser)
-      .withWidget(BuiltInWidgets.kComboBoxChooser)
-      .withSize(2, 1)
-      .withPosition(0, 0);
+    m_robotContainer = new RobotContainer(RobotConfig.getDefault());
 
     // Build an auto chooser. This will use Commands.none() as the default option.
     m_autoChooser = AutoBuilder.buildAutoChooser(m_defaultAutoName);
-
-    m_robotContainer.d_robotTab
+    d_robotTab
       .add(m_autoChooser)
       .withWidget(BuiltInWidgets.kComboBoxChooser)
-      .withSize(2, 1)
-      .withPosition(0, 1);
+      .withSize(3, 1)
+      .withPosition(3, 3);
   }
 
   /**
@@ -75,6 +78,10 @@ public class Robot extends TimedRobot {
       m_selectedConfigName = m_configChooser.getSelected();
       configureRobot(m_selectedConfigName);
     }
+
+    d_allianceEntry.setBoolean(
+      DriverStation.getAlliance().get() == Alliance.Red
+    );
   }
 
   /**

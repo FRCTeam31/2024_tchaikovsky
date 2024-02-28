@@ -41,7 +41,7 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
     .withPosition(8, 2)
     .withSize(2, 1)
     .getEntry();
-  private GenericEntry d_climbControlsActiveEntry = d_tab
+  public GenericEntry d_climbControlsActiveEntry = d_tab
     .add("Climb Controls Active", false)
     .withWidget(BuiltInWidgets.kBooleanBox)
     .withPosition(5, 1)

@@ -21,6 +21,7 @@ public class Limelight extends SubsystemBase {
 
   private NetworkTable m_limelightTable;
 
+  private ShuffleboardTab d_robotTab = Shuffleboard.getTab("Robot");
   private ShuffleboardTab d_tab = Shuffleboard.getTab("Limelight");
   private GenericEntry d_txEntry = d_tab
     .add("Horizontal Target Offset", 0)
@@ -57,6 +58,17 @@ public class Limelight extends SubsystemBase {
   public Limelight(Pose3d cameraPose) {
     m_limelightTable = NetworkTableInstance.getDefault().getTable("limelight");
     setCameraPose(cameraPose);
+
+    d_robotTab
+      .addCamera(
+        "Limelight Stream",
+        "LL2",
+        "http://limelight.local:5800/stream.mjpg"
+      )
+      .withSize(5, 4)
+      .withPosition(6, 0)
+      .withWidget(BuiltInWidgets.kCameraStream)
+      .withProperties(Map.of("Show controls", false, "Show crosshair", false));
   }
 
   //#region Basic Targeting Data

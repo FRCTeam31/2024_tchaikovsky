@@ -45,11 +45,11 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
   private final DoublePublisher m_gyroPublisher;
 
   private ShuffleboardTab d_driveTab = Shuffleboard.getTab("Drivetrain");
-  private GenericEntry d_snapToEnabledEntry = d_driveTab
+  public GenericEntry d_snapToEnabledEntry = d_driveTab
     .add("SnapTo Enabled", false)
     .withWidget(BuiltInWidgets.kBooleanBox)
     .getEntry();
-  private GenericEntry d_inHighGearEntry = d_driveTab
+  public GenericEntry d_inHighGearEntry = d_driveTab
     .add("In High Gear", false)
     .getEntry();
   private GenericEntry d_gyroAngle = d_driveTab
@@ -61,7 +61,7 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
   // Gyro and Kinematics
   public Pigeon2 m_gyro;
   public SwerveDriveKinematics m_kinematics;
-  private boolean m_inHighGear = true;
+  public boolean m_inHighGear = true;
 
   // Swerve Modules, in CCW order from FL to FR
   // SwerveModule m_frontLeftModule, m_rearLeftModule, m_rearRightModule, m_frontRightModule;

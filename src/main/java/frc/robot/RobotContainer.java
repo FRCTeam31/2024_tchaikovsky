@@ -4,9 +4,9 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -24,8 +24,8 @@ import prime.control.PrimeXboxController;
 
 public class RobotContainer {
 
-  public RobotConfig m_config;
-  public ShuffleboardTab d_robotTab = Shuffleboard.getTab("Robot");
+  private RobotConfig m_config;
+  private ShuffleboardTab d_robotTab = Shuffleboard.getTab("Robot");
 
   public PrimeXboxController m_driverController;
   public PrimeXboxController m_operatorController;
@@ -88,7 +88,11 @@ public class RobotContainer {
   }
 
   public void configureRobotDashboard() {
-    d_robotTab.add("Power Hub", m_pdh);
+    d_robotTab
+      .add("Power Hub", m_pdh)
+      .withSize(3, 3)
+      .withPosition(3, 0)
+      .withWidget(BuiltInWidgets.kPowerDistribution);
   }
 
   /**
