@@ -27,6 +27,10 @@ public class LinearActuator {
     m_linearActuatorVictorSPX.set(VictorSPXControlMode.PercentOutput, -1);
   }
 
+  public void set(double speed) {
+    m_linearActuatorVictorSPX.set(VictorSPXControlMode.PercentOutput, speed);
+  }
+
   public void stop() {
     m_linearActuatorVictorSPX.set(VictorSPXControlMode.PercentOutput, 0);
   }
@@ -35,7 +39,7 @@ public class LinearActuator {
     return potentiometer.getVoltage() / MAX_VOLTAGE;
   }
 
-  public void set(double desiredPositionPercent) {
+  public void setPosition(double desiredPositionPercent) {
     if (desiredPositionPercent > getPosition()) {
       while (getPosition() < desiredPositionPercent) {
         runForward();

@@ -27,7 +27,7 @@ public class Intake extends SubsystemBase implements IPlannable {
   private LazyCANSparkMax m_angleRight;
   private PIDController m_anglePid;
   private double m_angleStartPoint;
-  private boolean m_angleToggledIn;
+  public boolean m_angleToggledIn;
   private Debouncer m_angleToggleDebouncer = new Debouncer(
     0.1,
     Debouncer.DebounceType.kBoth
@@ -149,16 +149,12 @@ public class Intake extends SubsystemBase implements IPlannable {
     d_pidOutputEntry.setDouble(pidOutput);
     // artificial limits
     if (currentPosition < m_angleStartPoint && pidOutput > 0) {
-      // if (!m_bottomLimitSwitch.get()) {
       setAngleMotorSpeed(MathUtil.clamp(pidOutput, 0, 0.5));
-      // }
     } else if (
       currentPosition > (m_angleStartPoint - m_config.PositionDelta) &&
       pidOutput < 0
     ) {
-      // if (!m_topLimitSwitch.get()) {
       setAngleMotorSpeed(MathUtil.clamp(pidOutput, -0.5, 0));
-      // }
     } else {
       setAngleMotorSpeed(0);
     }

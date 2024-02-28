@@ -32,22 +32,30 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
   private GenericEntry d_leftLimitEntry = d_tab
     .add("Left Climber Limit Switch", false)
     .withWidget(BuiltInWidgets.kBooleanBox)
+    .withPosition(3, 2)
+    .withSize(2, 1)
     .getEntry();
   private GenericEntry d_rightLimitEntry = d_tab
     .add("Right Climber Limit Switch", false)
     .withWidget(BuiltInWidgets.kBooleanBox)
+    .withPosition(8, 2)
+    .withSize(2, 1)
     .getEntry();
   private GenericEntry d_climbControlsActiveEntry = d_tab
     .add("Climb Controls Active", false)
     .withWidget(BuiltInWidgets.kBooleanBox)
+    .withPosition(5, 1)
+    .withSize(3, 1)
     .getEntry();
   private GenericEntry d_leftServoAngleEntry = d_tab
     .add("Left Servo Angle", 0)
     .withWidget(BuiltInWidgets.kGyro)
+    .withPosition(8, 0)
     .getEntry();
   private GenericEntry d_rightServoAngleEntry = d_tab
     .add("Right Servo Angle", 0)
     .withWidget(BuiltInWidgets.kGyro)
+    .withPosition(8, 0)
     .getEntry();
 
   /**

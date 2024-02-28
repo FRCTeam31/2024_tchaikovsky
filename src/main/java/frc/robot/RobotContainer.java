@@ -38,6 +38,9 @@ public class RobotContainer {
   public PowerDistribution m_pdh;
 
   public RobotContainer(RobotConfig config) {
+    m_driverController = new PrimeXboxController(Controls.DRIVER_PORT);
+    m_operatorController = new PrimeXboxController(Controls.OPERATOR_PORT);
+
     reconfigure(config);
   }
 
@@ -92,9 +95,6 @@ public class RobotContainer {
    * Creates the controller and configures teleop controls
    */
   public void configureTeleopControls() {
-    m_driverController = new PrimeXboxController(Controls.DRIVER_PORT);
-    m_operatorController = new PrimeXboxController(Controls.OPERATOR_PORT);
-
     // Controls for Driving
     m_drivetrain.setDefaultCommand(
       m_drivetrain.defaultDriveCommand(
@@ -148,52 +148,34 @@ public class RobotContainer {
     // Operator Controls =================================
 
     // Always be updating the intake angle PID
-    // m_intake.setDefaultCommand(m_intake.seekAngleSetpointCommand());
+    m_intake.setDefaultCommand(m_intake.seekAngleSetpointCommand());
+    m_shooter.setDefaultCommand(m_shooter.seekElevationSetpointCommand());
 
-    m_operatorController.a().onTrue(m_intake.toggleIntakeInAndOutCommand()); // Set intake angle in/out
-    // m_operatorController // Raise intake, load note for amp score
-    //   .y()
-    //   .onTrue(
-    //     m_intake
-    //       .setIntakeInCommand()
-    //       .andThen(m_intake.waitForIntakeToReachAngleSetpointCommand())
-    //       .andThen(m_shooter.loadNoteForAmp())
-    //   );
-    // m_operatorController // Raise intake, unload note from shooter into intake
-    //   .b()
-    //   .onTrue(
-    //     m_intake
-    //       .setIntakeInCommand()
-    //       .andThen(m_intake.waitForIntakeToReachAngleSetpointCommand())
-    //   )
-    //   .whileTrue(
-    //     m_shooter
-    //       .unloadNoteForSpeaker()
-    //       .alongWith(m_intake.setRollersSpeedCommand(() -> 0.5))
-    //   )
-    //   .onFalse(
-    //     m_shooter.stopMotorsCommand().alongWith(m_intake.stopRollersCommand())
-    //   );
+    m_operatorController.a().onTrue(m_intake.toggleIntakeInAndOutCommand()); // Set intake angle in/out // TODO: Test
 
-    m_operatorController // Raise shooter, score in amp
+    m_operatorController // Raise/lower shooter
       .rightBumper()
-      .onTrue(m_shooter.setElevationUpCommand()) // wait is integrated
-      .onFalse(m_shooter.stopMotorsCommand());
+      .onTrue(m_shooter.toggleElevationCommand()); // wait is integrated
 
-    // m_operatorController // Shoot into Speaker with both intake and shooter
-    //   .leftBumper()
-    //   .onTrue(m_shooter.setElevationDownCommand()) // wait is integrated
-    //   .whileTrue(
-    //     m_intake.setRollersSpeedCommand(() -> -1) // eject the note at full speed
-    //   )
-    //   .onFalse(
-    //     m_shooter.stopMotorsCommand() // stop everything
-    //   );
-
-    m_operatorController
+    m_operatorController // Shooting the note
       .b()
-      .whileTrue(m_shooter.scoreInSpeaker())
-      .onFalse(m_shooter.stopMotorsCommand());
+      .whileTrue(
+        m_shooter
+          .scoreInSpeaker()
+          .alongWith(
+            Commands.run(
+              () -> {
+                if (!m_shooter.m_shooterIsUp) {
+                  m_intake.runIntakeRollers(-1);
+                }
+              },
+              m_intake
+            )
+          )
+      )
+      .onFalse(
+        m_shooter.stopMotorsCommand().alongWith(m_intake.stopRollersCommand())
+      );
 
     m_operatorController // intake note
       .leftTrigger(0.1)
@@ -206,8 +188,23 @@ public class RobotContainer {
 
     m_operatorController // eject note
       .rightTrigger(0.1)
-      .whileTrue(m_intake.ejectNoteCommand())
-      .onFalse(m_intake.stopRollersCommand());
+      .whileTrue(
+        m_intake
+          .ejectNoteCommand()
+          .alongWith(
+            Commands.run(
+              () -> {
+                if (!m_shooter.m_shooterIsUp && m_intake.m_angleToggledIn) {
+                  m_shooter.runShooter(0.3);
+                }
+              },
+              m_shooter
+            )
+          )
+      )
+      .onFalse(
+        m_intake.stopRollersCommand().alongWith(m_shooter.stopMotorsCommand())
+      );
   }
 
   /**

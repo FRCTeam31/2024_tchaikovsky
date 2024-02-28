@@ -4,6 +4,8 @@ import com.ctre.phoenix.motorcontrol.VictorSPXControlMode;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -26,7 +28,12 @@ public class Shooter extends SubsystemBase implements IPlannable {
   private LinearActuator m_rightLinearActuator;
   private DigitalInput m_noteDetector;
 
-  private boolean m_shooterIsUp;
+  public boolean m_shooterIsUp;
+  private PIDController m_elevationPidController;
+  private Debouncer m_elevationToggleDebouncer = new Debouncer(
+    0.1,
+    Debouncer.DebounceType.kBoth
+  );
 
   // #region Shuffleboard
   // Shuffleboard configuration
@@ -59,6 +66,11 @@ public class Shooter extends SubsystemBase implements IPlannable {
     .add("Shooter is up", false)
     .withWidget(BuiltInWidgets.kBooleanBox)
     .getEntry();
+  private GenericEntry d_pidOutputEntry = d_shooterTab
+    .add("PID output", 0)
+    .withWidget(BuiltInWidgets.kNumberBar)
+    .withProperties(Map.of("Max", 2, "Min", -2))
+    .getEntry();
 
   // #endregion
 
@@ -87,8 +99,13 @@ public class Shooter extends SubsystemBase implements IPlannable {
         m_config.RightLinearActuatorAnalogChannel
       );
 
-    m_noteDetector = new DigitalInput(m_config.NoteDetectorDIOChannel);
+    // m_noteDetector = new DigitalInput(m_config.NoteDetectorDIOChannel);
     m_shooterIsUp = false;
+    m_elevationPidController = new PIDController(25, 0, 0, 0.02);
+    m_elevationPidController.setSetpoint(m_config.MinimumElevation);
+    d_shooterTab
+      .add("Elevation PID", m_elevationPidController)
+      .withWidget(BuiltInWidgets.kPIDController);
   }
 
   //#region Control Methods
@@ -122,7 +139,8 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * @return
    */
   public boolean isNoteLoaded() {
-    return m_noteDetector.get();
+    // return m_noteDetector.get();
+    return false;
   }
 
   /**
@@ -137,14 +155,25 @@ public class Shooter extends SubsystemBase implements IPlannable {
       ? m_config.MaximumElevation
       : m_config.MinimumElevation;
 
-    if (currentPosition < setpoint) {
-      // if the current position is below the setpoint, run the actuator forward
-      m_rightLinearActuator.runForward();
-    } else if (currentPosition > setpoint) {
-      // if the current position is above the setpoint, run the actuator in reverse
-      m_rightLinearActuator.runReverse();
+    var pidOutput = m_elevationPidController.calculate(
+      currentPosition,
+      setpoint
+    );
+
+    d_pidOutputEntry.setDouble(pidOutput);
+    var canGoHigher =
+      currentPosition < m_config.MaximumElevation && pidOutput > 0;
+    var canGoLower =
+      currentPosition > m_config.MinimumElevation && pidOutput < 0;
+
+    if (canGoHigher) {
+      m_leftLinearActuator.set(pidOutput);
+      m_rightLinearActuator.set(pidOutput);
+    } else if (canGoLower) {
+      m_leftLinearActuator.set(pidOutput);
+      m_rightLinearActuator.set(pidOutput);
     } else {
-      // if the current position is at the setpoint, stop the actuator
+      m_leftLinearActuator.stop();
       m_rightLinearActuator.stop();
     }
   }
@@ -208,7 +237,9 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * @return
    */
   public Command toggleElevationCommand() {
-    return this.runOnce(() -> m_shooterIsUp = !m_shooterIsUp);
+    return this.runOnce(() -> {
+        m_shooterIsUp = !m_elevationToggleDebouncer.calculate(m_shooterIsUp);
+      });
   }
 
   /**
