@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
@@ -458,17 +459,17 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
 
   // Command for resetting the gyro
   public Command resetGyroCommand() {
-    return this.runOnce(() -> resetGyro());
+    return Commands.runOnce(() -> resetGyro());
   }
 
   // Command for resetting the Robots odometry
   public Command resetOdometryCommand(Pose2d pose) {
-    return this.runOnce(() -> resetOdometry(pose));
+    return Commands.runOnce(() -> resetOdometry(pose));
   }
 
   // Command for toggling the shifter
   public Command toggleShifterCommand() {
-    return this.runOnce(() -> toggleShifter());
+    return Commands.runOnce(() -> toggleShifter());
   }
 
   // Command for setting the angle of the wheels
@@ -480,22 +481,20 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
    * Creates a command that enables snap to gyro control
    */
   public Command setSnapToGyroControlCommand(boolean enabled) {
-    return this.runOnce(() -> setSnapToGyroControl(enabled));
+    return Commands.runOnce(() -> setSnapToGyroControl(enabled));
   }
 
   // Command for toggling Snap-To controls
   public Command toggleSnapToAngleCommand() {
-    return this.runOnce(() -> {
-        toggleSnapToGyroControl();
-      });
+    return Commands.runOnce(() -> toggleSnapToGyroControl());
   }
 
   // Command for driving with Snap-To controls enabled
-  public Command driveWithSnapToAngleCommand(double angle) {
-    return this.runOnce(() -> {
-        setSnapToGyroControl(true);
-        m_snapToRotationController.setSetpoint(angle);
-      });
+  public Command setSnapToSetpoint(double angle) {
+    return Commands.runOnce(() -> {
+      setSnapToGyroControl(true);
+      m_snapToRotationController.setSetpoint(angle);
+    });
   }
 
   public Map<String, Command> getNamedCommands() {

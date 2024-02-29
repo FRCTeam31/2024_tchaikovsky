@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.ShooterConfig;
 import java.util.Map;
@@ -197,7 +198,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * @return
    */
   public Command stopMotorsCommand() {
-    return this.run(() -> stopMotors());
+    return Commands.runOnce(() -> stopMotors());
   }
 
   /**
@@ -205,7 +206,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * @return
    */
   public Command scoreInAmp() {
-    return this.run(() -> runShooter(0.5));
+    return Commands.run(() -> runShooter(0.5));
   }
 
   /**
@@ -213,7 +214,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * @return
    */
   public Command scoreInSpeaker() {
-    return this.run(() -> runShooter(1));
+    return Commands.run(() -> runShooter(1));
   }
 
   /**
@@ -221,7 +222,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * @return
    */
   public Command setElevationUpCommand() {
-    return this.runOnce(() -> m_shooterIsUp = true);
+    return Commands.runOnce(() -> m_shooterIsUp = true);
   }
 
   /**
@@ -229,7 +230,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * @return
    */
   public Command setElevationDownCommand() {
-    return this.runOnce(() -> m_shooterIsUp = false);
+    return Commands.runOnce(() -> m_shooterIsUp = false);
   }
 
   /**
@@ -237,9 +238,9 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * @return
    */
   public Command toggleElevationCommand() {
-    return this.runOnce(() -> {
-        m_shooterIsUp = !m_elevationToggleDebouncer.calculate(m_shooterIsUp);
-      });
+    return Commands.runOnce(() -> {
+      m_shooterIsUp = !m_elevationToggleDebouncer.calculate(m_shooterIsUp);
+    });
   }
 
   /**
@@ -255,41 +256,41 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * @return
    */
   public Command waitForElevationToReachSetpointCommand() {
-    return this.runOnce(() -> {
-        var setpoint = m_shooterIsUp
-          ? m_config.MaximumElevation
-          : m_config.MinimumElevation;
+    return Commands.runOnce(() -> {
+      var setpoint = m_shooterIsUp
+        ? m_config.MaximumElevation
+        : m_config.MinimumElevation;
 
-        var delta = Math.abs(getRightActuatorPosition() - setpoint);
+      var delta = Math.abs(getRightActuatorPosition() - setpoint);
 
-        while (delta > 0.05) {
-          // wait for the actuator to reach the setpoint
-        }
-      });
+      while (delta > 0.05) {
+        // wait for the actuator to reach the setpoint
+      }
+    });
   }
 
   /**
    * Loads a note into the shooter for dropping into the amp
    */
   public Command loadNoteForAmp() {
-    return this.runOnce(() -> {
-        while (!isNoteLoaded()) {
-          runShooter(0.5);
-        }
-        stopMotors();
-      });
+    return Commands.runOnce(() -> {
+      while (!isNoteLoaded()) {
+        runShooter(0.5);
+      }
+      stopMotors();
+    });
   }
 
   /**
    * Unloads a note from the shooter for shooting into the Speaker
    */
   public Command unloadNoteForSpeaker() {
-    return this.runOnce(() -> {
-        while (!isNoteLoaded()) {
-          runShooter(0.5);
-        }
-        stopMotors();
-      });
+    return Commands.runOnce(() -> {
+      while (!isNoteLoaded()) {
+        runShooter(0.5);
+      }
+      stopMotors();
+    });
   }
 
   public Map<String, Command> getNamedCommands() {

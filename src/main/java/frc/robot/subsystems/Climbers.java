@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.ClimbersConfig;
 import java.util.function.BooleanSupplier;
@@ -158,9 +159,9 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
    * @return
    */
   public Command toggleClimbControlsCommand() {
-    return this.runOnce(() -> {
-        m_climbControlsEnabled = !m_climbControlsEnabled;
-      });
+    return Commands.runOnce(() -> {
+      m_climbControlsEnabled = !m_climbControlsEnabled;
+    });
   }
 
   public Command defaultClimbingCommand(

@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.IntakeConfig;
 import java.util.Map;
@@ -175,14 +176,14 @@ public class Intake extends SubsystemBase implements IPlannable {
    * Command for running the Intake to Intake a Note
    */
   public Command setRollersSpeedCommand(DoubleSupplier speed) {
-    return this.run(() -> runIntakeRollers(speed.getAsDouble()));
+    return Commands.runOnce(() -> runIntakeRollers(speed.getAsDouble()));
   }
 
   /**
    * Command for running the Intake to Eject a Note
    */
   public Command ejectNoteCommand() {
-    return this.run(() -> runIntakeRollers(-1));
+    return Commands.runOnce(() -> runIntakeRollers(-1));
   }
 
   // Seeks an Angle Setpoint
@@ -194,7 +195,7 @@ public class Intake extends SubsystemBase implements IPlannable {
    * Command for setting the intake angle into loading position
    */
   public Command setIntakeInCommand() {
-    return this.runOnce(() -> m_angleToggledIn = true);
+    return Commands.runOnce(() -> m_angleToggledIn = true);
   }
 
   /**
@@ -202,31 +203,30 @@ public class Intake extends SubsystemBase implements IPlannable {
    * @return
    */
   public Command toggleIntakeInAndOutCommand() {
-    return this.runOnce(() ->
-        m_angleToggledIn = !m_angleToggleDebouncer.calculate(m_angleToggledIn)
-      );
+    return Commands.runOnce(() ->
+      m_angleToggledIn = !m_angleToggleDebouncer.calculate(m_angleToggledIn)
+    );
   }
 
   public Command waitForIntakeToReachAngleSetpointCommand() {
-    return this.runOnce(() -> {
-        while (!m_anglePid.atSetpoint()) {}
-      });
+    return Commands.runOnce(() -> {
+      while (!m_anglePid.atSetpoint()) {}
+    });
   }
 
   // Command for stopping the Intake Motors
-  public Command stopAllMotorsCommand() {
-    return this.run(() -> {
-        m_angleLeft.stopMotor();
-        m_angleRight.stopMotor();
-        m_rollers.stopMotor();
-      });
+  public Command stopArmMotorsCommand() {
+    return Commands.runOnce(() -> {
+      m_angleLeft.stopMotor();
+      m_angleRight.stopMotor();
+    });
   }
 
-  // Stops the motors for the Intake Rollers
+  // Command for stopping the Intake Motors
   public Command stopRollersCommand() {
-    return this.run(() -> {
-        m_rollers.stopMotor();
-      });
+    return Commands.runOnce(() -> {
+      m_rollers.stopMotor();
+    });
   }
 
   public Map<String, Command> getNamedCommands() {
@@ -245,7 +245,7 @@ public class Intake extends SubsystemBase implements IPlannable {
       "Wait_For_Intake_To_Reach_Setpoint",
       waitForIntakeToReachAngleSetpointCommand(),
       "Stop_All_Intake_Motors",
-      stopAllMotorsCommand(),
+      stopArmMotorsCommand(),
       "Stop_Intake_Rollers",
       stopRollersCommand()
     );
