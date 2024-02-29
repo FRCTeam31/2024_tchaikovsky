@@ -132,7 +132,7 @@ public class RobotConfig {
         false,
         true,
         new PrimePIDConstants(0.032, 0, 0),
-        48,
+        50,
         0,
         0
       );
