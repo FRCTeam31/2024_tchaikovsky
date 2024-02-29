@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -26,16 +27,16 @@ public class RobotContainer {
 
   private RobotConfig m_config;
   private ShuffleboardTab d_robotTab = Shuffleboard.getTab("Robot");
+  private PrimeXboxController m_driverController;
+  private PrimeXboxController m_operatorController;
 
-  public PrimeXboxController m_driverController;
-  public PrimeXboxController m_operatorController;
-  public Drivetrain m_drivetrain;
-  public Shooter m_shooter;
-  public Intake m_intake;
-  public Climbers m_climbers;
-  public Limelight m_limelight;
-  public LEDStrips m_leds;
-  public PowerDistribution m_pdh;
+  public Drivetrain Drivetrain;
+  public Shooter Shooter;
+  public Intake Intake;
+  public Climbers Climbers;
+  public Limelight Limelight;
+  public LEDStrips LEDs;
+  public PowerDistribution PDH;
 
   public RobotContainer(RobotConfig config) {
     m_driverController = new PrimeXboxController(Controls.DRIVER_PORT);
@@ -54,31 +55,32 @@ public class RobotContainer {
       CommandScheduler.getInstance().cancelAll();
 
       // Close subsystems before reconfiguring
-      if (m_drivetrain != null) m_drivetrain.close();
-      if (m_shooter != null) m_shooter.close();
-      if (m_intake != null) m_intake.close();
-      if (m_climbers != null) m_climbers.close();
-      if (m_leds != null) m_leds.close();
-      if (m_pdh != null) m_pdh.close();
+      if (Drivetrain != null) Drivetrain.close();
+      if (Shooter != null) Shooter.close();
+      if (Intake != null) Intake.close();
+      if (Climbers != null) Climbers.close();
+      if (LEDs != null) LEDs.close();
+      if (PDH != null) PDH.close();
 
       // Save new config
       m_config = config;
 
       // Create new subsystems
-      m_drivetrain = new Drivetrain(m_config);
-      m_shooter = new Shooter(m_config.Shooter);
-      m_intake = new Intake(m_config.Intake);
-      m_climbers = new Climbers(m_config.Climbers);
-      m_limelight = new Limelight(m_config.LimelightPose);
-      m_leds = new LEDStrips(m_config.LEDs);
-      m_pdh = new PowerDistribution();
+      Drivetrain = new Drivetrain(m_config);
+      Shooter = new Shooter(m_config.Shooter);
+      Intake = new Intake(m_config.Intake);
+      Climbers = new Climbers(m_config.Climbers);
+      Limelight = new Limelight(m_config.LimelightPose);
+      LEDs = new LEDStrips(m_config.LEDs);
+      PDH = new PowerDistribution();
 
       // Reconfigure bindings
       configureTeleopControls();
+
       // Register the named commands from each subsystem that may be used in PathPlanner
-      // NamedCommands.registerCommands(m_drivetrain.getNamedCommands());
-      // NamedCommands.registerCommands(m_shooter.getNamedCommands());
-      // NamedCommands.registerCommands(m_intake.getNamedCommands());
+      NamedCommands.registerCommands(Drivetrain.getNamedCommands());
+      NamedCommands.registerCommands(Shooter.getNamedCommands());
+      NamedCommands.registerCommands(Intake.getNamedCommands());
     } catch (Exception e) {
       DriverStation.reportError(
         "[ERROR] >> Failed to configure robot: " + e.getMessage(),
@@ -89,7 +91,7 @@ public class RobotContainer {
 
   public void configureRobotDashboard() {
     d_robotTab
-      .add("Power Hub", m_pdh)
+      .add("Power Hub", PDH)
       .withSize(3, 3)
       .withPosition(3, 0)
       .withWidget(BuiltInWidgets.kPowerDistribution);
@@ -100,8 +102,8 @@ public class RobotContainer {
    */
   public void configureTeleopControls() {
     // Controls for Driving
-    m_drivetrain.setDefaultCommand(
-      m_drivetrain.defaultDriveCommand(
+    Drivetrain.setDefaultCommand(
+      Drivetrain.defaultDriveCommand(
         m_driverController.getRightStickYSupplier(
           m_config.Drivetrain.DriveDeadband,
           m_config.Drivetrain.DeadbandCurveWeight
@@ -121,28 +123,26 @@ public class RobotContainer {
     // Controls for Snap-To
     m_driverController
       .pov(Controls.up)
-      .onTrue(m_drivetrain.setSnapToSetpoint(Math.toRadians(0)));
+      .onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(0)));
     m_driverController
       .pov(Controls.left)
-      .onTrue(m_drivetrain.setSnapToSetpoint(Math.toRadians(90)));
+      .onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(90)));
     m_driverController
       .pov(Controls.down)
-      .onTrue(m_drivetrain.setSnapToSetpoint(Math.toRadians(180)));
+      .onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(180)));
     m_driverController
       .pov(Controls.right)
-      .onTrue(m_drivetrain.setSnapToSetpoint(Math.toRadians(270)));
+      .onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(270)));
 
-    m_driverController
-      .button(Controls.A)
-      .onTrue(m_drivetrain.resetGyroCommand());
+    m_driverController.button(Controls.A).onTrue(Drivetrain.resetGyroCommand());
     m_driverController
       .button(Controls.B)
-      .onTrue(m_drivetrain.toggleShifterCommand());
+      .onTrue(Drivetrain.toggleShifterCommand());
 
     // Climbers
-    m_driverController.y().onTrue(m_climbers.toggleClimbControlsCommand());
-    m_climbers.setDefaultCommand(
-      m_climbers.defaultClimbingCommand(
+    m_driverController.y().onTrue(Climbers.toggleClimbControlsCommand());
+    Climbers.setDefaultCommand(
+      Climbers.defaultClimbingCommand(
         m_driverController.button(Controls.RB),
         m_driverController.button(Controls.LB),
         () -> m_driverController.getRawAxis(Controls.RIGHT_TRIGGER),
@@ -152,62 +152,62 @@ public class RobotContainer {
     // Operator Controls =================================
 
     // Always be updating the intake angle PID
-    m_intake.setDefaultCommand(m_intake.seekAngleSetpointCommand());
-    m_shooter.setDefaultCommand(m_shooter.seekElevationSetpointCommand());
+    Intake.setDefaultCommand(Intake.seekAngleSetpointCommand());
+    Shooter.setDefaultCommand(Shooter.seekElevationSetpointCommand());
 
-    m_operatorController.a().onTrue(m_intake.toggleIntakeInAndOutCommand()); // Set intake angle in/out // TODO: Test
+    m_operatorController.a().onTrue(Intake.toggleIntakeInAndOutCommand()); // Set intake angle in/out // TODO: Test
 
     m_operatorController // Raise/lower shooter
       .rightBumper()
-      .onTrue(m_shooter.toggleElevationCommand()); // wait is integrated
+      .onTrue(Shooter.toggleElevationCommand()); // wait is integrated
 
     m_operatorController // Shooting the note
       .b()
       .whileTrue(
-        m_shooter
+        Shooter
           .scoreInSpeaker()
           .alongWith(
             Commands.run(
               () -> {
-                if (!m_shooter.m_shooterIsUp) {
-                  m_intake.runIntakeRollers(-1);
+                if (!Shooter.m_shooterIsUp) {
+                  Intake.runIntakeRollers(-1);
                 }
               },
-              m_intake
+              Intake
             )
           )
       )
       .onFalse(
-        m_shooter.stopMotorsCommand().alongWith(m_intake.stopRollersCommand())
+        Shooter.stopMotorsCommand().alongWith(Intake.stopRollersCommand())
       );
 
     m_operatorController // intake note
       .leftTrigger(0.1)
       .whileTrue(
-        m_intake.setRollersSpeedCommand(() ->
+        Intake.setRollersSpeedCommand(() ->
           m_operatorController.getLeftTriggerAxis()
         )
       )
-      .onFalse(m_intake.stopRollersCommand());
+      .onFalse(Intake.stopRollersCommand());
 
     m_operatorController // eject note
       .rightTrigger(0.1)
       .whileTrue(
-        m_intake
+        Intake
           .ejectNoteCommand()
           .alongWith(
             Commands.run(
               () -> {
-                if (!m_shooter.m_shooterIsUp && m_intake.m_angleToggledIn) {
-                  m_shooter.runShooter(0.3);
+                if (!Shooter.m_shooterIsUp && Intake.m_angleToggledIn) {
+                  Shooter.runShooter(0.3);
                 }
               },
-              m_shooter
+              Shooter
             )
           )
       )
       .onFalse(
-        m_intake.stopRollersCommand().alongWith(m_shooter.stopMotorsCommand())
+        Intake.stopRollersCommand().alongWith(Shooter.stopMotorsCommand())
       );
   }
 
@@ -219,22 +219,22 @@ public class RobotContainer {
 
     m_driverController
       .start()
-      .whileTrue(m_drivetrain.sysIdQuasistatic(Direction.kForward))
-      .onFalse(Commands.runOnce(() -> m_drivetrain.stopMotors(), m_drivetrain));
+      .whileTrue(Drivetrain.sysIdQuasistatic(Direction.kForward))
+      .onFalse(Commands.runOnce(() -> Drivetrain.stopMotors(), Drivetrain));
 
     m_driverController
       .back()
-      .whileTrue(m_drivetrain.sysIdQuasistatic(Direction.kReverse))
-      .onFalse(Commands.runOnce(() -> m_drivetrain.stopMotors(), m_drivetrain));
+      .whileTrue(Drivetrain.sysIdQuasistatic(Direction.kReverse))
+      .onFalse(Commands.runOnce(() -> Drivetrain.stopMotors(), Drivetrain));
 
     m_driverController
       .rightBumper()
-      .whileTrue(m_drivetrain.sysIdDynamic(Direction.kForward))
-      .onFalse(Commands.runOnce(() -> m_drivetrain.stopMotors(), m_drivetrain));
+      .whileTrue(Drivetrain.sysIdDynamic(Direction.kForward))
+      .onFalse(Commands.runOnce(() -> Drivetrain.stopMotors(), Drivetrain));
 
     m_driverController
       .leftBumper()
-      .whileTrue(m_drivetrain.sysIdDynamic(Direction.kReverse))
-      .onFalse(Commands.runOnce(() -> m_drivetrain.stopMotors(), m_drivetrain));
+      .whileTrue(Drivetrain.sysIdDynamic(Direction.kReverse))
+      .onFalse(Commands.runOnce(() -> Drivetrain.stopMotors(), Drivetrain));
   }
 }

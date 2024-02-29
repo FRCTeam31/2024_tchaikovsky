@@ -3,6 +3,7 @@ package frc.robot.config;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.SerialPort.Port;
 import prime.control.PrimePIDConstants;
 
 public class RobotConfig {
@@ -144,7 +145,7 @@ public class RobotConfig {
 
     config.LimelightPose = new Pose3d(); // TODO: Find out what the pose (translation & rotation) of the camera lens is from the robot center -- ask Arseni to get it from the CAD model
 
-    config.LEDs = new LEDConfig(8, 9);
+    config.LEDs = new LEDConfig(Port.kUSB1, Port.kUSB2);
 
     return config;
   }

@@ -1,15 +1,15 @@
 package prime.control.LEDs;
 
-import edu.wpi.first.wpilibj.I2C;
-import edu.wpi.first.wpilibj.I2C.Port;
+import edu.wpi.first.wpilibj.SerialPort;
+import edu.wpi.first.wpilibj.SerialPort.Port;
 
 public class PrimeLEDController implements AutoCloseable {
 
-  private I2C m_i2c;
+  private SerialPort m_serial;
   private SectionState[] m_lastPackets;
 
-  public PrimeLEDController(int deviceI2CAddress, int sectionCount) {
-    m_i2c = new I2C(Port.kOnboard, deviceI2CAddress);
+  public PrimeLEDController(Port port, int sectionCount) {
+    m_serial = new SerialPort(115200, port);
     m_lastPackets = new SectionState[sectionCount];
   }
 
@@ -32,7 +32,7 @@ public class PrimeLEDController implements AutoCloseable {
     var packet = state.toSectionPacket(section);
 
     // Write the data packet to the controller
-    m_i2c.writeBulk(packet, packet.length);
+    m_serial.write(packet, packet.length);
   }
 
   /**
@@ -81,6 +81,6 @@ public class PrimeLEDController implements AutoCloseable {
 
   @Override
   public void close() throws Exception {
-    m_i2c.close();
+    m_serial.close();
   }
 }
