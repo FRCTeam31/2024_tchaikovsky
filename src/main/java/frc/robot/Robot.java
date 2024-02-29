@@ -50,8 +50,6 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
-    CameraServer.startAutomaticCapture();
-
     m_robotContainer = new RobotContainer(RobotConfig.getDefault());
     m_robotContainer.LEDs.setLeftSection(
       0,
