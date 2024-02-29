@@ -41,21 +41,29 @@ public class Intake extends SubsystemBase implements IPlannable {
     .add("Position L (rotations)", 0)
     .withWidget(BuiltInWidgets.kNumberBar)
     .withProperties(Map.of("Max", 50, "Min", -50))
+    .withPosition(6, 1)
+    .withSize(2, 2)
     .getEntry();
   private GenericEntry d_positionRightEntry = d_intakeTab
     .add("Position R (rotations)", 0)
     .withWidget(BuiltInWidgets.kNumberBar)
     .withProperties(Map.of("Max", 50, "Min", -50))
+    .withPosition(8, 1)
+    .withSize(2, 2)
     .getEntry();
   private GenericEntry d_pidOutputEntry = d_intakeTab
     .add("PID output", 0)
     .withWidget(BuiltInWidgets.kNumberBar)
     .withProperties(Map.of("Max", 2, "Min", -2))
+    .withPosition(4, 1)
+    .withSize(2, 2)
     .getEntry();
 
   private GenericEntry d_intakeSetpoint = d_intakeTab
     .add("Angle Toggled In", true)
     .withWidget(BuiltInWidgets.kBooleanBox)
+    .withPosition(2, 1)
+    .withSize(1, 2)
     .getEntry();
 
   // #endregion
@@ -94,7 +102,9 @@ public class Intake extends SubsystemBase implements IPlannable {
     m_anglePid.setSetpoint(m_angleStartPoint);
     d_intakeTab
       .add("Angle PID", m_anglePid)
-      .withWidget(BuiltInWidgets.kPIDController);
+      .withWidget(BuiltInWidgets.kPIDController)
+      .withPosition(3, 1)
+      .withSize(1, 2);
     // m_bottomLimitSwitch = new DigitalInput(config.BottomLimitSwitchChannel);
     // m_topLimitSwitch = new DigitalInput(config.TopLimitSwitchChannel);
   }

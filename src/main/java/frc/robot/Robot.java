@@ -40,10 +40,6 @@ public class Robot extends TimedRobot {
 
   public boolean autoEnabled = false;
 
-  private final String m_defaultConfigName = "swerve_test_bot.json";
-  private SendableChooser<String> m_configChooser;
-  private String m_selectedConfigName = m_defaultConfigName;
-
   private final String m_defaultAutoName = "Speaker Auto 1";
   public static SendableChooser<Command> m_autoChooser;
   private Command m_autonomousCommand;
@@ -72,12 +68,6 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-    // Check the selected config name to see if it has changed
-    if (m_selectedConfigName != m_configChooser.getSelected()) {
-      // A new config has been selected, save the new name and reconfigure the robot
-      m_selectedConfigName = m_configChooser.getSelected();
-      configureRobot(m_selectedConfigName);
-    }
 
     d_allianceEntry.setBoolean(
       DriverStation.getAlliance().get() == Alliance.Red
