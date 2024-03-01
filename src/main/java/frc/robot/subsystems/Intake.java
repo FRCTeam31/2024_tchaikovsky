@@ -6,6 +6,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -239,6 +240,15 @@ public class Intake extends SubsystemBase implements IPlannable {
     });
   }
 
+  public Command runIntakeForTime(long timeInMilliseconds, int speed) {
+    return this.run(() -> {
+        long initTime = RobotController.getFPGATime();
+        while (RobotController.getFPGATime() - initTime <= timeInMilliseconds) {
+          runIntakeRollers(speed);
+        }
+      });
+  }
+
   public Map<String, Command> getNamedCommands() {
     return Map.of(
       // "Example_Command", exampleCommand(),
@@ -257,7 +267,11 @@ public class Intake extends SubsystemBase implements IPlannable {
       "Stop_All_Intake_Motors",
       stopArmMotorsCommand(),
       "Stop_Intake_Rollers",
-      stopRollersCommand()
+      stopRollersCommand(),
+      "Intake_Note_For_2_Seconds",
+      runIntakeForTime(2000, -1),
+      "Outtake_Note_For_2_Seconds",
+      runIntakeForTime(2000, 1)
     );
   }
 
