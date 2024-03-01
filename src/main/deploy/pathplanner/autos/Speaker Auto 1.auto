@@ -12,6 +12,44 @@
     "data": {
       "commands": [
         {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Outtake_Note_For_2_Seconds"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Run_Shooter_For_2_Seconds"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Stop_Intake_Rollers"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Stop_Shooter_Motors"
+                }
+              }
+            ]
+          }
+        },
+        {
           "type": "named",
           "data": {
             "name": "Toggle_Intake"
@@ -26,13 +64,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Toggle_Intake"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Stop_Intake_Rollers"
+            "name": "Intake_Note_For_2_Seconds"
           }
         },
         {
@@ -83,6 +115,12 @@
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Speaker To Note Center"
           }
         }
       ]

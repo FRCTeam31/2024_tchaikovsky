@@ -2,16 +2,54 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.4,
-      "y": 5.5
+      "x": 0.76,
+      "y": 6.48
     },
-    "rotation": -90.0
+    "rotation": -30.0
   },
   "command": {
     "type": "sequential",
     "data": {
       "commands": [
         {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Outtake_Note_For_2_Seconds"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Run_Shooter_For_2_Seconds"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Stop_Intake_Rollers"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Stop_Shooter_Motors"
+                }
+              }
+            ]
+          }
+        },
+        {
           "type": "named",
           "data": {
             "name": "Toggle_Intake"
@@ -20,19 +58,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Speaker To Note Center"
+            "pathName": "Speaker to Left Note"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Toggle_Intake"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Stop_Intake_Rollers"
+            "name": "Intake_Note_For_2_Seconds"
           }
         },
         {
@@ -44,7 +76,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Note To Speaker Center"
+            "pathName": "Left Note to Speaker"
           }
         },
         {
