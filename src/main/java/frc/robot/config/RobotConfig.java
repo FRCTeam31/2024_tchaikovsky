@@ -133,15 +133,15 @@ public class RobotConfig {
         true,
         new PrimePIDConstants(0.032, 0, 0),
         50,
-        0,
-        0
+        4,
+        5
       );
 
     config.Shooter =
       new ShooterConfig(20, 19, false, false, 21, 0, 22, 1, 9, 0, 0.85);
 
     config.Climbers =
-      new ClimbersConfig(18, 17, true, true, 0.2, -1, 2, 3, 0, 1, 180, 150);
+      new ClimbersConfig(18, 17, true, true, 0.5, -1, 2, 3, 0, 1, 180, 150);
 
     config.LimelightPose = new Pose3d(); // TODO: Find out what the pose (translation & rotation) of the camera lens is from the robot center -- ask Arseni to get it from the CAD model
 

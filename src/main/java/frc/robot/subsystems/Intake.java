@@ -67,6 +67,16 @@ public class Intake extends SubsystemBase implements IPlannable {
     .withSize(1, 2)
     .getEntry();
 
+  private GenericEntry d_topLimitSwitch = d_intakeTab
+    .add("Top LimitSwitch", false)
+    .withWidget(BuiltInWidgets.kBooleanBox)
+    .getEntry();
+
+  private GenericEntry d_bottomLimitSwitch = d_intakeTab
+    .add("Bottom Limitswitch", false)
+    .withWidget(BuiltInWidgets.kBooleanBox)
+    .getEntry();
+
   // #endregion
 
   /**
@@ -76,6 +86,8 @@ public class Intake extends SubsystemBase implements IPlannable {
   public Intake(IntakeConfig config) {
     m_config = config;
     setName("Intake");
+    m_topLimitSwitch = new DigitalInput(m_config.TopLimitSwitchChannel);
+    m_bottomLimitSwitch = new DigitalInput(m_config.BottomLimitSwitchChannel);
 
     m_rollers =
       new LazyCANSparkMax(m_config.RollersCanId, MotorType.kBrushless);
@@ -160,11 +172,16 @@ public class Intake extends SubsystemBase implements IPlannable {
 
     d_pidOutputEntry.setDouble(pidOutput);
     // artificial limits
-    if (currentPosition < m_angleStartPoint && pidOutput > 0) {
+    if (
+      currentPosition < m_angleStartPoint &&
+      pidOutput > 0 &&
+      !m_topLimitSwitch.get()
+    ) {
       setAngleMotorSpeed(MathUtil.clamp(pidOutput, 0, 0.5));
     } else if (
       currentPosition > (m_angleStartPoint - m_config.PositionDelta) &&
-      pidOutput < 0
+      pidOutput < 0 &&
+      !m_bottomLimitSwitch.get()
     ) {
       setAngleMotorSpeed(MathUtil.clamp(pidOutput, -0.5, 0));
     } else {
@@ -179,6 +196,10 @@ public class Intake extends SubsystemBase implements IPlannable {
     d_positionLeftEntry.setDouble(getPositionLeft());
     d_positionRightEntry.setDouble(getPositionRight());
     d_intakeSetpoint.setBoolean(m_angleToggledIn);
+    d_bottomLimitSwitch.setBoolean(m_bottomLimitSwitch.get());
+    boolean topIsPressed = m_topLimitSwitch.get();
+    boolean myVar = topIsPressed;
+    d_topLimitSwitch.setBoolean(m_topLimitSwitch.get());
   }
 
   //#region Commands
