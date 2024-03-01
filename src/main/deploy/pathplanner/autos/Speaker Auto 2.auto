@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.4,
-      "y": 5.5
+      "x": 0.76,
+      "y": 6.48
     },
-    "rotation": -90.0
+    "rotation": -30.0
   },
   "command": {
     "type": "sequential",
@@ -58,7 +58,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Speaker To Note Center"
+            "pathName": "Speaker to Left Note"
           }
         },
         {
@@ -76,7 +76,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Note To Speaker Center"
+            "pathName": "Left Note to Speaker"
           }
         },
         {
@@ -115,12 +115,6 @@
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Speaker To Note Center"
           }
         }
       ]

@@ -55,4 +55,20 @@ public class SectionState {
       (byte) (this.directionReversed ? 1 : 0),
     };
   }
+
+  public static SectionState solidColor(Color color) {
+    return new SectionState(color, LEDPattern.Solid, 0, false);
+  }
+
+  public static SectionState blinkColor(Color color, int speed) {
+    return new SectionState(color, LEDPattern.Blink, speed, false);
+  }
+
+  public static SectionState raceColor(
+    Color color,
+    int speed,
+    boolean reversed
+  ) {
+    return new SectionState(color, LEDPattern.Race, speed, reversed);
+  }
 }

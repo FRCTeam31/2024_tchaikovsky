@@ -6,6 +6,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -41,20 +42,38 @@ public class Intake extends SubsystemBase implements IPlannable {
     .add("Position L (rotations)", 0)
     .withWidget(BuiltInWidgets.kNumberBar)
     .withProperties(Map.of("Max", 50, "Min", -50))
+    .withPosition(6, 1)
+    .withSize(2, 2)
     .getEntry();
   private GenericEntry d_positionRightEntry = d_intakeTab
     .add("Position R (rotations)", 0)
     .withWidget(BuiltInWidgets.kNumberBar)
     .withProperties(Map.of("Max", 50, "Min", -50))
+    .withPosition(8, 1)
+    .withSize(2, 2)
     .getEntry();
   private GenericEntry d_pidOutputEntry = d_intakeTab
     .add("PID output", 0)
     .withWidget(BuiltInWidgets.kNumberBar)
     .withProperties(Map.of("Max", 2, "Min", -2))
+    .withPosition(4, 1)
+    .withSize(2, 2)
     .getEntry();
 
   private GenericEntry d_intakeSetpoint = d_intakeTab
     .add("Angle Toggled In", true)
+    .withWidget(BuiltInWidgets.kBooleanBox)
+    .withPosition(2, 1)
+    .withSize(1, 2)
+    .getEntry();
+
+  private GenericEntry d_topLimitSwitch = d_intakeTab
+    .add("Top LimitSwitch", false)
+    .withWidget(BuiltInWidgets.kBooleanBox)
+    .getEntry();
+
+  private GenericEntry d_bottomLimitSwitch = d_intakeTab
+    .add("Bottom Limitswitch", false)
     .withWidget(BuiltInWidgets.kBooleanBox)
     .getEntry();
 
@@ -67,6 +86,8 @@ public class Intake extends SubsystemBase implements IPlannable {
   public Intake(IntakeConfig config) {
     m_config = config;
     setName("Intake");
+    m_topLimitSwitch = new DigitalInput(m_config.TopLimitSwitchChannel);
+    m_bottomLimitSwitch = new DigitalInput(m_config.BottomLimitSwitchChannel);
 
     m_rollers =
       new LazyCANSparkMax(m_config.RollersCanId, MotorType.kBrushless);
@@ -94,7 +115,9 @@ public class Intake extends SubsystemBase implements IPlannable {
     m_anglePid.setSetpoint(m_angleStartPoint);
     d_intakeTab
       .add("Angle PID", m_anglePid)
-      .withWidget(BuiltInWidgets.kPIDController);
+      .withWidget(BuiltInWidgets.kPIDController)
+      .withPosition(3, 1)
+      .withSize(1, 2);
     // m_bottomLimitSwitch = new DigitalInput(config.BottomLimitSwitchChannel);
     // m_topLimitSwitch = new DigitalInput(config.TopLimitSwitchChannel);
   }
@@ -149,11 +172,16 @@ public class Intake extends SubsystemBase implements IPlannable {
 
     d_pidOutputEntry.setDouble(pidOutput);
     // artificial limits
-    if (currentPosition < m_angleStartPoint && pidOutput > 0) {
+    if (
+      currentPosition < m_angleStartPoint &&
+      pidOutput > 0 &&
+      !m_topLimitSwitch.get()
+    ) {
       setAngleMotorSpeed(MathUtil.clamp(pidOutput, 0, 0.5));
     } else if (
       currentPosition > (m_angleStartPoint - m_config.PositionDelta) &&
-      pidOutput < 0
+      pidOutput < 0 &&
+      !m_bottomLimitSwitch.get()
     ) {
       setAngleMotorSpeed(MathUtil.clamp(pidOutput, -0.5, 0));
     } else {
@@ -168,6 +196,10 @@ public class Intake extends SubsystemBase implements IPlannable {
     d_positionLeftEntry.setDouble(getPositionLeft());
     d_positionRightEntry.setDouble(getPositionRight());
     d_intakeSetpoint.setBoolean(m_angleToggledIn);
+    d_bottomLimitSwitch.setBoolean(m_bottomLimitSwitch.get());
+    boolean topIsPressed = m_topLimitSwitch.get();
+    boolean myVar = topIsPressed;
+    d_topLimitSwitch.setBoolean(m_topLimitSwitch.get());
   }
 
   //#region Commands
@@ -229,6 +261,15 @@ public class Intake extends SubsystemBase implements IPlannable {
     });
   }
 
+  public Command runIntakeForTime(long timeInMilliseconds, int speed) {
+    return this.run(() -> {
+        long initTime = RobotController.getFPGATime();
+        while (RobotController.getFPGATime() - initTime <= timeInMilliseconds) {
+          runIntakeRollers(speed);
+        }
+      });
+  }
+
   public Map<String, Command> getNamedCommands() {
     return Map.of(
       // "Example_Command", exampleCommand(),
@@ -247,7 +288,11 @@ public class Intake extends SubsystemBase implements IPlannable {
       "Stop_All_Intake_Motors",
       stopArmMotorsCommand(),
       "Stop_Intake_Rollers",
-      stopRollersCommand()
+      stopRollersCommand(),
+      "Intake_Note_For_2_Seconds",
+      runIntakeForTime(2000, -1),
+      "Outtake_Note_For_2_Seconds",
+      runIntakeForTime(2000, 1)
     );
   }
 

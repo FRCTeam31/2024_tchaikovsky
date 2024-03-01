@@ -24,6 +24,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.config.RobotConfig;
 import java.util.Map;
 import prime.config.PrimeConfigurator;
+import prime.control.LEDs.Color;
+import prime.control.LEDs.SectionState;
 
 public class Robot extends TimedRobot {
 
@@ -40,10 +42,6 @@ public class Robot extends TimedRobot {
 
   public boolean autoEnabled = false;
 
-  private final String m_defaultConfigName = "swerve_test_bot.json";
-  private SendableChooser<String> m_configChooser;
-  private String m_selectedConfigName = m_defaultConfigName;
-
   private final String m_defaultAutoName = "Speaker Auto 1";
   public static SendableChooser<Command> m_autoChooser;
   private Command m_autonomousCommand;
@@ -52,9 +50,15 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
-    CameraServer.startAutomaticCapture();
-
     m_robotContainer = new RobotContainer(RobotConfig.getDefault());
+    // m_robotContainer.LEDs.setLeftSection(
+    //   0,
+    //   SectionState.solidColor(Color.GREEN)
+    // );
+    // m_robotContainer.LEDs.setRightSection(
+    //   0,
+    //   SectionState.solidColor(Color.GREEN)
+    // );
 
     // Build an auto chooser. This will use Commands.none() as the default option.
     m_autoChooser = AutoBuilder.buildAutoChooser(m_defaultAutoName);
@@ -72,12 +76,6 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-    // Check the selected config name to see if it has changed
-    if (m_selectedConfigName != m_configChooser.getSelected()) {
-      // A new config has been selected, save the new name and reconfigure the robot
-      m_selectedConfigName = m_configChooser.getSelected();
-      configureRobot(m_selectedConfigName);
-    }
 
     d_allianceEntry.setBoolean(
       DriverStation.getAlliance().get() == Alliance.Red
@@ -109,8 +107,14 @@ public class Robot extends TimedRobot {
       return;
     }
 
-    m_robotContainer.m_drivetrain.resetGyro();
-    m_robotContainer.m_drivetrain.resetOdometry(startingPose);
+    // m_robotContainer.LEDs.setLeftSection(0, SectionState.solidColor(Color.RED));
+    // m_robotContainer.LEDs.setRightSection(
+    //   0,
+    //   SectionState.solidColor(Color.RED)
+    // );
+
+    m_robotContainer.Drivetrain.resetGyro();
+    m_robotContainer.Drivetrain.resetOdometry(startingPose);
     m_autonomousCommand.schedule();
   }
 
@@ -123,10 +127,20 @@ public class Robot extends TimedRobot {
       m_autonomousCommand.cancel();
     }
 
-    m_robotContainer.m_drivetrain.resetGyro();
-    m_robotContainer.m_drivetrain.resetOdometry(
+    m_robotContainer.Drivetrain.resetGyro();
+    m_robotContainer.Drivetrain.resetOdometry(
       new Pose2d(0, 0, Rotation2d.fromDegrees(0))
     );
+
+    // m_robotContainer.LEDs.setLeftSection(
+    //   0,
+    //   SectionState.solidColor(Color.BLUE)
+    // );
+    // m_robotContainer.LEDs.setRightSection(
+    //   0,
+    //   SectionState.solidColor(Color.BLUE)
+    // );
+
     m_robotContainer.configureTeleopControls();
   }
 
@@ -137,8 +151,8 @@ public class Robot extends TimedRobot {
   public void testInit() {
     CommandScheduler.getInstance().cancelAll();
 
-    m_robotContainer.m_drivetrain.resetGyro();
-    m_robotContainer.m_drivetrain.resetOdometry(
+    m_robotContainer.Drivetrain.resetGyro();
+    m_robotContainer.Drivetrain.resetOdometry(
       new Pose2d(0, 0, Rotation2d.fromDegrees(0))
     );
     m_robotContainer.configureTestControls();

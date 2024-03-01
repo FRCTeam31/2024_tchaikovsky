@@ -1,12 +1,14 @@
 package frc.robot.config;
 
+import edu.wpi.first.wpilibj.SerialPort.Port;
+
 public class LEDConfig {
 
-  public int LEDStripLeftAddress;
-  public int LEDStripRightAddress;
+  public Port LeftPort;
+  public Port RightPort;
 
-  public LEDConfig(int leftAddress, int rightAddress) {
-    LEDStripLeftAddress = leftAddress;
-    LEDStripRightAddress = rightAddress;
+  public LEDConfig(Port leftPort, Port rightPort) {
+    LeftPort = leftPort;
+    RightPort = rightPort;
   }
 }

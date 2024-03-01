@@ -1,5 +1,4 @@
 #include <Adafruit_NeoPixel.h>
-#include <Wire.h>
 
 // #define DEBUG_BLINK
 // #define DEBUG_PULSE
@@ -101,52 +100,43 @@ LEDSection sectionStates[SECTION_COUNT] = {
 };
 
 void receiveData(int byteCount) {
-    Serial.println("Received " + String(byteCount) + " I2C bytes");
-
-    while (Wire.available() > 7) {
-      Serial.println("Received packet");
+    while (Serial.available() > 7) {
       LEDSection packet;
 
-      byte sectionNum = Wire.read(); // Section (1 byte)
+      byte sectionNum = Serial.read(); // Section (1 byte)
 
       // Validate the section number
       if (sectionNum < 0 || sectionNum >= SECTION_COUNT) {
-        Serial.println("Received packet for invalid section: " + sectionNum);
 
         // Skip the rest of the packet
         for (int i = 1; i < 7; i++) {
-          Wire.read();
+          Serial.read();
         }
       }
       
       // Read the color (3 bytes)
-      byte r = Wire.read(); // R
-      byte g = Wire.read(); // G
-      byte b = Wire.read(); // B
+      byte r = Serial.read(); // R
+      byte g = Serial.read(); // G
+      byte b = Serial.read(); // B
       packet.color = packet.packColor(r, g, b);
 
-      packet.pattern = (LEDPattern)Wire.read(); // Pattern (1 byte)
-      packet.speed = Wire.read() * 10; // Speed (1 bytes)
-      packet.direction = Wire.read() > 0; // Direction (1 byte)
+      packet.pattern = (LEDPattern)Serial.read(); // Pattern (1 byte)
+      packet.speed = Serial.read() * 10; // Speed (1 bytes)
+      packet.direction = Serial.read() > 0; // Direction (1 byte)
       
       // Save the packet to the section buffer
       sectionStateBuffer[sectionNum] = packet;
     }
 
-    // Clear any extra data in the Wire buffer that isn't a full packet
-    while (Wire.available() > 0) {
-      Wire.read();
+    // Clear any extra data in the Serial buffer that isn't a full packet
+    while (Serial.available() > 0) {
+      Serial.read();
     }
 }
 
 void setup() {
   // Set up serial comms
   Serial.begin(115200);
-
-  // Setup I2C
-  Wire.begin(8);  // Set the device address to 8
-//   Wire.begin(9);  // Set the device address to 10
-  Wire.onReceive(receiveData);
 
   // Set up LED strip
   strip.begin();
@@ -166,28 +156,6 @@ void updateSection(int section) {
     if (sectionStateBuffer[section].pattern == Solid) {
         setSolid(section, sectionStateBuffer[section].color);
         return;
-    }
-
-    // Write debug info for each pattern
-    switch (sectionStateBuffer[section].pattern) {
-      case Blink:
-        #ifdef DEBUG_BLINK
-            Serial.println("Starting Blink pattern for section " + String(section) + " at " + String(data.lastFrameTimestamp) + "ms");
-            Serial.println("Next update time: " + String(data.lastFrameTimestamp + data.speed) + "ms -- Current time: " + String(data.lastFrameTimestamp) + "ms");
-        #endif
-        break;
-      case Race:
-        #ifdef DEBUG_RACEFORWARD
-            Serial.println("Starting Race pattern for section " + String(section) + " at " + String(data.lastFrameTimestamp) + "ms");
-            Serial.println("Next update time: " + String(data.lastFrameTimestamp + data.speed) + "ms -- Current time: " + String(data.lastFrameTimestamp) + "ms");
-        #endif
-        break;
-      case Pulse:
-        #ifdef DEBUG_PULSE
-            Serial.println("Starting Pulse pattern for section " + String(section) + " at " + String(data.lastFrameTimestamp) + "ms");
-            Serial.println("Next update time: " + String(data.lastFrameTimestamp + data.speed) + "ms -- Current time: " + String(data.lastFrameTimestamp) + "ms");
-        #endif
-        break;
     }
 
     // Move the buffer to the current state
@@ -242,10 +210,6 @@ void updateBlink(int section, LEDSection& data) {
 
   // If the current time is > the last frame timestamp + speed, update the section
   if (currentTime - data.lastFrameTimestamp >= data.speed) {
-    #ifdef DEBUG_BLINK
-      Serial.println("Updating blink pattern for section " + String(section));
-      Serial.println("Next update time: " + String(data.lastFrameTimestamp + data.speed) + "ms -- Current time: " + String(currentTime) + "ms");
-    #endif
     // Toggle the frame
     data.frame = (data.frame == 0) ? 1 : 0;
 
