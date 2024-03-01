@@ -51,14 +51,14 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     m_robotContainer = new RobotContainer(RobotConfig.getDefault());
-    m_robotContainer.LEDs.setLeftSection(
-      0,
-      SectionState.solidColor(Color.GREEN)
-    );
-    m_robotContainer.LEDs.setRightSection(
-      0,
-      SectionState.solidColor(Color.GREEN)
-    );
+    // m_robotContainer.LEDs.setLeftSection(
+    //   0,
+    //   SectionState.solidColor(Color.GREEN)
+    // );
+    // m_robotContainer.LEDs.setRightSection(
+    //   0,
+    //   SectionState.solidColor(Color.GREEN)
+    // );
 
     // Build an auto chooser. This will use Commands.none() as the default option.
     m_autoChooser = AutoBuilder.buildAutoChooser(m_defaultAutoName);
@@ -107,11 +107,11 @@ public class Robot extends TimedRobot {
       return;
     }
 
-    m_robotContainer.LEDs.setLeftSection(0, SectionState.solidColor(Color.RED));
-    m_robotContainer.LEDs.setRightSection(
-      0,
-      SectionState.solidColor(Color.RED)
-    );
+    // m_robotContainer.LEDs.setLeftSection(0, SectionState.solidColor(Color.RED));
+    // m_robotContainer.LEDs.setRightSection(
+    //   0,
+    //   SectionState.solidColor(Color.RED)
+    // );
 
     m_robotContainer.Drivetrain.resetGyro();
     m_robotContainer.Drivetrain.resetOdometry(startingPose);
@@ -132,14 +132,14 @@ public class Robot extends TimedRobot {
       new Pose2d(0, 0, Rotation2d.fromDegrees(0))
     );
 
-    m_robotContainer.LEDs.setLeftSection(
-      0,
-      SectionState.solidColor(Color.BLUE)
-    );
-    m_robotContainer.LEDs.setRightSection(
-      0,
-      SectionState.solidColor(Color.BLUE)
-    );
+    // m_robotContainer.LEDs.setLeftSection(
+    //   0,
+    //   SectionState.solidColor(Color.BLUE)
+    // );
+    // m_robotContainer.LEDs.setRightSection(
+    //   0,
+    //   SectionState.solidColor(Color.BLUE)
+    // );
 
     m_robotContainer.configureTeleopControls();
   }
