@@ -49,13 +49,21 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
   public GenericEntry d_snapToEnabledEntry = d_driveTab
     .add("SnapTo Enabled", false)
     .withWidget(BuiltInWidgets.kBooleanBox)
+    .withPosition(1, 7)
+    .withSize(3, 1)
     .getEntry();
   public GenericEntry d_inHighGearEntry = d_driveTab
     .add("In High Gear", false)
+    .withWidget(BuiltInWidgets.kBooleanBox)
+    .withPosition(1, 8)
+    .withSize(3, 1)
     .getEntry();
   private GenericEntry d_gyroAngle = d_driveTab
     .add("Gyro Angle", 0)
     .withWidget(BuiltInWidgets.kGyro)
+    .withPosition(2, 7)
+    .withSize(2, 2)
+
     .withProperties(Map.of("major tick spacing", 15, "starting angle", 0))
     .getEntry();
 
