@@ -48,9 +48,9 @@ public class RobotConfig {
         new PrimePIDConstants(0.019, 0, 0, 0, 0.11, 0, 0.05), // Drive PID
         new PrimePIDConstants(2, 0, 0), // Steering PID
         new PrimePIDConstants(4, 0, 0), // SnapTo PID,
-        new PrimePIDConstants(4, 0, 0), // Pathing Translation PID
+        new PrimePIDConstants(0.1, 0, 0), // Pathing Translation PID
         // new PrimePIDConstants(0.0425, 0, 0.004)
-        new PrimePIDConstants(2.5, 0, 0), // Pathing Rotation PID$
+        new PrimePIDConstants(0, 0, 0), // Pathing Rotation PID$
         0.15,
         0.5
       );

@@ -197,8 +197,6 @@ public class Intake extends SubsystemBase implements IPlannable {
     d_positionRightEntry.setDouble(getPositionRight());
     d_intakeSetpoint.setBoolean(m_angleToggledIn);
     d_bottomLimitSwitch.setBoolean(m_bottomLimitSwitch.get());
-    boolean topIsPressed = m_topLimitSwitch.get();
-    boolean myVar = topIsPressed;
     d_topLimitSwitch.setBoolean(m_topLimitSwitch.get());
   }
 
@@ -263,10 +261,7 @@ public class Intake extends SubsystemBase implements IPlannable {
 
   public Command runIntakeForTime(long timeInMilliseconds, int speed) {
     return this.run(() -> {
-        long initTime = RobotController.getFPGATime();
-        while (RobotController.getFPGATime() - initTime <= timeInMilliseconds) {
-          runIntakeRollers(speed);
-        }
+        runIntakeRollers(speed);
       });
   }
 
@@ -290,9 +285,9 @@ public class Intake extends SubsystemBase implements IPlannable {
       "Stop_Intake_Rollers",
       stopRollersCommand(),
       "Intake_Note_For_2_Seconds",
-      runIntakeForTime(2000, -1),
+      runIntakeForTime(2000, 1),
       "Outtake_Note_For_2_Seconds",
-      runIntakeForTime(2000, 1)
+      runIntakeForTime(2000, -1)
     );
   }
 

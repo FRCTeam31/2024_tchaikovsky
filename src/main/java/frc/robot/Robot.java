@@ -42,7 +42,7 @@ public class Robot extends TimedRobot {
 
   public boolean autoEnabled = false;
 
-  private final String m_defaultAutoName = "Speaker Auto 1";
+  private final String m_defaultAutoName = "Copy of Speaker Auto 1";
   public static SendableChooser<Command> m_autoChooser;
   private Command m_autonomousCommand;
 
