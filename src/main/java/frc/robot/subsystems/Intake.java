@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.config.IntakeConfig;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
@@ -259,10 +260,22 @@ public class Intake extends SubsystemBase implements IPlannable {
     });
   }
 
-  public Command runIntakeForTime(long timeInMilliseconds, int speed) {
-    return this.run(() -> {
-        runIntakeRollers(speed);
-      });
+  public Command intakeNoteForTime(double seconds, double speed) {
+    return Commands
+      .runOnce(() -> {
+        setRollersSpeedCommand(() -> speed);
+      })
+      .andThen(new WaitCommand(seconds))
+      .andThen(stopRollersCommand());
+  }
+
+  public Command outtakeNoteForTime(double seconds, double speed) {
+    return Commands
+      .runOnce(() -> {
+        setRollersSpeedCommand(() -> speed);
+      })
+      .andThen(new WaitCommand(seconds))
+      .andThen(stopRollersCommand());
   }
 
   public Map<String, Command> getNamedCommands() {
@@ -285,9 +298,9 @@ public class Intake extends SubsystemBase implements IPlannable {
       "Stop_Intake_Rollers",
       stopRollersCommand(),
       "Intake_Note_For_2_Seconds",
-      runIntakeForTime(2000, 1),
+      intakeNoteForTime(2, 0.5),
       "Outtake_Note_For_2_Seconds",
-      runIntakeForTime(2000, -1)
+      outtakeNoteForTime(2, -0.5)
     );
   }
 

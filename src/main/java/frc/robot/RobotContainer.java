@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.config.RobotConfig;
 import frc.robot.subsystems.Climbers;
@@ -82,6 +83,18 @@ public class RobotContainer {
       NamedCommands.registerCommands(Drivetrain.getNamedCommands());
       NamedCommands.registerCommands(Shooter.getNamedCommands());
       NamedCommands.registerCommands(Intake.getNamedCommands());
+
+      // Inter-Subsystem NamedCommands
+      NamedCommands.registerCommand(
+        "Run_Shooter_For_2_Seconds",
+        Shooter
+          .scoreInSpeakerCommand()
+          .andThen(new WaitCommand(0.25))
+          .andThen(Intake.ejectNoteCommand())
+          .andThen(new WaitCommand(2))
+          .andThen(Shooter.stopMotorsCommand())
+          .alongWith(Intake.stopRollersCommand())
+      );
     } catch (Exception e) {
       DriverStation.reportError(
         "[ERROR] >> Failed to configure robot: " + e.getMessage(),
@@ -167,7 +180,7 @@ public class RobotContainer {
       .b()
       .whileTrue(
         Shooter
-          .scoreInSpeaker()
+          .scoreInSpeakerCommand()
           .alongWith(
             Commands.run(
               () -> {

@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.config.ShooterConfig;
 import java.util.Map;
 import prime.movers.IPlannable;
@@ -194,6 +195,10 @@ public class Shooter extends SubsystemBase implements IPlannable {
 
   //#region Shooter Commands
 
+  public Command setShooterSpeedCommand() {
+    return Commands.run(() -> {});
+  }
+
   /**
    * Stops the shooter motors
    * @return
@@ -206,7 +211,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * Shootes a note at half speed
    * @return
    */
-  public Command scoreInAmp() {
+  public Command scoreInAmpCommand() {
     return Commands.run(() -> runShooter(0.5));
   }
 
@@ -214,7 +219,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * Shootes a note at full speed
    * @return
    */
-  public Command scoreInSpeaker() {
+  public Command scoreInSpeakerCommand() {
     return Commands.run(() -> runShooter(1));
   }
 
@@ -273,7 +278,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
   /**
    * Loads a note into the shooter for dropping into the amp
    */
-  public Command loadNoteForAmp() {
+  public Command loadNoteForAmpCommand() {
     return Commands.runOnce(() -> {
       while (!isNoteLoaded()) {
         runShooter(0.5);
@@ -285,7 +290,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
   /**
    * Unloads a note from the shooter for shooting into the Speaker
    */
-  public Command unloadNoteForSpeaker() {
+  public Command unloadNoteForSpeakerCommand() {
     return Commands.runOnce(() -> {
       while (!isNoteLoaded()) {
         runShooter(0.5);
@@ -294,13 +299,13 @@ public class Shooter extends SubsystemBase implements IPlannable {
     });
   }
 
-  public Command runShooterForTime(long timeInMilliseconds, int speed) {
-    return this.run(() -> {
-        long initTime = RobotController.getFPGATime();
-        while (RobotController.getFPGATime() - initTime <= timeInMilliseconds) {
-          runShooter(speed);
-        }
-      });
+  public Command runShooterForTime(double seconds, double speed) {
+    return Commands
+      .runOnce(() -> {
+        runShooter(speed);
+      })
+      .andThen(new WaitCommand(seconds))
+      .andThen(stopMotorsCommand());
   }
 
   public Map<String, Command> getNamedCommands() {
@@ -309,19 +314,17 @@ public class Shooter extends SubsystemBase implements IPlannable {
       "Stop_Shooter_Motors",
       stopMotorsCommand(),
       "Score_In_Amp",
-      scoreInAmp(),
+      scoreInAmpCommand(),
       "Score_In_Speaker",
-      scoreInSpeaker(),
+      scoreInSpeakerCommand(),
       "Set_Actuators_Up",
       setElevationUpCommand(),
       "Set_Actuators_Down",
       setElevationDownCommand(),
       "Load_Amp",
-      loadNoteForAmp(),
+      loadNoteForAmpCommand(),
       "Unload_Shooter",
-      unloadNoteForSpeaker(),
-      "Run_Shooter_For_2_Seconds",
-      runShooterForTime(2000, 1)
+      unloadNoteForSpeakerCommand()
     );
   }
 
