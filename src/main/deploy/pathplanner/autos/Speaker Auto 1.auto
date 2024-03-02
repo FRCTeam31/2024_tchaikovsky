@@ -12,41 +12,9 @@
     "data": {
       "commands": [
         {
-          "type": "parallel",
+          "type": "named",
           "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "Outtake_Note_For_2_Seconds"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Run_Shooter_For_2_Seconds"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "Stop_Intake_Rollers"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Stop_Shooter_Motors"
-                }
-              }
-            ]
+            "name": "Run_Shooter_For_2_Seconds"
           }
         },
         {
@@ -56,15 +24,22 @@
           }
         },
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "Speaker To Note Center"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Intake_Note_For_2_Seconds"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Speaker To Note Center"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Intake_Note_For_2_Seconds"
+                }
+              }
+            ]
           }
         },
         {
@@ -80,41 +55,9 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "named",
           "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "Outtake_Note_For_2_Seconds"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Run_Shooter_For_2_Seconds"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "Stop_Intake_Rollers"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Stop_Shooter_Motors"
-                }
-              }
-            ]
+            "name": "Run_Shooter_For_2_Seconds"
           }
         },
         {

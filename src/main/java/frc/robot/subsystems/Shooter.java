@@ -266,48 +266,6 @@ public class Shooter extends SubsystemBase implements IPlannable {
     return this.run(() -> seekElevationSetpoint());
   }
 
-  /**
-   * Waits for the elevation to reach the setpoint
-   * @return
-   */
-  public Command waitForElevationToReachSetpointCommand() {
-    return Commands.runOnce(() -> {
-      var setpoint = m_shooterIsUp
-        ? m_config.MaximumElevation
-        : m_config.MinimumElevation;
-
-      var delta = Math.abs(getRightActuatorPosition() - setpoint);
-
-      while (delta > 0.05) {
-        // wait for the actuator to reach the setpoint
-      }
-    });
-  }
-
-  /**
-   * Loads a note into the shooter for dropping into the amp
-   */
-  public Command loadNoteForAmpCommand() {
-    return Commands.runOnce(() -> {
-      while (!isNoteLoaded()) {
-        runShooter(0.5);
-      }
-      stopMotors();
-    });
-  }
-
-  /**
-   * Unloads a note from the shooter for shooting into the Speaker
-   */
-  public Command unloadNoteForSpeakerCommand() {
-    return Commands.runOnce(() -> {
-      while (!isNoteLoaded()) {
-        runShooter(0.5);
-      }
-      stopMotors();
-    });
-  }
-
   public Command runShooterForTime(double seconds, double speed) {
     return Commands
       .runOnce(() -> {
@@ -329,11 +287,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
       "Set_Actuators_Up",
       setElevationUpCommand(),
       "Set_Actuators_Down",
-      setElevationDownCommand(),
-      "Load_Amp",
-      loadNoteForAmpCommand(),
-      "Unload_Shooter",
-      unloadNoteForSpeakerCommand()
+      setElevationDownCommand()
     );
   }
 

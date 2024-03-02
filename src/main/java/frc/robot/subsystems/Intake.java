@@ -246,12 +246,6 @@ public class Intake extends SubsystemBase implements IPlannable {
     );
   }
 
-  public Command waitForIntakeToReachAngleSetpointCommand() {
-    return Commands.runOnce(() -> {
-      while (!m_anglePid.atSetpoint()) {}
-    });
-  }
-
   // Command for stopping the Intake Motors
   public Command stopArmMotorsCommand() {
     return Commands.runOnce(() -> {
@@ -268,10 +262,7 @@ public class Intake extends SubsystemBase implements IPlannable {
   }
 
   public Command intakeNoteForTime(double seconds, double speed) {
-    return Commands
-      .runOnce(() -> {
-        setRollersSpeedCommand(() -> speed);
-      })
+    return setRollersSpeedCommand(() -> speed)
       .andThen(new WaitCommand(seconds))
       .andThen(stopRollersCommand());
   }
@@ -298,14 +289,12 @@ public class Intake extends SubsystemBase implements IPlannable {
       seekAngleSetpointCommand(),
       "Set_Intake_In",
       setIntakeInCommand(),
-      "Wait_For_Intake_To_Reach_Setpoint",
-      waitForIntakeToReachAngleSetpointCommand(),
       "Stop_All_Intake_Motors",
       stopArmMotorsCommand(),
       "Stop_Intake_Rollers",
       stopRollersCommand(),
       "Intake_Note_For_2_Seconds",
-      intakeNoteForTime(2, 0.5),
+      intakeNoteForTime(2, 1),
       "Outtake_Note_For_2_Seconds",
       outtakeNoteForTime(2, -0.5)
     );

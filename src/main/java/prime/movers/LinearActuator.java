@@ -38,18 +38,4 @@ public class LinearActuator {
   public double getPosition() {
     return potentiometer.getVoltage() / MAX_VOLTAGE;
   }
-
-  public void setPosition(double desiredPositionPercent) {
-    if (desiredPositionPercent > getPosition()) {
-      while (getPosition() < desiredPositionPercent) {
-        runForward();
-      }
-    } else if (desiredPositionPercent < getPosition()) {
-      while (getPosition() > desiredPositionPercent) {
-        runReverse();
-      }
-    }
-
-    stop();
-  }
 }

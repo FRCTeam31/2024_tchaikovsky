@@ -90,9 +90,9 @@ public class RobotContainer {
         "Run_Shooter_For_2_Seconds",
         Shooter
           .scoreInSpeakerCommand()
-          .andThen(new WaitCommand(0.5))
+          .andThen(new WaitCommand(0.75))
           .andThen(Intake.ejectNoteCommand())
-          .andThen(new WaitCommand(2))
+          .andThen(new WaitCommand(0.75))
           .andThen(Shooter.stopMotorsCommand())
           .andThen(Intake.stopRollersCommand())
       );
