@@ -211,6 +211,13 @@ public class Intake extends SubsystemBase implements IPlannable {
   }
 
   /**
+   * Command for running the Intake to Intake a Note at a variable speed
+   */
+  public Command runRollersWithSpeedCommand(DoubleSupplier speed) {
+    return Commands.run(() -> runIntakeRollers(speed.getAsDouble()));
+  }
+
+  /**
    * Command for running the Intake to Eject a Note
    */
   public Command ejectNoteCommand() {

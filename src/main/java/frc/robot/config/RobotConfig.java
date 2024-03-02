@@ -138,7 +138,7 @@ public class RobotConfig {
       );
 
     config.Shooter =
-      new ShooterConfig(20, 19, false, false, 21, 0, 22, 1, 9, 0, 0.85);
+      new ShooterConfig(20, 19, false, false, 21, 0, 22, 1, 7, 0, 0.85);
 
     config.Climbers =
       new ClimbersConfig(18, 17, true, true, 0.5, -1, 2, 3, 0, 1, 180, 150);

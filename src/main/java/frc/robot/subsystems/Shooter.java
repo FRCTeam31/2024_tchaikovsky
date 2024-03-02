@@ -1,9 +1,11 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.VictorSPXControlMode;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.networktables.GenericEntry;
@@ -88,8 +90,11 @@ public class Shooter extends SubsystemBase implements IPlannable {
     m_talonFX = new TalonFX(m_config.TalonFXCanID);
     m_talonFX.getConfigurator().apply(new TalonFXConfiguration());
     m_talonFX.setInverted(true);
+    m_talonFX.setNeutralMode(NeutralModeValue.Brake);
+
     m_victorSPX = new VictorSPX(m_config.VictorSPXCanID);
     m_victorSPX.configFactoryDefault();
+    m_victorSPX.setNeutralMode(NeutralMode.Brake);
 
     m_leftLinearActuator =
       new LinearActuator(
@@ -102,7 +107,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
         m_config.RightLinearActuatorAnalogChannel
       );
 
-    // m_noteDetector = new DigitalInput(m_config.NoteDetectorDIOChannel);
+    m_noteDetector = new DigitalInput(m_config.NoteDetectorDIOChannel);
     m_shooterIsUp = false;
     m_elevationPidController = new PIDController(25, 0, 0, 0.02);
     m_elevationPidController.setSetpoint(m_config.MinimumElevation);
@@ -119,6 +124,10 @@ public class Shooter extends SubsystemBase implements IPlannable {
    */
   public void runShooter(double speed) {
     m_talonFX.set(speed);
+    m_victorSPX.set(VictorSPXControlMode.PercentOutput, speed * 3);
+  }
+
+  public void runGreenWheel(double speed) {
     m_victorSPX.set(VictorSPXControlMode.PercentOutput, speed);
   }
 
@@ -142,8 +151,8 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * @return
    */
   public boolean isNoteLoaded() {
-    // return m_noteDetector.get();
-    return false;
+    return !m_noteDetector.get();
+    // return false;
   }
 
   /**
@@ -220,7 +229,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * @return
    */
   public Command scoreInSpeakerCommand() {
-    return Commands.run(() -> runShooter(1));
+    return Commands.runOnce(() -> runShooter(1));
   }
 
   /**

@@ -20,31 +20,6 @@
                 "data": {
                   "name": "Run_Shooter_For_2_Seconds"
                 }
-              },
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 2.0
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "sequential",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "Run_Shooter_For_2_Seconds"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Outtake_Note_For_2_Seconds"
-                }
               }
             ]
           }
@@ -52,20 +27,7 @@
         {
           "type": "parallel",
           "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "Stop_Intake_Rollers"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Stop_Shooter_Motors"
-                }
-              }
-            ]
+            "commands": []
           }
         },
         {

@@ -454,6 +454,10 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     boolean fieldRelative
   ) {
     return this.run(() -> {
+        if (Math.abs(rotationSupplier.getAsDouble()) > 0.2) {
+          setSnapToGyroControl(false);
+        }
+
         var strafeX =
           -xSupplier.getAsDouble() *
           m_config.Drivetrain.MaxSpeedMetersPerSecond;

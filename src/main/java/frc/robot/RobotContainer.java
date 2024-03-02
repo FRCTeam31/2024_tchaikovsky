@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.config.RobotConfig;
 import frc.robot.subsystems.Climbers;
@@ -89,11 +90,11 @@ public class RobotContainer {
         "Run_Shooter_For_2_Seconds",
         Shooter
           .scoreInSpeakerCommand()
-          .andThen(new WaitCommand(0.25))
+          .andThen(new WaitCommand(0.5))
           .andThen(Intake.ejectNoteCommand())
           .andThen(new WaitCommand(2))
           .andThen(Shooter.stopMotorsCommand())
-          .alongWith(Intake.stopRollersCommand())
+          .andThen(Intake.stopRollersCommand())
       );
     } catch (Exception e) {
       DriverStation.reportError(
@@ -140,18 +141,19 @@ public class RobotContainer {
       .onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(0)));
     m_driverController
       .pov(Controls.left)
-      .onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(90)));
+      .onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(270)));
     m_driverController
       .pov(Controls.down)
       .onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(180)));
     m_driverController
       .pov(Controls.right)
-      .onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(270)));
+      .onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(90)));
 
-    m_driverController.button(Controls.A).onTrue(Drivetrain.resetGyroCommand());
+    m_driverController.a().onTrue(Drivetrain.resetGyroCommand());
+    m_driverController.b().onTrue(Drivetrain.toggleShifterCommand());
     m_driverController
-      .button(Controls.B)
-      .onTrue(Drivetrain.toggleShifterCommand());
+      .x()
+      .onTrue(Commands.runOnce(() -> Drivetrain.setSnapToGyroControl(false)));
 
     // Climbers
     m_driverController.y().onTrue(Climbers.toggleClimbControlsCommand());
@@ -178,28 +180,24 @@ public class RobotContainer {
 
     m_operatorController // Shooting the note
       .b()
-      .whileTrue(
+      .onTrue(
         Shooter
           .scoreInSpeakerCommand()
-          .alongWith(
-            Commands.run(
-              () -> {
-                if (!Shooter.m_shooterIsUp) {
-                  Intake.runIntakeRollers(-1);
-                }
-              },
-              Intake
-            )
-          )
-      )
-      .onFalse(
-        Shooter.stopMotorsCommand().alongWith(Intake.stopRollersCommand())
+          .andThen(new WaitCommand(0.75))
+          .andThen(Intake.ejectNoteCommand())
+          .andThen(new WaitCommand(1))
+          .andThen(Shooter.stopMotorsCommand())
+          .andThen(Intake.stopRollersCommand())
       );
+    // .whileTrue(Shooter.scoreInSpeakerCommand())
+    // .onFalse(
+    //   Shooter.stopMotorsCommand().alongWith(Intake.stopRollersCommand())
+    // );
 
     m_operatorController // intake note
       .leftTrigger(0.1)
       .whileTrue(
-        Intake.setRollersSpeedCommand(() ->
+        Intake.runRollersWithSpeedCommand(() ->
           m_operatorController.getLeftTriggerAxis()
         )
       )
@@ -207,23 +205,40 @@ public class RobotContainer {
 
     m_operatorController // eject note
       .rightTrigger(0.1)
-      .whileTrue(
-        Intake
-          .ejectNoteCommand()
-          .alongWith(
-            Commands.run(
-              () -> {
-                if (!Shooter.m_shooterIsUp && Intake.m_angleToggledIn) {
-                  Shooter.runShooter(0.3);
-                }
-              },
-              Shooter
-            )
-          )
-      )
+      .whileTrue(Intake.ejectNoteCommand())
       .onFalse(
         Intake.stopRollersCommand().alongWith(Shooter.stopMotorsCommand())
       );
+
+    m_operatorController // load note for amp
+      .y()
+      .onTrue(
+        Commands
+          .runOnce(() -> Intake.runIntakeRollers(-0.6)) // eject
+          .alongWith(Commands.runOnce(() -> Shooter.runShooter(0.10))) // load
+          .andThen(new WaitUntilCommand(Shooter::isNoteLoaded))
+          .withTimeout(1)
+          .andThen(new WaitCommand(0.075))
+          .andThen(Intake.stopRollersCommand())
+          .andThen(Shooter.stopMotorsCommand())
+      );
+    // .whileTrue(
+    //   Intake
+    //     .ejectNoteCommand()
+    //     .alongWith(
+    //       Commands.run(
+    //         () -> {
+    //           if (!Shooter.m_shooterIsUp && Intake.m_angleToggledIn) {
+    //             Shooter.runShooter(0.05);
+    //           }
+    //         },
+    //         Shooter
+    //       )
+    //     )
+    // )
+    // .onFalse(
+    //   Intake.stopRollersCommand().alongWith(Shooter.stopMotorsCommand())
+    // );
   }
 
   /**
