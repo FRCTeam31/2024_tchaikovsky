@@ -72,7 +72,7 @@ public class RobotContainer {
       Intake = new Intake(m_config.Intake);
       Climbers = new Climbers(m_config.Climbers);
       Limelight = new Limelight(m_config.LimelightPose);
-      // LEDs = new LEDStrips(m_config.LEDs);
+      LEDs = new LEDStrips(m_config.LEDs);
       PDH = new PowerDistribution();
 
       // Reconfigure bindings

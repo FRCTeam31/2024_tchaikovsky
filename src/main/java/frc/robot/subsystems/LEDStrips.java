@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.LEDConfig;
 import prime.control.LEDs.PrimeLEDController;
@@ -13,8 +14,24 @@ public class LEDStrips extends SubsystemBase implements AutoCloseable {
 
   public LEDStrips(LEDConfig config) {
     m_config = config;
-    m_leftLedController = new PrimeLEDController(m_config.LeftPort, 3);
-    m_rightLedController = new PrimeLEDController(m_config.RightPort, 3);
+
+    try {
+      m_leftLedController = new PrimeLEDController(m_config.LeftPort, 3);
+    } catch (Exception e) {
+      DriverStation.reportError(
+        "Failed to initialize left LEDs - " + e.getMessage(),
+        e.getStackTrace()
+      );
+    }
+
+    try {
+      m_rightLedController = new PrimeLEDController(m_config.RightPort, 3);
+    } catch (Exception e) {
+      DriverStation.reportError(
+        "Failed to initialize right LEDs - " + e.getMessage(),
+        e.getStackTrace()
+      );
+    }
   }
 
   /**
@@ -23,7 +40,9 @@ public class LEDStrips extends SubsystemBase implements AutoCloseable {
    * @param state The state to set the section to
    */
   public void setLeftSection(int section, SectionState state) {
-    m_leftLedController.setSectionState((byte) section, state);
+    if (m_leftLedController != null) {
+      m_leftLedController.setSectionState((byte) section, state);
+    }
   }
 
   /**
@@ -32,12 +51,19 @@ public class LEDStrips extends SubsystemBase implements AutoCloseable {
    * @param state The state to set the section to
    */
   public void setRightSection(int section, SectionState state) {
-    m_rightLedController.setSectionState((byte) section, state);
+    if (m_rightLedController != null) {
+      m_rightLedController.setSectionState((byte) section, state);
+    }
   }
 
   @Override
   public void close() throws Exception {
-    m_leftLedController.close();
-    m_rightLedController.close();
+    if (m_leftLedController != null) {
+      m_leftLedController.close();
+    }
+
+    if (m_rightLedController != null) {
+      m_rightLedController.close();
+    }
   }
 }

@@ -50,14 +50,14 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     m_robotContainer = new RobotContainer(RobotConfig.getDefault());
-    // m_robotContainer.LEDs.setLeftSection(
-    //   0,
-    //   SectionState.solidColor(Color.GREEN)
-    // );
-    // m_robotContainer.LEDs.setRightSection(
-    //   0,
-    //   SectionState.solidColor(Color.GREEN)
-    // );
+    m_robotContainer.LEDs.setLeftSection(
+      0,
+      SectionState.solidColor(Color.GREEN)
+    );
+    m_robotContainer.LEDs.setRightSection(
+      0,
+      SectionState.solidColor(Color.GREEN)
+    );
 
     // Build an auto chooser. This will use Commands.none() as the default option.
     m_autoChooser = AutoBuilder.buildAutoChooser(m_defaultAutoName);

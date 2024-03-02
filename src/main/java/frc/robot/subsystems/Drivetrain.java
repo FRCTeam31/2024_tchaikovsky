@@ -63,8 +63,6 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     .withWidget(BuiltInWidgets.kGyro)
     .withPosition(2, 7)
     .withSize(2, 2)
-
-    .withProperties(Map.of("major tick spacing", 15, "starting angle", 0))
     .getEntry();
 
   // Gyro and Kinematics
@@ -127,7 +125,11 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
 
     // Configure field
     m_field = new Field2d();
-    d_driveTab.add("Field", m_field).withWidget(BuiltInWidgets.kField);
+    d_driveTab
+      .add("Field", m_field)
+      .withWidget(BuiltInWidgets.kField)
+      .withPosition(2, 3)
+      .withSize(4, 3);
 
     // Configure snap-to PID
 
@@ -432,6 +434,7 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
         m_rearRightModule.getModuleState(),
       }
     );
+
     var robotPose = m_odometry.update(gyroAngle, getModulePositions());
     m_field.setRobotPose(robotPose);
 
