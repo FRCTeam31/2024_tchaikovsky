@@ -145,7 +145,7 @@ public class RobotConfig {
 
     config.LimelightPose = new Pose3d(); // TODO: Find out what the pose (translation & rotation) of the camera lens is from the robot center -- ask Arseni to get it from the CAD model
 
-    config.LEDs = new LEDConfig(Port.kUSB1, Port.kUSB2);
+    config.LEDs = new LEDConfig(Port.kUSB2, Port.kUSB1);
 
     return config;
   }
