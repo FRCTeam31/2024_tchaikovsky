@@ -48,9 +48,9 @@ public class RobotConfig {
         new PrimePIDConstants(0.019, 0, 0, 0, 0.11, 0, 0.05), // Drive PID
         new PrimePIDConstants(2, 0, 0), // Steering PID
         new PrimePIDConstants(4, 0, 0), // SnapTo PID,
-        new PrimePIDConstants(4, 0, 0), // Pathing Translation PID
+        new PrimePIDConstants(0.1, 0, 0), // Pathing Translation PID
         // new PrimePIDConstants(0.0425, 0, 0.004)
-        new PrimePIDConstants(2.5, 0, 0), // Pathing Rotation PID$
+        new PrimePIDConstants(0, 0, 0), // Pathing Rotation PID$
         0.15,
         0.5
       );
@@ -145,7 +145,7 @@ public class RobotConfig {
 
     config.LimelightPose = new Pose3d(); // TODO: Find out what the pose (translation & rotation) of the camera lens is from the robot center -- ask Arseni to get it from the CAD model
 
-    config.LEDs = new LEDConfig(Port.kUSB1, Port.kUSB2);
+    config.LEDs = new LEDConfig(Port.kUSB2, Port.kUSB1);
 
     return config;
   }

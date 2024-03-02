@@ -6,7 +6,6 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
-import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.GenericEntry;
@@ -42,7 +41,7 @@ public class Robot extends TimedRobot {
 
   public boolean autoEnabled = false;
 
-  private final String m_defaultAutoName = "Speaker Auto 1";
+  private final String m_defaultAutoName = "Copy of Speaker Auto 1";
   public static SendableChooser<Command> m_autoChooser;
   private Command m_autonomousCommand;
 
@@ -131,7 +130,6 @@ public class Robot extends TimedRobot {
     m_robotContainer.Drivetrain.resetOdometry(
       new Pose2d(0, 0, Rotation2d.fromDegrees(0))
     );
-
     // m_robotContainer.LEDs.setLeftSection(
     //   0,
     //   SectionState.solidColor(Color.BLUE)
@@ -140,8 +138,6 @@ public class Robot extends TimedRobot {
     //   0,
     //   SectionState.solidColor(Color.BLUE)
     // );
-
-    m_robotContainer.configureTeleopControls();
   }
 
   /**
@@ -160,43 +156,5 @@ public class Robot extends TimedRobot {
     // Start the data logger
     DataLogManager.start();
     DriverStation.startDataLog(DataLogManager.getLog());
-  }
-
-  /**
-   * Configures the robot with a new config file
-   * @param newConfigName The name of the new config file
-   */
-  private void configureRobot(String newConfigName) {
-    DriverStation.reportWarning(
-      ">> Configuring robot to \"" + newConfigName + "\" profile",
-      false
-    );
-
-    // Read the config from the file and reconfigure the robot
-    var config = readConfigFromFile(newConfigName);
-    m_robotContainer.reconfigure(config);
-  }
-
-  /**
-   * Reads a RobotConfig from a JSON file
-   * @param fileName The name of the JSON file to read
-   * @return A RobotConfig instance or null if the file could not be read
-   */
-  private RobotConfig readConfigFromFile(String fileName) {
-    var config = PrimeConfigurator.mapConfigFromJsonFile(
-      RobotConfig.class,
-      fileName
-    );
-
-    if (config == null) {
-      DriverStation.reportError(
-        "[ERROR] >> Failed to read config file \"" + fileName + "\"",
-        false
-      );
-
-      return null;
-    }
-
-    return config;
   }
 }

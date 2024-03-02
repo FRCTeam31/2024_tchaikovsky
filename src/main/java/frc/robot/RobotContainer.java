@@ -75,7 +75,8 @@ public class RobotContainer {
       PDH = new PowerDistribution();
 
       // Reconfigure bindings
-      configureTeleopControls();
+      configureDriverControls();
+      configureOperatorControls();
 
       // Register the named commands from each subsystem that may be used in PathPlanner
       NamedCommands.registerCommands(Drivetrain.getNamedCommands());
@@ -100,7 +101,7 @@ public class RobotContainer {
   /**
    * Creates the controller and configures teleop controls
    */
-  public void configureTeleopControls() {
+  public void configureDriverControls() {
     // Controls for Driving
     Drivetrain.setDefaultCommand(
       Drivetrain.defaultDriveCommand(
@@ -149,8 +150,9 @@ public class RobotContainer {
         () -> m_driverController.getRawAxis(Controls.LEFT_TRIGGER)
       )
     );
-    // Operator Controls =================================
+  }
 
+  public void configureOperatorControls() {
     // Always be updating the intake angle PID
     Intake.setDefaultCommand(Intake.seekAngleSetpointCommand());
     Shooter.setDefaultCommand(Shooter.seekElevationSetpointCommand());
