@@ -33,6 +33,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import frc.robot.config.RobotConfig;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
+import prime.control.Controls;
 import prime.movers.IPlannable;
 
 public class Drivetrain extends SubsystemBase implements IPlannable {
@@ -230,16 +231,13 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     double rotationRadiansPerSecond,
     boolean fieldRelative
   ) {
-    // Invert Y axis
-    // forwardMetersPerSecond *= -1;
-
     ChassisSpeeds desiredChassisSpeeds;
 
-    if (!m_inHighGear) {
-      strafeXMetersPerSecond *= m_config.Drivetrain.LowGearScalar;
-      forwardMetersPerSecond *= m_config.Drivetrain.LowGearScalar;
-      rotationRadiansPerSecond *= m_config.Drivetrain.LowGearScalar;
-    }
+    // if (!m_inHighGear) {
+    //   strafeXMetersPerSecond *= m_config.Drivetrain.LowGearScalar;
+    //   forwardMetersPerSecond *= m_config.Drivetrain.LowGearScalar;
+    //   rotationRadiansPerSecond *= m_config.Drivetrain.LowGearScalar;
+    // }
 
     if (fieldRelative) {
       desiredChassisSpeeds =
@@ -458,13 +456,31 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
           setSnapToGyroControl(false);
         }
 
-        var strafeX =
+        // Scale speeds cubic
+        var forwardY = Controls.cubicScaledDeadband(
+          ySupplier.getAsDouble(),
+          0.1,
+          0.3
+        );
+        var strafeX = Controls.cubicScaledDeadband(
+          xSupplier.getAsDouble(),
+          0.1,
+          0.3
+        );
+        var rotation = Controls.cubicScaledDeadband(
+          rotationSupplier.getAsDouble(),
+          0.1,
+          0.3
+        );
+
+        // Set speeds to MPS
+        strafeX =
           -xSupplier.getAsDouble() *
           m_config.Drivetrain.MaxSpeedMetersPerSecond;
-        var forwardY =
+        forwardY =
           -ySupplier.getAsDouble() *
           m_config.Drivetrain.MaxSpeedMetersPerSecond;
-        var rotation =
+        rotation =
           -rotationSupplier.getAsDouble() *
           m_config.Drivetrain.MaxAngularSpeedRadians;
 

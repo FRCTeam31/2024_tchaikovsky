@@ -40,7 +40,7 @@ public class RobotConfig {
         0.67945,
         Math.PI * 0.7778174593052, // Wheelbase Circumference
         1,
-        Units.feetToMeters(15.7), // Max Speed MPS
+        Units.feetToMeters(20), // Max Speed MPS
         Units.feetToMeters(10), // Max Acceleration MPS^2
         Math.PI * 2, // Max Angular Speed in Radians
         0.5,

@@ -150,7 +150,7 @@ public class RobotContainer {
       .onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(90)));
 
     m_driverController.a().onTrue(Drivetrain.resetGyroCommand());
-    m_driverController.b().onTrue(Drivetrain.toggleShifterCommand());
+    // m_driverController.b().onTrue(Drivetrain.toggleShifterCommand());
     m_driverController
       .x()
       .onTrue(Commands.runOnce(() -> Drivetrain.setSnapToGyroControl(false)));
@@ -178,21 +178,22 @@ public class RobotContainer {
       .rightBumper()
       .onTrue(Shooter.toggleElevationCommand()); // wait is integrated
 
-    m_operatorController // Shooting the note
+    m_operatorController // score in speaker
       .b()
       .onTrue(
         Shooter
           .scoreInSpeakerCommand()
           .andThen(new WaitCommand(0.75))
           .andThen(Intake.ejectNoteCommand())
-          .andThen(new WaitCommand(1))
+          .andThen(new WaitCommand(0.75))
           .andThen(Shooter.stopMotorsCommand())
           .andThen(Intake.stopRollersCommand())
       );
-    // .whileTrue(Shooter.scoreInSpeakerCommand())
-    // .onFalse(
-    //   Shooter.stopMotorsCommand().alongWith(Intake.stopRollersCommand())
-    // );
+
+    m_operatorController // score in amp
+      .x()
+      .whileTrue(Shooter.scoreInSpeakerCommand())
+      .onFalse(Shooter.stopMotorsCommand());
 
     m_operatorController // intake note
       .leftTrigger(0.1)
@@ -222,23 +223,6 @@ public class RobotContainer {
           .andThen(Intake.stopRollersCommand())
           .andThen(Shooter.stopMotorsCommand())
       );
-    // .whileTrue(
-    //   Intake
-    //     .ejectNoteCommand()
-    //     .alongWith(
-    //       Commands.run(
-    //         () -> {
-    //           if (!Shooter.m_shooterIsUp && Intake.m_angleToggledIn) {
-    //             Shooter.runShooter(0.05);
-    //           }
-    //         },
-    //         Shooter
-    //       )
-    //     )
-    // )
-    // .onFalse(
-    //   Intake.stopRollersCommand().alongWith(Shooter.stopMotorsCommand())
-    // );
   }
 
   /**
