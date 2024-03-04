@@ -2,32 +2,25 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.76,
-      "y": 6.48
+      "x": 1.4,
+      "y": 5.5
     },
-    "rotation": -30.0
+    "rotation": -90.0
   },
   "command": {
     "type": "sequential",
     "data": {
       "commands": [
         {
-          "type": "sequential",
+          "type": "named",
           "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "Run_Shooter_For_2_Seconds"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Toggle_Intake"
-                }
-              }
-            ]
+            "name": "Run_Shooter_For_2_Seconds"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Toggle_Intake"
           }
         },
         {
@@ -37,7 +30,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Speaker to Left Note"
+                  "pathName": "Speaker To Center Note"
                 }
               },
               {
@@ -58,7 +51,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Left Note to Speaker"
+            "pathName": "Center Note To Speaker"
           }
         },
         {
@@ -66,10 +59,16 @@
           "data": {
             "name": "Run_Shooter_For_2_Seconds"
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Speaker To Center Note"
+          }
         }
       ]
     }
   },
-  "folder": null,
+  "folder": "Center Speaker Autos",
   "choreoAuto": false
 }

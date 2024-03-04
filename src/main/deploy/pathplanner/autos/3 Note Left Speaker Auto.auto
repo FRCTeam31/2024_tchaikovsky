@@ -1,0 +1,105 @@
+{
+  "version": 1.0,
+  "startingPose": null,
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "Run_Shooter_For_2_Seconds"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Toggle_Intake"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Speaker to Left Note"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Intake_Note_For_2_Seconds"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Toggle_Intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Left Note to Speaker"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Run_Shooter_For_2_Seconds"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Toggle_Intake"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Speaker to Far Left Note"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Intake_Note_For_3_Seconds"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Toggle_Intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Far Left Note to Speaker"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Run_Shooter_For_2_Seconds"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "Left Speaker Autos",
+  "choreoAuto": false
+}

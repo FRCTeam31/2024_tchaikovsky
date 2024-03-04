@@ -1,0 +1,117 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.4,
+      "y": 5.5
+    },
+    "rotation": -90.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "Run_Shooter_For_2_Seconds"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Toggle_Intake"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Speaker To Center Note"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Intake_Note_For_2_Seconds"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Toggle_Intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Center Note To Speaker"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Run_Shooter_For_2_Seconds"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Toggle_Intake"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Speaker To Far Center Note"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Intake_Note_For_3_Seconds"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Toggle_Intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Far Center Note To Speaker"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Run_Shooter_For_2_Seconds"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Speaker To Center Note"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "Center Speaker Autos",
+  "choreoAuto": false
+}

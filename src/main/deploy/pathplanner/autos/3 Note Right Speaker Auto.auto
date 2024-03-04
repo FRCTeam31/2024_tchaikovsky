@@ -1,12 +1,6 @@
 {
   "version": 1.0,
-  "startingPose": {
-    "position": {
-      "x": 1.4,
-      "y": 5.5
-    },
-    "rotation": -90.0
-  },
+  "startingPose": null,
   "command": {
     "type": "sequential",
     "data": {
@@ -30,7 +24,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Speaker To Note Center"
+                  "pathName": "Speaker to Right Note"
                 }
               },
               {
@@ -51,7 +45,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Note To Speaker Center"
+            "pathName": "Right Note to Speaker"
           }
         },
         {
@@ -61,14 +55,51 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Toggle_Intake"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Speaker to Far Right Note"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Intake_Note_For_3_Seconds"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Toggle_Intake"
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "Speaker To Note Center"
+            "pathName": "Far Right Note to Speaker"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Run_Shooter_For_2_Seconds"
           }
         }
       ]
     }
   },
-  "folder": null,
+  "folder": "Right Speaker Autos",
   "choreoAuto": false
 }
