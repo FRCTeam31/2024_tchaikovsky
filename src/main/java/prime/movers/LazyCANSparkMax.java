@@ -4,21 +4,21 @@ import com.revrobotics.CANSparkMax;
 
 public class LazyCANSparkMax extends CANSparkMax {
 
-    protected double mLastSpeed = Double.NaN;
+  protected double mLastSpeed = Double.NaN;
 
-    public LazyCANSparkMax(int deviceId, MotorType type) {
-        super(deviceId, type);
-    }
+  public LazyCANSparkMax(int deviceId, MotorType type) {
+    super(deviceId, type);
+  }
 
-    public double getLastSpeed() {
-        return mLastSpeed;
-    }
+  public double getLastSpeed() {
+    return mLastSpeed;
+  }
 
-    @Override
-    public void set(double speed) {
-        if (speed == mLastSpeed) return;
+  @Override
+  public void set(double speed) {
+    if (speed == mLastSpeed) return;
 
-        mLastSpeed = speed;
-        super.set(speed);
-    }
+    mLastSpeed = speed;
+    super.set(speed);
+  }
 }

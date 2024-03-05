@@ -52,8 +52,7 @@ public class DrivetrainConfig {
     WheelBaseMeters = wheelBaseMeters;
     WheelBaseCircumferenceMeters = wheelBaseCircumferenceMeters;
     MaxSpeedMetersPerSecond = maxSpeedMetersPerSecond;
-    MaxAccelerationMetersPerSecondSquared =
-      maxAccelerationMetersPerSecondSquared;
+    MaxAccelerationMetersPerSecondSquared = maxAccelerationMetersPerSecondSquared;
     MaxAngularSpeedRadians = maxAngularSpeedRadians;
 
     PigeonId = pigeonId;

@@ -88,10 +88,7 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
    */
   public void raiseLeftArm() {
     // if (!m_leftLimitSwitch.get()) {
-    m_leftVictorSPX.set(
-      VictorSPXControlMode.PercentOutput,
-      m_config.ClimberUpSpeed
-    );
+    m_leftVictorSPX.set(VictorSPXControlMode.PercentOutput, m_config.ClimberUpSpeed);
     // }
   }
 
@@ -99,10 +96,7 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
    * Raises the Right Climber
    */
   public void raiseRightArm() {
-    m_rightVictorSPX.set(
-      VictorSPXControlMode.PercentOutput,
-      m_config.ClimberUpSpeed
-    );
+    m_rightVictorSPX.set(VictorSPXControlMode.PercentOutput, m_config.ClimberUpSpeed);
   }
 
   /**
@@ -193,17 +187,13 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
           // Lower Right
           if (!raiseRightArm.getAsBoolean() && !raiseLeftArm.getAsBoolean()) {
             m_rightClimberServo.setAngle(m_config.ServoLockAngle);
-            lowerRightArm(
-              MathUtil.applyDeadband(lowerRightArm.getAsDouble(), 0.1)
-            );
+            lowerRightArm(MathUtil.applyDeadband(lowerRightArm.getAsDouble(), 0.1));
           }
 
           // Lower left
           if (!raiseRightArm.getAsBoolean() && !raiseLeftArm.getAsBoolean()) {
             m_leftClimberServo.setAngle(m_config.ServoLockAngle);
-            lowerLeftArm(
-              MathUtil.applyDeadband(lowerLeftArm.getAsDouble(), 0, 1)
-            );
+            lowerLeftArm(MathUtil.applyDeadband(lowerLeftArm.getAsDouble(), 0, 1));
           }
         }
       });

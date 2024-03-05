@@ -4,14 +4,19 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -22,15 +27,25 @@ import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.LEDStrips;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Shooter;
+import java.util.Map;
 import prime.control.Controls;
 import prime.control.PrimeXboxController;
 
 public class RobotContainer {
 
   private RobotConfig m_config;
-  private ShuffleboardTab d_robotTab = Shuffleboard.getTab("Robot");
   private PrimeXboxController m_driverController;
   private PrimeXboxController m_operatorController;
+
+  private ShuffleboardTab d_driverTab = Shuffleboard.getTab("Driver");
+  private SendableChooser<Command> m_autoChooser;
+  public GenericEntry d_allianceEntry = d_driverTab
+    .add("Alliance Color", false)
+    .withSize(3, 0)
+    .withPosition(12, 0)
+    .withWidget(BuiltInWidgets.kBooleanBox)
+    .withProperties(Map.of("Color when true", "#FF0000", "Color when false", "#0000FF"))
+    .getEntry();
 
   public Drivetrain Drivetrain;
   public Shooter Shooter;
@@ -56,6 +71,9 @@ public class RobotContainer {
       // Stop all commands
       CommandScheduler.getInstance().cancelAll();
 
+      // Save new config
+      m_config = config;
+
       // Close subsystems before reconfiguring
       if (Drivetrain != null) Drivetrain.close();
       if (Shooter != null) Shooter.close();
@@ -63,9 +81,6 @@ public class RobotContainer {
       if (Climbers != null) Climbers.close();
       if (LEDs != null) LEDs.close();
       if (PDH != null) PDH.close();
-
-      // Save new config
-      m_config = config;
 
       // Create new subsystems
       Drivetrain = new Drivetrain(m_config);
@@ -76,6 +91,9 @@ public class RobotContainer {
       LEDs = new LEDStrips(m_config.LEDs);
       PDH = new PowerDistribution();
 
+      // Create driver dashboard
+      configureRobotDashboard();
+
       // Reconfigure bindings
       configureDriverControls();
       configureOperatorControls();
@@ -85,35 +103,36 @@ public class RobotContainer {
       NamedCommands.registerCommands(Shooter.getNamedCommands());
       NamedCommands.registerCommands(Intake.getNamedCommands());
 
-      // Inter-Subsystem NamedCommands
-      NamedCommands.registerCommand(
-        "Run_Shooter_For_2_Seconds",
-        Shooter
-          .scoreInSpeakerCommand()
-          .andThen(new WaitCommand(0.75))
-          .andThen(Intake.ejectNoteCommand())
-          .andThen(new WaitCommand(0.75))
-          .andThen(Shooter.stopMotorsCommand())
-          .andThen(Intake.stopRollersCommand())
-      );
+      // Register the combined named commands that use multiple subsystems
+      NamedCommands.registerCommands(CombinedCommands.getNamedCommands(Shooter, Intake));
     } catch (Exception e) {
-      DriverStation.reportError(
-        "[ERROR] >> Failed to configure robot: " + e.getMessage(),
-        e.getStackTrace()
-      );
+      DriverStation.reportError("[ERROR] >> Failed to configure robot: " + e.getMessage(), e.getStackTrace());
     }
   }
 
   public void configureRobotDashboard() {
-    d_robotTab
-      .add("Power Hub", PDH)
-      .withSize(3, 3)
+    d_driverTab.add("Power Hub", PDH).withSize(2, 3).withPosition(1, 0).withWidget(BuiltInWidgets.kPowerDistribution);
+
+    d_driverTab
+      .addCamera("Limelight Stream", "LL2", "http://limelight.local:5800/stream.mjpg")
+      .withSize(8, 4)
       .withPosition(3, 0)
-      .withWidget(BuiltInWidgets.kPowerDistribution);
+      .withWidget(BuiltInWidgets.kCameraStream)
+      .withProperties(Map.of("Show controls", false, "Show crosshair", false));
+
+    // Build an auto chooser. This will use Commands.none() as the default option.
+    m_autoChooser = AutoBuilder.buildAutoChooser("Speaker Center - 2-note & Leave");
+    d_driverTab.add(m_autoChooser).withWidget(BuiltInWidgets.kComboBoxChooser).withSize(3, 1).withPosition(3, 4);
+    //
+    // TODO: Add more important items from subsystems here
+  }
+
+  public Command getAutonomousCommand() {
+    return m_autoChooser.getSelected();
   }
 
   /**
-   * Creates the controller and configures teleop controls
+   * Creates the controller and configures the driver's controls
    */
   public void configureDriverControls() {
     // Controls for Driving
@@ -136,24 +155,14 @@ public class RobotContainer {
     );
 
     // Controls for Snap-To
-    m_driverController
-      .pov(Controls.up)
-      .onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(0)));
-    m_driverController
-      .pov(Controls.left)
-      .onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(270)));
-    m_driverController
-      .pov(Controls.down)
-      .onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(180)));
-    m_driverController
-      .pov(Controls.right)
-      .onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(90)));
+    m_driverController.pov(Controls.up).onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(0)));
+    m_driverController.pov(Controls.left).onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(270)));
+    m_driverController.pov(Controls.down).onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(180)));
+    m_driverController.pov(Controls.right).onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(90)));
 
     m_driverController.a().onTrue(Drivetrain.resetGyroCommand());
     // m_driverController.b().onTrue(Drivetrain.toggleShifterCommand());
-    m_driverController
-      .x()
-      .onTrue(Commands.runOnce(() -> Drivetrain.setSnapToGyroControl(false)));
+    m_driverController.x().onTrue(Commands.runOnce(() -> Drivetrain.setSnapToGyroControl(false)));
 
     // Climbers
     m_driverController.y().onTrue(Climbers.toggleClimbControlsCommand());
@@ -167,62 +176,45 @@ public class RobotContainer {
     );
   }
 
+  /**
+   * Creates the controller and configures the driver's controls
+   */
   public void configureOperatorControls() {
-    // Always be updating the intake angle PID
+    // Default commands for seeking PID setpoints
     Intake.setDefaultCommand(Intake.seekAngleSetpointCommand());
     Shooter.setDefaultCommand(Shooter.seekElevationSetpointCommand());
 
-    m_operatorController.a().onTrue(Intake.toggleIntakeInAndOutCommand()); // Set intake angle in/out // TODO: Test
+    // Intake ========================================
+    m_operatorController.a().onTrue(Intake.toggleIntakeInAndOutCommand()); // Set intake angle in/out
 
-    m_operatorController // Raise/lower shooter
+    m_operatorController // When the trigger is pressed, intake a note at a variable speed
+      .leftTrigger(0.1)
+      .whileTrue(Intake.runRollersWithSpeedCommand(() -> m_operatorController.getLeftTriggerAxis()))
+      .onFalse(Intake.stopRollersCommand());
+
+    m_operatorController // When the trigger is pressed, eject a note at a constant speed
+      .rightTrigger(0.1)
+      .whileTrue(Intake.ejectNoteCommand())
+      .onFalse(Intake.stopRollersCommand());
+
+    // Shooter ========================================
+    m_operatorController // Toggle the elevation of the shooter
       .rightBumper()
-      .onTrue(Shooter.toggleElevationCommand()); // wait is integrated
+      .onTrue(Shooter.toggleElevationCommand());
 
-    m_operatorController // score in speaker
-      .b()
-      .onTrue(
-        Shooter
-          .scoreInSpeakerCommand()
-          .andThen(new WaitCommand(0.75))
-          .andThen(Intake.ejectNoteCommand())
-          .andThen(new WaitCommand(0.75))
-          .andThen(Shooter.stopMotorsCommand())
-          .andThen(Intake.stopRollersCommand())
-      );
-
-    m_operatorController // score in amp
+    m_operatorController // Runs only the shooter motors at a constant speed to score in the amp
       .x()
       .whileTrue(Shooter.scoreInSpeakerCommand())
       .onFalse(Shooter.stopMotorsCommand());
 
-    m_operatorController // intake note
-      .leftTrigger(0.1)
-      .whileTrue(
-        Intake.runRollersWithSpeedCommand(() ->
-          m_operatorController.getLeftTriggerAxis()
-        )
-      )
-      .onFalse(Intake.stopRollersCommand());
+    // Combined shooter and intake commands ===========
+    m_operatorController // Run speaker shot sequence
+      .b()
+      .onTrue(CombinedCommands.scoreInSpeakerSequentialGroup(Shooter, Intake));
 
-    m_operatorController // eject note
-      .rightTrigger(0.1)
-      .whileTrue(Intake.ejectNoteCommand())
-      .onFalse(
-        Intake.stopRollersCommand().alongWith(Shooter.stopMotorsCommand())
-      );
-
-    m_operatorController // load note for amp
+    m_operatorController // Run sequence to load a note into the shooter for scoring in the amp
       .y()
-      .onTrue(
-        Commands
-          .runOnce(() -> Intake.runIntakeRollers(-0.6)) // eject
-          .alongWith(Commands.runOnce(() -> Shooter.runShooter(0.10))) // load
-          .andThen(new WaitUntilCommand(Shooter::isNoteLoaded))
-          .withTimeout(1)
-          .andThen(new WaitCommand(0.075))
-          .andThen(Intake.stopRollersCommand())
-          .andThen(Shooter.stopMotorsCommand())
-      );
+      .onTrue(CombinedCommands.loadNoteForAmp(Shooter, Intake));
   }
 
   /**
@@ -250,5 +242,46 @@ public class RobotContainer {
       .leftBumper()
       .whileTrue(Drivetrain.sysIdDynamic(Direction.kReverse))
       .onFalse(Commands.runOnce(() -> Drivetrain.stopMotors(), Drivetrain));
+  }
+
+  public class CombinedCommands {
+
+    public static SequentialCommandGroup scoreInSpeakerSequentialGroup(Shooter shooter, Intake intake) {
+      return shooter
+        .scoreInSpeakerCommand() // Start the shooter
+        // TODO: Velocity control?
+        .andThen(new WaitCommand(0.75)) // Give it time to reach speed
+        .andThen(intake.ejectNoteCommand()) // Eject from the intake into the shooter
+        .andThen(new WaitCommand(0.2)) // Give the note time to get into the shooter
+        .andThen(new WaitUntilCommand(() -> !shooter.isNoteLoaded()))
+        .withTimeout(0.5) // Wait until the note is shot with a max time
+        .andThen(new WaitCommand(0.1)) // Give the note time to get fully out of the shooter
+        .andThen(stopShooterAndIntakeCommand(shooter, intake)); // Stop both the shooter and intake
+    }
+
+    public static SequentialCommandGroup loadNoteForAmp(Shooter shooter, Intake intake) {
+      return Commands
+        .runOnce(() -> intake.runIntakeRollers(-0.6)) // Eject from the intake
+        .alongWith(Commands.runOnce(() -> shooter.runShooter(0.10))) // Load into the shooter
+        .andThen(new WaitUntilCommand(shooter::isNoteLoaded))
+        .withTimeout(1) // Wait until the note is loaded
+        .andThen(new WaitCommand(0.075)) // Give the note time to get into the shooter
+        .andThen(stopShooterAndIntakeCommand(shooter, intake)); // Stop both the shooter and intake
+    }
+
+    public static SequentialCommandGroup stopShooterAndIntakeCommand(Shooter shooter, Intake intake) {
+      return shooter.stopMotorsCommand().andThen(intake.stopRollersCommand());
+    }
+
+    public static Map<String, Command> getNamedCommands(Shooter shooter, Intake intake) {
+      return Map.of(
+        "Score_In_Speaker",
+        CombinedCommands.scoreInSpeakerSequentialGroup(shooter, intake),
+        "Load_Note_For_Amp",
+        CombinedCommands.loadNoteForAmp(shooter, intake),
+        "Stop_Shooter_And_Intake",
+        CombinedCommands.stopShooterAndIntakeCommand(shooter, intake)
+      );
+    }
   }
 }

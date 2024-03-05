@@ -19,10 +19,7 @@ public class PrimeConfigurator {
    */
   public static SendableChooser<String> buildConfigChooser() {
     var chooser = new SendableChooser<String>();
-    for (var configName : PrimeConfigurator.getAvailableConfigsInDeploy()) chooser.addOption(
-      configName,
-      configName
-    );
+    for (var configName : PrimeConfigurator.getAvailableConfigsInDeploy()) chooser.addOption(configName, configName);
 
     return chooser;
   }
@@ -33,9 +30,7 @@ public class PrimeConfigurator {
    * @param defaultOption The name of the config that should be the default option.
    * @return SendableChooser populated with all config files in the /deploy folder
    */
-  public static SendableChooser<String> buildConfigChooser(
-    String defaultOption
-  ) {
+  public static SendableChooser<String> buildConfigChooser(String defaultOption) {
     var chooser = buildConfigChooser();
     chooser.setDefaultOption(defaultOption, defaultOption);
 
@@ -47,8 +42,7 @@ public class PrimeConfigurator {
    * @return
    */
   public static String[] getAvailableConfigsInDeploy() {
-    FilenameFilter jsonFilter = (dir, name) ->
-      name.toLowerCase().endsWith(".json");
+    FilenameFilter jsonFilter = (dir, name) -> name.toLowerCase().endsWith(".json");
 
     return Filesystem.getDeployDirectory().list(jsonFilter);
   }
@@ -64,18 +58,13 @@ public class PrimeConfigurator {
     try {
       var mapper = new ObjectMapper();
       var file = new File(pathToFile);
-      if (!file.exists()) throw new Exception(
-        "File does not exist at path: \"" + pathToFile + "\""
-      );
+      if (!file.exists()) throw new Exception("File does not exist at path: \"" + pathToFile + "\"");
 
       T config = mapper.readValue(file, type);
 
       return config;
     } catch (Exception e) {
-      DriverStation.reportError(
-        "[ERROR] >> Failed to map config: " + e.getMessage(),
-        e.getStackTrace()
-      );
+      DriverStation.reportError("[ERROR] >> Failed to map config: " + e.getMessage(), e.getStackTrace());
       return null;
     }
   }

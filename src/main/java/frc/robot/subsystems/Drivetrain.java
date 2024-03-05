@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.MathUtil;
@@ -97,22 +98,17 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
 
     // Create gyro
     m_gyro = new Pigeon2(config.Drivetrain.PigeonId);
+    m_gyro.getConfigurator().apply(new Pigeon2Configuration());
+    m_gyro.reset();
 
     // Create swerve modules, kinematics, and odometry
     m_measuredSwerveStatesPublisher =
-      NetworkTableInstance
-        .getDefault()
-        .getStructArrayTopic("/SwerveStates", SwerveModuleState.struct)
-        .publish();
+      NetworkTableInstance.getDefault().getStructArrayTopic("/SwerveStates", SwerveModuleState.struct).publish();
 
     m_desiredSwerveStatesPublisher =
-      NetworkTableInstance
-        .getDefault()
-        .getStructArrayTopic("/DesiredSwerveStates", SwerveModuleState.struct)
-        .publish();
+      NetworkTableInstance.getDefault().getStructArrayTopic("/DesiredSwerveStates", SwerveModuleState.struct).publish();
 
-    m_gyroPublisher =
-      NetworkTableInstance.getDefault().getDoubleTopic("/Gyro").publish();
+    m_gyroPublisher = NetworkTableInstance.getDefault().getDoubleTopic("/Gyro").publish();
 
     m_kinematics =
       new SwerveDriveKinematics(
@@ -126,11 +122,7 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
 
     // Configure field
     m_field = new Field2d();
-    d_driveTab
-      .add("Field", m_field)
-      .withWidget(BuiltInWidgets.kField)
-      .withPosition(2, 3)
-      .withSize(4, 3);
+    d_driveTab.add("Field", m_field).withWidget(BuiltInWidgets.kField).withPosition(2, 3).withSize(4, 3);
 
     // Configure snap-to PID
 
@@ -171,29 +163,13 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
   // Creates the swerve modules and starts odometry
   private void createSwerveModulesAndOdometry() {
     m_frontLeftModule =
-      new SwerveModule(
-        m_config.FrontLeftSwerveModule,
-        m_config.Drivetrain.DrivePID,
-        m_config.Drivetrain.SteeringPID
-      );
+      new SwerveModule(m_config.FrontLeftSwerveModule, m_config.Drivetrain.DrivePID, m_config.Drivetrain.SteeringPID);
     m_frontRightModule =
-      new SwerveModule(
-        m_config.FrontRightSwerveModule,
-        m_config.Drivetrain.DrivePID,
-        m_config.Drivetrain.SteeringPID
-      );
+      new SwerveModule(m_config.FrontRightSwerveModule, m_config.Drivetrain.DrivePID, m_config.Drivetrain.SteeringPID);
     m_rearLeftModule =
-      new SwerveModule(
-        m_config.RearLeftSwerveModule,
-        m_config.Drivetrain.DrivePID,
-        m_config.Drivetrain.SteeringPID
-      );
+      new SwerveModule(m_config.RearLeftSwerveModule, m_config.Drivetrain.DrivePID, m_config.Drivetrain.SteeringPID);
     m_rearRightModule =
-      new SwerveModule(
-        m_config.RearRightSwerveModule,
-        m_config.Drivetrain.DrivePID,
-        m_config.Drivetrain.SteeringPID
-      );
+      new SwerveModule(m_config.RearRightSwerveModule, m_config.Drivetrain.DrivePID, m_config.Drivetrain.SteeringPID);
 
     m_odometry =
       new SwerveDriveOdometry(
@@ -204,13 +180,7 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
       );
 
     // in CCW order from FL to FR
-    m_swerveModules =
-      new SwerveModule[] {
-        m_frontLeftModule,
-        m_frontLeftModule,
-        m_rearLeftModule,
-        m_rearRightModule,
-      };
+    m_swerveModules = new SwerveModule[] { m_frontLeftModule, m_frontLeftModule, m_rearLeftModule, m_rearRightModule };
   }
 
   // Resets the Gyro
@@ -249,20 +219,13 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
         );
     } else {
       desiredChassisSpeeds =
-        new ChassisSpeeds(
-          strafeXMetersPerSecond,
-          forwardMetersPerSecond,
-          rotationRadiansPerSecond
-        );
+        new ChassisSpeeds(strafeXMetersPerSecond, forwardMetersPerSecond, rotationRadiansPerSecond);
     }
 
     if (m_snapToGyroEnabled) {
       m_lastSnapToCalculatedPIDOutput =
-        -m_snapToRotationController.calculate(
-          MathUtil.angleModulus(m_gyro.getRotation2d().getRadians())
-        );
-      desiredChassisSpeeds.omegaRadiansPerSecond =
-        -1 * m_lastSnapToCalculatedPIDOutput;
+        -m_snapToRotationController.calculate(MathUtil.angleModulus(m_gyro.getRotation2d().getRadians()));
+      desiredChassisSpeeds.omegaRadiansPerSecond = -1 * m_lastSnapToCalculatedPIDOutput;
     }
 
     m_lastRotationRadians = desiredChassisSpeeds.omegaRadiansPerSecond;
@@ -278,13 +241,8 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     // var xSpeed = desiredChassisSpeeds.vxMetersPerSecond;
     // var ySpeed = desiredChassisSpeeds.vyMetersPerSecond;
 
-    var swerveModuleStates = m_kinematics.toSwerveModuleStates(
-      desiredChassisSpeeds
-    );
-    SwerveDriveKinematics.desaturateWheelSpeeds(
-      swerveModuleStates,
-      m_config.Drivetrain.MaxSpeedMetersPerSecond
-    );
+    var swerveModuleStates = m_kinematics.toSwerveModuleStates(desiredChassisSpeeds);
+    SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, m_config.Drivetrain.MaxSpeedMetersPerSecond);
 
     m_desiredSwerveStatesPublisher.set(swerveModuleStates);
 
@@ -306,11 +264,7 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     m_swerveModulePositions[2] = m_rearLeftModule.getPosition();
     m_swerveModulePositions[3] = m_rearRightModule.getPosition();
 
-    m_odometry.resetPosition(
-      m_gyro.getRotation2d(),
-      m_swerveModulePositions,
-      pose
-    );
+    m_odometry.resetPosition(m_gyro.getRotation2d(), m_swerveModulePositions, pose);
   }
 
   // Gets the direction the robot is facing in degrees, CCW+
@@ -457,32 +411,14 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
         }
 
         // Scale speeds cubic
-        var forwardY = Controls.cubicScaledDeadband(
-          ySupplier.getAsDouble(),
-          0.1,
-          0.3
-        );
-        var strafeX = Controls.cubicScaledDeadband(
-          xSupplier.getAsDouble(),
-          0.1,
-          0.3
-        );
-        var rotation = Controls.cubicScaledDeadband(
-          rotationSupplier.getAsDouble(),
-          0.1,
-          0.3
-        );
+        var forwardY = Controls.cubicScaledDeadband(ySupplier.getAsDouble(), 0.1, 0.3);
+        var strafeX = Controls.cubicScaledDeadband(xSupplier.getAsDouble(), 0.1, 0.3);
+        var rotation = Controls.cubicScaledDeadband(rotationSupplier.getAsDouble(), 0.1, 0.3);
 
         // Set speeds to MPS
-        strafeX =
-          -xSupplier.getAsDouble() *
-          m_config.Drivetrain.MaxSpeedMetersPerSecond;
-        forwardY =
-          -ySupplier.getAsDouble() *
-          m_config.Drivetrain.MaxSpeedMetersPerSecond;
-        rotation =
-          -rotationSupplier.getAsDouble() *
-          m_config.Drivetrain.MaxAngularSpeedRadians;
+        strafeX = -xSupplier.getAsDouble() * m_config.Drivetrain.MaxSpeedMetersPerSecond;
+        forwardY = -ySupplier.getAsDouble() * m_config.Drivetrain.MaxSpeedMetersPerSecond;
+        rotation = -rotationSupplier.getAsDouble() * m_config.Drivetrain.MaxAngularSpeedRadians;
 
         driveFromCartesianSpeeds(-strafeX, forwardY, rotation, fieldRelative);
       });
@@ -564,19 +500,11 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
       Units.Volts.of(5),
       Units.Seconds.of(15),
       state -> {
-        SmartDashboard.putString(
-          "Drive/SysID Current Routine",
-          state.toString()
-        );
+        SmartDashboard.putString("Drive/SysID Current Routine", state.toString());
       }
     );
 
-    var mechanism = new Mechanism(
-      this::setModuleDriveVoltages,
-      this::logMotors,
-      this,
-      getName()
-    );
+    var mechanism = new Mechanism(this::setModuleDriveVoltages, this::logMotors, this, getName());
 
     return new SysIdRoutine(config, mechanism);
   }
@@ -589,50 +517,26 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     log
       .motor(m_frontLeftModule.getName())
       .voltage(Units.Volts.of(m_frontLeftModule.getDriveVoltage()))
-      .linearPosition(
-        Units.Meters.of(m_frontLeftModule.getPosition().distanceMeters)
-      )
-      .linearVelocity(
-        Units.MetersPerSecond.of(
-          m_frontLeftModule.getModuleState().speedMetersPerSecond
-        )
-      );
+      .linearPosition(Units.Meters.of(m_frontLeftModule.getPosition().distanceMeters))
+      .linearVelocity(Units.MetersPerSecond.of(m_frontLeftModule.getModuleState().speedMetersPerSecond));
 
     log
       .motor(m_frontRightModule.getName())
       .voltage(Units.Volts.of(m_frontRightModule.getDriveVoltage()))
-      .linearPosition(
-        Units.Meters.of(m_frontRightModule.getPosition().distanceMeters)
-      )
-      .linearVelocity(
-        Units.MetersPerSecond.of(
-          m_frontRightModule.getModuleState().speedMetersPerSecond
-        )
-      );
+      .linearPosition(Units.Meters.of(m_frontRightModule.getPosition().distanceMeters))
+      .linearVelocity(Units.MetersPerSecond.of(m_frontRightModule.getModuleState().speedMetersPerSecond));
 
     log
       .motor(m_rearLeftModule.getName())
       .voltage(Units.Volts.of(m_rearLeftModule.getDriveVoltage()))
-      .linearPosition(
-        Units.Meters.of(m_rearLeftModule.getPosition().distanceMeters)
-      )
-      .linearVelocity(
-        Units.MetersPerSecond.of(
-          m_rearLeftModule.getModuleState().speedMetersPerSecond
-        )
-      );
+      .linearPosition(Units.Meters.of(m_rearLeftModule.getPosition().distanceMeters))
+      .linearVelocity(Units.MetersPerSecond.of(m_rearLeftModule.getModuleState().speedMetersPerSecond));
 
     log
       .motor(m_rearRightModule.getName())
       .voltage(Units.Volts.of(m_rearRightModule.getDriveVoltage()))
-      .linearPosition(
-        Units.Meters.of(m_rearRightModule.getPosition().distanceMeters)
-      )
-      .linearVelocity(
-        Units.MetersPerSecond.of(
-          m_rearRightModule.getModuleState().speedMetersPerSecond
-        )
-      );
+      .linearPosition(Units.Meters.of(m_rearRightModule.getPosition().distanceMeters))
+      .linearVelocity(Units.MetersPerSecond.of(m_rearRightModule.getModuleState().speedMetersPerSecond));
   }
 
   //#endregion

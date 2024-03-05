@@ -64,10 +64,7 @@ public class RobotConfig {
         0.164551 - 0.25,
         false,
         true,
-        new Translation2d(
-          -(config.Drivetrain.TrackWidthMeters / 2),
-          config.Drivetrain.WheelBaseMeters / 2
-        ),
+        new Translation2d(-(config.Drivetrain.TrackWidthMeters / 2), config.Drivetrain.WheelBaseMeters / 2),
         6.75,
         0.1
       );
@@ -81,10 +78,7 @@ public class RobotConfig {
         0.350098 - 0.25,
         true,
         true,
-        new Translation2d(
-          config.Drivetrain.TrackWidthMeters / 2,
-          config.Drivetrain.WheelBaseMeters / 2
-        ),
+        new Translation2d(config.Drivetrain.TrackWidthMeters / 2, config.Drivetrain.WheelBaseMeters / 2),
         6.75,
         0.1
       );
@@ -98,10 +92,7 @@ public class RobotConfig {
         0.717773 - 0.25,
         true,
         true,
-        new Translation2d(
-          config.Drivetrain.TrackWidthMeters / 2,
-          -(config.Drivetrain.WheelBaseMeters / 2)
-        ),
+        new Translation2d(config.Drivetrain.TrackWidthMeters / 2, -(config.Drivetrain.WheelBaseMeters / 2)),
         6.75,
         0.1
       );
@@ -115,33 +106,16 @@ public class RobotConfig {
         0.181152 - 0.25,
         false,
         true,
-        new Translation2d(
-          -(config.Drivetrain.TrackWidthMeters / 2),
-          -(config.Drivetrain.WheelBaseMeters / 2)
-        ),
+        new Translation2d(-(config.Drivetrain.TrackWidthMeters / 2), -(config.Drivetrain.WheelBaseMeters / 2)),
         6.75,
         0.1
       );
 
-    config.Intake =
-      new IntakeConfig(
-        16,
-        15,
-        14,
-        false,
-        false,
-        true,
-        new PrimePIDConstants(0.032, 0, 0),
-        50,
-        4,
-        5
-      );
+    config.Intake = new IntakeConfig(16, 15, 14, false, false, true, new PrimePIDConstants(0.032, 0, 0), 50, 4, 5);
 
-    config.Shooter =
-      new ShooterConfig(20, 19, false, false, 21, 0, 22, 1, 7, 0, 0.85);
+    config.Shooter = new ShooterConfig(20, 19, false, false, 21, 0, 22, 1, 7, 0, 0.85);
 
-    config.Climbers =
-      new ClimbersConfig(18, 17, true, true, 0.5, -1, 2, 3, 0, 1, 180, 150);
+    config.Climbers = new ClimbersConfig(18, 17, true, true, 0.5, -1, 2, 3, 0, 1, 180, 150);
 
     config.LimelightPose = new Pose3d(); // TODO: Find out what the pose (translation & rotation) of the camera lens is from the robot center -- ask Arseni to get it from the CAD model
 

@@ -46,22 +46,9 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
   private PIDController m_steeringPidController;
 
   // Start at velocity 0, no feed forward, use slot 0
-  private final VelocityVoltage m_voltageVelocity = new VelocityVoltage(
-    0,
-    0,
-    false,
-    0,
-    0,
-    false,
-    false,
-    false
-  );
+  private final VelocityVoltage m_voltageVelocity = new VelocityVoltage(0, 0, false, 0, 0, false, false, false);
 
-  public SwerveModule(
-    SwerveModuleConfig moduleConfig,
-    PrimePIDConstants drivePID,
-    PrimePIDConstants steeringPID
-  ) {
+  public SwerveModule(SwerveModuleConfig moduleConfig, PrimePIDConstants drivePID, PrimePIDConstants steeringPID) {
     m_config = moduleConfig;
     setName(m_config.ModuleName);
 
@@ -87,11 +74,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
         .withWidget(BuiltInWidgets.kNumberBar)
         .withProperties(Map.of("min", 0, "max", 20))
         .getEntry();
-    d_driveVoltageEntry =
-      d_moduleTab
-        .add("Voltage (V)", 0)
-        .withWidget(BuiltInWidgets.kVoltageView)
-        .getEntry();
+    d_driveVoltageEntry = d_moduleTab.add("Voltage (V)", 0).withWidget(BuiltInWidgets.kVoltageView).getEntry();
     d_moduleHeadingEntry =
       d_moduleTab
         .add("Heading (Degrees)", 0)
@@ -109,8 +92,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
 
   // Sets up the steering motor and PID controller
   private void setupSteeringMotor(PrimePIDConstants pid) {
-    m_SteeringMotor =
-      new LazyCANSparkMax(m_config.SteeringMotorCanId, MotorType.kBrushless);
+    m_SteeringMotor = new LazyCANSparkMax(m_config.SteeringMotorCanId, MotorType.kBrushless);
     m_SteeringMotor.restoreFactoryDefaults();
 
     m_SteeringMotor.setSmartCurrentLimit(100, 80);
@@ -122,9 +104,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
     m_steeringPidController = new PIDController(pid.kP, pid.kI, pid.kD, 0.020);
     m_steeringPidController.enableContinuousInput(0, 1); // 0 to 1 rotation
     m_steeringPidController.setTolerance((1 / 360.0) * 5); // 5 degrees in units of rotations
-    d_moduleTab
-      .add("Steering PID", m_steeringPidController)
-      .withWidget(BuiltInWidgets.kPIDController);
+    d_moduleTab.add("Steering PID", m_steeringPidController).withWidget(BuiltInWidgets.kPIDController);
   }
 
   // Sets up the drive motors
@@ -137,12 +117,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
 
     // Set the PID values for slot 0
     driveMotorConfig.Slot0 =
-      new Slot0Configs()
-        .withKP(pid.kP)
-        .withKI(pid.kI)
-        .withKD(pid.kD)
-        .withKS(pid.kS)
-        .withKV(pid.kV);
+      new Slot0Configs().withKP(pid.kP).withKI(pid.kI).withKD(pid.kD).withKS(pid.kS).withKV(pid.kV);
 
     // Set the voltage limits
     driveMotorConfig.Voltage.PeakForwardVoltage = 12;
@@ -152,9 +127,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
     driveMotorConfig.withCurrentLimits(m_config.DriveCurrentLimitConfiguration);
 
     // Set the ramp rates
-    driveMotorConfig.withClosedLoopRamps(
-      m_config.DriveClosedLoopRampConfiguration
-    );
+    driveMotorConfig.withClosedLoopRamps(m_config.DriveClosedLoopRampConfiguration);
 
     // Apply the configuration
     m_driveMotor.getConfigurator().apply(driveMotorConfig);
@@ -210,9 +183,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
    */
   public void setDesiredSpeed(double speedRotationsPerSecond) {
     m_driveMotor.setControl(
-      m_voltageVelocity
-        .withVelocity(speedRotationsPerSecond)
-        .withAcceleration(speedRotationsPerSecond / 2)
+      m_voltageVelocity.withVelocity(speedRotationsPerSecond).withAcceleration(speedRotationsPerSecond / 2)
     );
   }
 
@@ -225,10 +196,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
     var setpoint = angle.getRotations() % 1;
     if (setpoint < 0) setpoint += 1;
 
-    var newOutput = m_steeringPidController.calculate(
-      getEncoderHeading(),
-      setpoint
-    );
+    var newOutput = m_steeringPidController.calculate(getEncoderHeading(), setpoint);
 
     m_SteeringMotor.set(MathUtil.clamp(newOutput, -1, 1));
   }
@@ -288,10 +256,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
    * Gets the current state of the module
    */
   public SwerveModuleState getModuleState() {
-    return new SwerveModuleState(
-      getVelocityMetersPerSecond(),
-      getEncoderHeadingRotation2d()
-    );
+    return new SwerveModuleState(getVelocityMetersPerSecond(), getEncoderHeadingRotation2d());
   }
 
   /**
@@ -331,9 +296,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
   @Override
   public void periodic() {
     d_driveVelocityEntry.setDouble(getModuleState().speedMetersPerSecond);
-    d_driveVoltageEntry.setDouble(
-      m_driveMotor.getMotorVoltage().getValueAsDouble()
-    );
+    d_driveVoltageEntry.setDouble(m_driveMotor.getMotorVoltage().getValueAsDouble());
     d_moduleHeadingEntry.setDouble(getEncoderHeadingRotation2d().getDegrees());
   }
 
@@ -342,10 +305,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
    */
   @Override
   public void close() {
-    DriverStation.reportWarning(
-      ">> Module " + getName() + " closing...",
-      false
-    );
+    DriverStation.reportWarning(">> Module " + getName() + " closing...", false);
     m_SteeringMotor.close();
     m_driveMotor.close();
     m_encoder.close();

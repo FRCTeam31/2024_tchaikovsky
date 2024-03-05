@@ -16,10 +16,7 @@ public class CTREConverter {
    * @param gearRatio Gear Ratio between CANCoder and Mechanism
    * @return Degrees of Rotation of Mechanism
    */
-  public static double CANcoderToDegrees(
-    double positionCounts,
-    double gearRatio
-  ) {
+  public static double CANcoderToDegrees(double positionCounts, double gearRatio) {
     return positionCounts * (360.0 / (gearRatio * CANCoderTicks));
   }
 
@@ -28,10 +25,7 @@ public class CTREConverter {
    * @param gearRatio Gear Ratio between CANCoder and Mechanism
    * @return Rotation of Mechanism
    */
-  public static Rotation2d CANcoderToRotation(
-    double positionCounts,
-    double gearRatio
-  ) {
+  public static Rotation2d CANcoderToRotation(double positionCounts, double gearRatio) {
     return Rotation2d.fromDegrees(CANcoderToDegrees(positionCounts, gearRatio));
   }
 
@@ -49,10 +43,7 @@ public class CTREConverter {
    * @param gearRatio Gear Ratio between CANCoder and Mechanism
    * @return CANCoder Position Counts
    */
-  public static double rotationToCANcoder(
-    Rotation2d rotation,
-    double gearRatio
-  ) {
+  public static double rotationToCANcoder(Rotation2d rotation, double gearRatio) {
     return degreesToCANcoder(rotation.getDegrees(), gearRatio);
   }
 
@@ -61,10 +52,7 @@ public class CTREConverter {
    * @param gearRatio Gear Ratio between Falcon and Mechanism
    * @return Degrees of Rotation of Falcon
    */
-  public static double falconTicksToDegrees(
-    double positionCounts,
-    double gearRatio
-  ) {
+  public static double falconTicksToDegrees(double positionCounts, double gearRatio) {
     return positionCounts * (360.0 / (gearRatio * FalconEncoderTicks));
   }
 
@@ -73,13 +61,8 @@ public class CTREConverter {
    * @param gearRatio Gear Ratio between Falcon and Mechanism
    * @return Rotation of Falcon
    */
-  public static Rotation2d falconTicksToRotation(
-    double positionCounts,
-    double gearRatio
-  ) {
-    return Rotation2d.fromDegrees(
-      falconTicksToDegrees(positionCounts, gearRatio)
-    );
+  public static Rotation2d falconTicksToRotation(double positionCounts, double gearRatio) {
+    return Rotation2d.fromDegrees(falconTicksToDegrees(positionCounts, gearRatio));
   }
 
   /**
@@ -96,10 +79,7 @@ public class CTREConverter {
    * @param gearRatio Gear Ratio between Falcon and Mechanism
    * @return Falcon Position Counts
    */
-  public static double rotationToFalconTicks(
-    Rotation2d rotation,
-    double gearRatio
-  ) {
+  public static double rotationToFalconTicks(Rotation2d rotation, double gearRatio) {
     return degreesToFalconTicks(rotation.getDegrees(), gearRatio);
   }
 
@@ -108,10 +88,7 @@ public class CTREConverter {
    * @param gearRatio Gear Ratio between Falcon and Mechanism (set to 1 for Falcon RPM)
    * @return RPM of Mechanism
    */
-  public static double falconTicksToRPM(
-    double velocityCounts,
-    double gearRatio
-  ) {
+  public static double falconTicksToRPM(double velocityCounts, double gearRatio) {
     double motorRPM = velocityCounts * (600.0 / FalconEncoderTicks);
     double mechRPM = motorRPM / gearRatio;
     return mechRPM;
@@ -134,11 +111,7 @@ public class CTREConverter {
    * @param gearRatio Gear Ratio between Falcon and Mechanism (set to 1 for Falcon MPS)
    * @return Falcon Velocity Counts
    */
-  public static double falconTicksToMPS(
-    double velocitycounts,
-    double circumference,
-    double gearRatio
-  ) {
+  public static double falconTicksToMPS(double velocitycounts, double circumference, double gearRatio) {
     double wheelRPM = falconTicksToRPM(velocitycounts, gearRatio);
     double wheelMPS = (wheelRPM * circumference) / 60;
     return wheelMPS;
@@ -150,11 +123,7 @@ public class CTREConverter {
    * @param gearRatio Gear Ratio between Falcon and Mechanism (set to 1 for Falcon MPS)
    * @return Falcon Velocity Counts
    */
-  public static double MPSToFalconTicks(
-    double velocity,
-    double circumference,
-    double gearRatio
-  ) {
+  public static double MPSToFalconTicks(double velocity, double circumference, double gearRatio) {
     double wheelRPM = ((velocity * 60) / circumference);
     double wheelVelocity = RPMToFalconTicks(wheelRPM, gearRatio);
     return wheelVelocity;
@@ -166,11 +135,7 @@ public class CTREConverter {
    * @param gearRatio Gear Ratio between Falcon and Wheel
    * @return Meters
    */
-  public static double falconTicksToMeters(
-    double positionCounts,
-    double circumference,
-    double gearRatio
-  ) {
+  public static double falconTicksToMeters(double positionCounts, double circumference, double gearRatio) {
     return positionCounts * (circumference / (gearRatio * FalconEncoderTicks));
   }
 
@@ -180,11 +145,7 @@ public class CTREConverter {
    * @param gearRatio Gear Ratio between Falcon and Wheel
    * @return Falcon Position Counts
    */
-  public static double metersToFalconTicks(
-    double meters,
-    double circumference,
-    double gearRatio
-  ) {
+  public static double metersToFalconTicks(double meters, double circumference, double gearRatio) {
     return meters / (circumference / (gearRatio * FalconEncoderTicks));
   }
 
