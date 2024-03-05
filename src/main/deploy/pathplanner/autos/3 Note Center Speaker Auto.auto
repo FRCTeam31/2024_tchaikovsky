@@ -24,22 +24,9 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "path",
           "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Speaker To Center Note"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Intake_Note_For_2_Seconds"
-                }
-              }
-            ]
+            "pathName": "Speaker To Center Note"
           }
         },
         {
