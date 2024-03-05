@@ -88,9 +88,9 @@ class LEDSection {
 Adafruit_NeoPixel strip(NUMPIXELS, PIN1, NEO_GRB + NEO_KHZ800);
 LEDSection sectionStateBuffer[SECTION_COUNT] = {
   // Section, R, G, B, Pattern, Speed, Direction
-  LEDSection(255, 0, 0, Solid, 1000 / 25, true),
-  LEDSection(255, 0, 0, Blink, 1000, 0),
-  LEDSection(255, 0, 0, Pulse, 1000 / 25, false),
+  LEDSection(255, 255, 0, Pulse, 100, false),
+  LEDSection(255, 255, 0, Pulse, 100, false),
+  LEDSection(255, 255, 0, Pulse, 100, false),
 };
 LEDSection sectionStates[SECTION_COUNT] = {
   // Section, R, G, B, Pattern, Speed, Direction
