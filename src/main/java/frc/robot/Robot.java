@@ -25,6 +25,14 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     m_robotContainer = new RobotContainer(RobotConfig.getDefault());
 
+    // Set startup pattern
+    var modePattern = LEDSection.pulseColor(Color.ORANGE, 1000);
+    m_robotContainer.LEDs.setLeftSection(0, modePattern);
+    m_robotContainer.LEDs.setRightSection(0, modePattern);
+  }
+
+  @Override
+  public void disabledInit() {
     var modePattern = LEDSection.pulseColor(onRedAlliance() ? Color.RED : Color.BLUE, 255);
     m_robotContainer.LEDs.setLeftSection(0, modePattern);
     m_robotContainer.LEDs.setRightSection(0, modePattern);

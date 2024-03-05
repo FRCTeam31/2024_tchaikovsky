@@ -154,15 +154,14 @@ public class RobotContainer {
       )
     );
 
+    m_driverController.a().onTrue(Drivetrain.resetGyroCommand());
+
     // Controls for Snap-To
+    m_driverController.x().onTrue(Commands.runOnce(() -> Drivetrain.setSnapToGyroControl(false)));
     m_driverController.pov(Controls.up).onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(0)));
     m_driverController.pov(Controls.left).onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(270)));
     m_driverController.pov(Controls.down).onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(180)));
     m_driverController.pov(Controls.right).onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(90)));
-
-    m_driverController.a().onTrue(Drivetrain.resetGyroCommand());
-    // m_driverController.b().onTrue(Drivetrain.toggleShifterCommand());
-    m_driverController.x().onTrue(Commands.runOnce(() -> Drivetrain.setSnapToGyroControl(false)));
 
     // Climbers
     m_driverController.y().onTrue(Climbers.toggleClimbControlsCommand());
@@ -177,7 +176,7 @@ public class RobotContainer {
   }
 
   /**
-   * Creates the controller and configures the driver's controls
+   * Creates the controller and configures the operator's controls
    */
   public void configureOperatorControls() {
     // Default commands for seeking PID setpoints
