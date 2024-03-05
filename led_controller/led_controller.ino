@@ -80,7 +80,7 @@ class LEDSection {
     }
 };
 
-#define PIN1 6 // D2
+#define PIN1 10 // D10
 #define NUMPIXELS 78
 #define SECTION_COUNT 3
 #define LEDS_PER_SECTION 26

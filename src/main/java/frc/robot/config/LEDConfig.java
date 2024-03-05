@@ -4,11 +4,9 @@ import edu.wpi.first.wpilibj.SerialPort.Port;
 
 public class LEDConfig {
 
-  public Port LeftPort;
-  public Port RightPort;
+  public Port Port;
 
-  public LEDConfig(Port leftPort, Port rightPort) {
-    LeftPort = leftPort;
-    RightPort = rightPort;
+  public LEDConfig(Port port) {
+    Port = port;
   }
 }

@@ -27,15 +27,13 @@ public class Robot extends TimedRobot {
 
     // Set startup pattern
     var modePattern = LEDSection.pulseColor(Color.ORANGE, 1000);
-    m_robotContainer.LEDs.setLeftSection(0, modePattern);
-    m_robotContainer.LEDs.setRightSection(0, modePattern);
+    m_robotContainer.LEDs.setSection(0, modePattern);
   }
 
   @Override
   public void disabledInit() {
     var modePattern = LEDSection.pulseColor(onRedAlliance() ? Color.RED : Color.BLUE, 255);
-    m_robotContainer.LEDs.setLeftSection(0, modePattern);
-    m_robotContainer.LEDs.setRightSection(0, modePattern);
+    m_robotContainer.LEDs.setSection(0, modePattern);
   }
 
   /**
@@ -55,8 +53,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     var modePattern = LEDSection.blinkColor(onRedAlliance() ? Color.RED : Color.BLUE, 250);
-    m_robotContainer.LEDs.setLeftSection(0, modePattern);
-    m_robotContainer.LEDs.setRightSection(0, modePattern);
+    m_robotContainer.LEDs.setSection(0, modePattern);
 
     // Get the selected auto command
     var autoCommand = m_robotContainer.getAutonomousCommand();
@@ -84,8 +81,7 @@ public class Robot extends TimedRobot {
     }
 
     var modePattern = LEDSection.raceColor(onRedAlliance() ? Color.RED : Color.BLUE, 500, true);
-    m_robotContainer.LEDs.setLeftSection(0, modePattern);
-    m_robotContainer.LEDs.setRightSection(0, modePattern);
+    m_robotContainer.LEDs.setSection(0, modePattern);
   }
 
   /**

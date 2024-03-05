@@ -9,22 +9,15 @@ import prime.control.LEDs.PrimeLEDController;
 public class LEDStrips extends SubsystemBase implements AutoCloseable {
 
   private LEDConfig m_config;
-  private PrimeLEDController m_leftLedController;
-  private PrimeLEDController m_rightLedController;
+  private PrimeLEDController m_controller;
 
   public LEDStrips(LEDConfig config) {
     m_config = config;
 
     try {
-      m_leftLedController = new PrimeLEDController(m_config.LeftPort, 3);
+      m_controller = new PrimeLEDController(m_config.Port, 3);
     } catch (Exception e) {
       DriverStation.reportError("Failed to initialize left LEDs - " + e.getMessage(), e.getStackTrace());
-    }
-
-    try {
-      m_rightLedController = new PrimeLEDController(m_config.RightPort, 3);
-    } catch (Exception e) {
-      DriverStation.reportError("Failed to initialize right LEDs - " + e.getMessage(), e.getStackTrace());
     }
   }
 
@@ -33,31 +26,29 @@ public class LEDStrips extends SubsystemBase implements AutoCloseable {
    * @param section The section to set
    * @param state The state to set the section to
    */
-  public void setLeftSection(int section, LEDSection state) {
-    if (m_leftLedController != null) {
-      m_leftLedController.setSectionState((byte) section, state);
+  public void setSection(int section, LEDSection state) {
+    if (m_controller != null) {
+      m_controller.setSectionState((byte) section, state);
     }
   }
 
   /**
-   * Set the state of a section of the right LED strip
+   * Set the state of a section of the left LED strip
    * @param section The section to set
    * @param state The state to set the section to
    */
-  public void setRightSection(int section, LEDSection state) {
-    if (m_rightLedController != null) {
-      m_rightLedController.setSectionState((byte) section, state);
+  public void setAllSections(LEDSection state) {
+    if (m_controller != null) {
+      m_controller.setSectionState((byte) 0, state);
+      m_controller.setSectionState((byte) 1, state);
+      m_controller.setSectionState((byte) 2, state);
     }
   }
 
   @Override
   public void close() throws Exception {
-    if (m_leftLedController != null) {
-      m_leftLedController.close();
-    }
-
-    if (m_rightLedController != null) {
-      m_rightLedController.close();
+    if (m_controller != null) {
+      m_controller.close();
     }
   }
 }
