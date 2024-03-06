@@ -45,7 +45,7 @@ public class RobotConfig {
         Math.PI * 2, // Max Angular Speed in Radians
         0.5,
         false,
-        new PrimePIDConstants(0.019, 0, 0, 0, 0.11, 0, 0.05), // Drive PID
+        new PrimePIDConstants(0.019, 0, 0, 0, 0.095, 0, 0.05), // Drive PID
         new PrimePIDConstants(2, 0, 0), // Steering PID
         new PrimePIDConstants(4, 0, 0), // SnapTo PID,
         new PrimePIDConstants(1.75, 0, 0), // Pathing Translation PID

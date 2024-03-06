@@ -294,7 +294,7 @@ public class Intake extends SubsystemBase implements IPlannable {
       "Stop_Intake_Rollers",
       stopRollersCommand(),
       "Intake_Note_For_2_Seconds",
-      intakeNoteForTime(2, 1),
+      intakeNoteForTime(1.25, 1),
       "Intake_Note_For_3_Seconds",
       intakeNoteForTime(3.2, 1),
       "Outtake_Note_For_2_Seconds",
