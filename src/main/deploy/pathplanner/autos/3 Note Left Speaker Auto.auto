@@ -1,6 +1,12 @@
 {
   "version": 1.0,
-  "startingPose": null,
+  "startingPose": {
+    "position": {
+      "x": 0.82,
+      "y": 6.48
+    },
+    "rotation": -29.879999999999995
+  },
   "command": {
     "type": "sequential",
     "data": {
@@ -15,6 +21,12 @@
           "type": "named",
           "data": {
             "name": "Toggle_Intake"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.5
           }
         },
         {

@@ -16,11 +16,11 @@
     },
     {
       "anchor": {
-        "x": 0.76,
+        "x": 0.82,
         "y": 6.48
       },
       "prevControl": {
-        "x": 0.8929834075884366,
+        "x": 0.9529834075884366,
         "y": 6.609962769475088
       },
       "nextControl": null,
@@ -45,7 +45,7 @@
   "reversed": false,
   "folder": "Left Auto Paths",
   "previewStartingState": {
-    "rotation": -89.73973803112202,
+    "rotation": -89.74000000000001,
     "velocity": 0
   },
   "useDefaultConstraints": false
