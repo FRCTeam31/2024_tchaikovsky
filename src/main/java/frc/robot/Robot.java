@@ -62,26 +62,25 @@ public class Robot extends TimedRobot {
       0,
       LEDSection.blinkColor(onRedAlliance() ? Color.RED : Color.BLUE, 250)
     );
-
     // Get the selected auto command
-    var autoCommand = m_robotContainer.getAutonomousCommand();
-    m_autonomousCommand = autoCommand; // Save the command for cancelling later if needed
+    // var autoCommand = m_robotContainer.getAutonomousCommand();
+    // m_autonomousCommand = autoCommand; // Save the command for cancelling later if needed
 
     // Exit without scheduling an auto command if none is selected
-    if (autoCommand == null || autoCommand == Commands.none()) {
-      DriverStation.reportError("[ERROR] >> No auto command selected", false);
-      return;
-    }
+    // if (autoCommand == null || autoCommand == Commands.none()) {
+    //   DriverStation.reportError("[ERROR] >> No auto command selected", false);
+    //   return;
+    // }
 
-    // Get the auto's starting pose, reset the gyro and odometry
-    var startingPose = PathPlannerAuto.getStaringPoseFromAutoFile(
-      autoCommand.getName()
-    );
-    m_robotContainer.Drivetrain.resetGyro();
-    m_robotContainer.Drivetrain.resetOdometry(startingPose);
+    // // Get the auto's starting pose, reset the gyro and odometry
+    // var startingPose = PathPlannerAuto.getStaringPoseFromAutoFile(
+    //   autoCommand.getName()
+    // );
+    // m_robotContainer.Drivetrain.resetGyro();
+    // m_robotContainer.Drivetrain.resetOdometry(startingPose);
 
-    // Schedule the auto command
-    autoCommand.schedule();
+    // // Schedule the auto command
+    // autoCommand.schedule();
   }
 
   /**

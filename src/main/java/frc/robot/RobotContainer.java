@@ -38,7 +38,7 @@ public class RobotContainer {
   private PrimeXboxController m_operatorController;
 
   private ShuffleboardTab d_driverTab = Shuffleboard.getTab("Driver");
-  private SendableChooser<Command> m_autoChooser;
+  // private SendableChooser<Command> m_autoChooser;
   public GenericEntry d_allianceEntry = d_driverTab
     .add("Alliance Color", false)
     .withSize(3, 0)
@@ -132,22 +132,20 @@ public class RobotContainer {
       .withPosition(3, 0)
       .withWidget(BuiltInWidgets.kCameraStream)
       .withProperties(Map.of("Show controls", false, "Show crosshair", false));
-
     // Build an auto chooser. This will use Commands.none() as the default option.
-    m_autoChooser =
-      AutoBuilder.buildAutoChooser("Speaker Center - 2-note & Leave");
-    d_driverTab
-      .add(m_autoChooser)
-      .withWidget(BuiltInWidgets.kComboBoxChooser)
-      .withSize(3, 1)
-      .withPosition(3, 4);
+    // m_autoChooser = AutoBuilder.buildAutoChooser("Park Auto");
+    // d_driverTab
+    //   .add(m_autoChooser)
+    //   .withWidget(BuiltInWidgets.kComboBoxChooser)
+    //   .withSize(3, 1)
+    //   .withPosition(3, 4);
     //
     // TODO: Add more important items from subsystems here
   }
 
-  public Command getAutonomousCommand() {
-    return m_autoChooser.getSelected();
-  }
+  // public Command getAutonomousCommand() {
+  //   return m_autoChooser.getSelected();
+  // }
 
   /**
    * Creates the controller and configures the driver's controls
