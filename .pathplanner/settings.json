@@ -16,7 +16,7 @@
     "Right Speaker Autos"
   ],
   "defaultMaxVel": 4.0,
-  "defaultMaxAccel": 4.0,
+  "defaultMaxAccel": 8.0,
   "defaultMaxAngVel": 180.0,
   "defaultMaxAngAccel": 360.0,
   "maxModuleSpeed": 4.0
