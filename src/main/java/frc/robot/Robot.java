@@ -25,15 +25,20 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     m_robotContainer = new RobotContainer(RobotConfig.getDefault());
 
-    // Set startup pattern
-    var modePattern = LEDSection.pulseColor(Color.ORANGE, 1000);
-    m_robotContainer.LEDs.setSection(0, modePattern);
+    // Set LED startup pattern
+    m_robotContainer.LEDs.setSection(
+      0,
+      LEDSection.pulseColor(Color.ORANGE, 1000)
+    );
   }
 
   @Override
   public void disabledInit() {
-    var modePattern = LEDSection.pulseColor(onRedAlliance() ? Color.RED : Color.BLUE, 255);
-    m_robotContainer.LEDs.setSection(0, modePattern);
+    // Set disabled LED pattern
+    m_robotContainer.LEDs.setSection(
+      0,
+      LEDSection.pulseColor(onRedAlliance() ? Color.RED : Color.BLUE, 500)
+    );
   }
 
   /**
@@ -52,8 +57,11 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    var modePattern = LEDSection.blinkColor(onRedAlliance() ? Color.RED : Color.BLUE, 250);
-    m_robotContainer.LEDs.setSection(0, modePattern);
+    // Set auto LED pattern
+    m_robotContainer.LEDs.setSection(
+      0,
+      LEDSection.blinkColor(onRedAlliance() ? Color.RED : Color.BLUE, 250)
+    );
 
     // Get the selected auto command
     var autoCommand = m_robotContainer.getAutonomousCommand();
@@ -65,9 +73,14 @@ public class Robot extends TimedRobot {
       return;
     }
 
-    var startingPose = PathPlannerAuto.getStaringPoseFromAutoFile(autoCommand.getName());
+    // Get the auto's starting pose, reset the gyro and odometry
+    var startingPose = PathPlannerAuto.getStaringPoseFromAutoFile(
+      autoCommand.getName()
+    );
     m_robotContainer.Drivetrain.resetGyro();
     m_robotContainer.Drivetrain.resetOdometry(startingPose);
+
+    // Schedule the auto command
     autoCommand.schedule();
   }
 
@@ -77,11 +90,19 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {
     if (m_autonomousCommand != null) {
+      // Cancel the auto command if it's still running
       m_autonomousCommand.cancel();
+
+      // Stop the shooter and intake motors in case they're still running
+      m_robotContainer.Shooter.stopMotorsCommand().schedule();
+      m_robotContainer.Intake.stopRollersCommand().schedule();
     }
 
-    var modePattern = LEDSection.raceColor(onRedAlliance() ? Color.RED : Color.BLUE, 500, true);
-    m_robotContainer.LEDs.setSection(0, modePattern);
+    // Set teleop LED pattern
+    m_robotContainer.LEDs.setSection(
+      0,
+      LEDSection.raceColor(onRedAlliance() ? Color.RED : Color.BLUE, 500, true)
+    );
   }
 
   /**
