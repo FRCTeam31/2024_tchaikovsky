@@ -235,7 +235,7 @@ public class RobotContainer {
 
     m_operatorController // Runs only the shooter motors at a constant speed to score in the amp
       .x()
-      .whileTrue(Shooter.shootNoteAtFullSpeedCommand())
+      .whileTrue(Shooter.startShootingNoteCommand())
       .onFalse(Shooter.stopMotorsCommand());
 
     // Combined shooter and intake commands ===========
@@ -282,9 +282,8 @@ public class RobotContainer {
       Intake intake
     ) {
       return shooter
-        .shootNoteAtFullSpeedCommand() // Start the shooter
-        // TODO: Velocity control?
-        .andThen(new WaitCommand(0.75)) // Give it time to reach speed
+        .startShootingNoteCommand() // Start the shooter
+        .andThen(new WaitCommand(0.75)) // Give it time to reach speed TODO: Velocity control later?
         .andThen(intake.ejectNoteCommand()) // Eject from the intake into the shooter
         .andThen(new WaitCommand(0.2)) // Give the note time to get into the shooter
         .andThen(new WaitUntilCommand(() -> !shooter.isNoteLoaded()))

@@ -284,14 +284,6 @@ public class Intake extends SubsystemBase implements IPlannable {
 
   public Map<String, Command> getNamedCommands() {
     return Map.of(
-      // "Toggle_Intake",
-      // toggleIntakeInAndOutCommand(),
-      // "Intake_Note_For_2_Seconds",
-      // intakeNoteForTime(1.25, 1),
-      // "Intake_Note_For_3_Seconds",
-      // intakeNoteForTime(3.2, 1),
-      // "Outtake_Note_For_2_Seconds",
-      // outtakeNoteForTime(2, -0.5)
       "Set_Intake_Out",
       setIntakeOutCommand(),
       "Set_Intake_In",
