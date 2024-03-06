@@ -209,7 +209,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * Shootes a note at full speed
    * @return
    */
-  public Command scoreInSpeakerCommand() {
+  public Command shootNoteAtFullSpeedCommand() {
     return Commands.runOnce(() -> runShooter(1));
   }
 
@@ -257,19 +257,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
   }
 
   public Map<String, Command> getNamedCommands() {
-    return Map.of(
-      // "Example_Command", exampleCommand(),
-      "Stop_Shooter_Motors",
-      stopMotorsCommand(),
-      "Score_In_Amp",
-      scoreInAmpCommand(),
-      "Score_In_Speaker",
-      scoreInSpeakerCommand(),
-      "Set_Actuators_Up",
-      setElevationUpCommand(),
-      "Set_Actuators_Down",
-      setElevationDownCommand()
-    );
+    return Map.of();
   }
 
   //#endregion

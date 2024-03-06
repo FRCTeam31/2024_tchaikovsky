@@ -44,7 +44,9 @@ public class RobotContainer {
     .withSize(3, 0)
     .withPosition(12, 0)
     .withWidget(BuiltInWidgets.kBooleanBox)
-    .withProperties(Map.of("Color when true", "#FF0000", "Color when false", "#0000FF"))
+    .withProperties(
+      Map.of("Color when true", "#FF0000", "Color when false", "#0000FF")
+    )
     .getEntry();
 
   public Drivetrain Drivetrain;
@@ -99,30 +101,46 @@ public class RobotContainer {
       configureOperatorControls();
 
       // Register the named commands from each subsystem that may be used in PathPlanner
-      NamedCommands.registerCommands(Drivetrain.getNamedCommands());
-      NamedCommands.registerCommands(Shooter.getNamedCommands());
       NamedCommands.registerCommands(Intake.getNamedCommands());
 
       // Register the combined named commands that use multiple subsystems
-      NamedCommands.registerCommands(CombinedCommands.getNamedCommands(Shooter, Intake));
+      NamedCommands.registerCommands(
+        CombinedCommands.getNamedCommands(Shooter, Intake)
+      );
     } catch (Exception e) {
-      DriverStation.reportError("[ERROR] >> Failed to configure robot: " + e.getMessage(), e.getStackTrace());
+      DriverStation.reportError(
+        "[ERROR] >> Failed to configure robot: " + e.getMessage(),
+        e.getStackTrace()
+      );
     }
   }
 
   public void configureRobotDashboard() {
-    d_driverTab.add("Power Hub", PDH).withSize(2, 3).withPosition(1, 0).withWidget(BuiltInWidgets.kPowerDistribution);
+    d_driverTab
+      .add("Power Hub", PDH)
+      .withSize(2, 3)
+      .withPosition(1, 0)
+      .withWidget(BuiltInWidgets.kPowerDistribution);
 
     d_driverTab
-      .addCamera("Limelight Stream", "LL2", "http://limelight.local:5800/stream.mjpg")
+      .addCamera(
+        "Limelight Stream",
+        "LL2",
+        "http://limelight.local:5800/stream.mjpg"
+      )
       .withSize(8, 4)
       .withPosition(3, 0)
       .withWidget(BuiltInWidgets.kCameraStream)
       .withProperties(Map.of("Show controls", false, "Show crosshair", false));
 
     // Build an auto chooser. This will use Commands.none() as the default option.
-    m_autoChooser = AutoBuilder.buildAutoChooser("Speaker Center - 2-note & Leave");
-    d_driverTab.add(m_autoChooser).withWidget(BuiltInWidgets.kComboBoxChooser).withSize(3, 1).withPosition(3, 4);
+    m_autoChooser =
+      AutoBuilder.buildAutoChooser("Speaker Center - 2-note & Leave");
+    d_driverTab
+      .add(m_autoChooser)
+      .withWidget(BuiltInWidgets.kComboBoxChooser)
+      .withSize(3, 1)
+      .withPosition(3, 4);
     //
     // TODO: Add more important items from subsystems here
   }
@@ -157,11 +175,21 @@ public class RobotContainer {
     m_driverController.a().onTrue(Drivetrain.resetGyroCommand());
 
     // Controls for Snap-To
-    m_driverController.x().onTrue(Commands.runOnce(() -> Drivetrain.setSnapToGyroControl(false)));
-    m_driverController.pov(Controls.up).onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(0)));
-    m_driverController.pov(Controls.left).onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(270)));
-    m_driverController.pov(Controls.down).onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(180)));
-    m_driverController.pov(Controls.right).onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(90)));
+    m_driverController
+      .x()
+      .onTrue(Commands.runOnce(() -> Drivetrain.setSnapToGyroControl(false)));
+    m_driverController
+      .pov(Controls.up)
+      .onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(0)));
+    m_driverController
+      .pov(Controls.left)
+      .onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(270)));
+    m_driverController
+      .pov(Controls.down)
+      .onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(180)));
+    m_driverController
+      .pov(Controls.right)
+      .onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(90)));
 
     // Climbers
     m_driverController.y().onTrue(Climbers.toggleClimbControlsCommand());
@@ -188,7 +216,11 @@ public class RobotContainer {
 
     m_operatorController // When the trigger is pressed, intake a note at a variable speed
       .leftTrigger(0.1)
-      .whileTrue(Intake.runRollersWithSpeedCommand(() -> m_operatorController.getLeftTriggerAxis()))
+      .whileTrue(
+        Intake.runRollersWithSpeedCommand(() ->
+          m_operatorController.getLeftTriggerAxis()
+        )
+      )
       .onFalse(Intake.stopRollersCommand());
 
     m_operatorController // When the trigger is pressed, eject a note at a constant speed
@@ -203,7 +235,7 @@ public class RobotContainer {
 
     m_operatorController // Runs only the shooter motors at a constant speed to score in the amp
       .x()
-      .whileTrue(Shooter.scoreInSpeakerCommand())
+      .whileTrue(Shooter.shootNoteAtFullSpeedCommand())
       .onFalse(Shooter.stopMotorsCommand());
 
     // Combined shooter and intake commands ===========
@@ -245,9 +277,12 @@ public class RobotContainer {
 
   public class CombinedCommands {
 
-    public static SequentialCommandGroup scoreInSpeakerSequentialGroup(Shooter shooter, Intake intake) {
+    public static SequentialCommandGroup scoreInSpeakerSequentialGroup(
+      Shooter shooter,
+      Intake intake
+    ) {
       return shooter
-        .scoreInSpeakerCommand() // Start the shooter
+        .shootNoteAtFullSpeedCommand() // Start the shooter
         // TODO: Velocity control?
         .andThen(new WaitCommand(0.75)) // Give it time to reach speed
         .andThen(intake.ejectNoteCommand()) // Eject from the intake into the shooter
@@ -258,7 +293,10 @@ public class RobotContainer {
         .andThen(stopShooterAndIntakeCommand(shooter, intake)); // Stop both the shooter and intake
     }
 
-    public static SequentialCommandGroup loadNoteForAmp(Shooter shooter, Intake intake) {
+    public static SequentialCommandGroup loadNoteForAmp(
+      Shooter shooter,
+      Intake intake
+    ) {
       return Commands
         .runOnce(() -> intake.runIntakeRollers(-0.6)) // Eject from the intake
         .alongWith(Commands.runOnce(() -> shooter.runShooter(0.10))) // Load into the shooter
@@ -268,11 +306,17 @@ public class RobotContainer {
         .andThen(stopShooterAndIntakeCommand(shooter, intake)); // Stop both the shooter and intake
     }
 
-    public static SequentialCommandGroup stopShooterAndIntakeCommand(Shooter shooter, Intake intake) {
+    public static SequentialCommandGroup stopShooterAndIntakeCommand(
+      Shooter shooter,
+      Intake intake
+    ) {
       return shooter.stopMotorsCommand().andThen(intake.stopRollersCommand());
     }
 
-    public static Map<String, Command> getNamedCommands(Shooter shooter, Intake intake) {
+    public static Map<String, Command> getNamedCommands(
+      Shooter shooter,
+      Intake intake
+    ) {
       return Map.of(
         "Score_In_Speaker",
         CombinedCommands.scoreInSpeakerSequentialGroup(shooter, intake),

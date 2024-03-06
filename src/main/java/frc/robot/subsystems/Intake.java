@@ -236,6 +236,13 @@ public class Intake extends SubsystemBase implements IPlannable {
   }
 
   /**
+   * Command for setting the intake angle into ground position
+   */
+  public Command setIntakeOutCommand() {
+    return Commands.runOnce(() -> m_angleToggledIn = false);
+  }
+
+  /**
    * Toggles the intake angle setpoint between in/out
    * @return
    */
@@ -277,18 +284,21 @@ public class Intake extends SubsystemBase implements IPlannable {
 
   public Map<String, Command> getNamedCommands() {
     return Map.of(
-      // "Example_Command", exampleCommand(),
-      "Toggle_Intake",
-      toggleIntakeInAndOutCommand(),
-      "Set_Roller_Speed",
-      setRollersSpeedCommand(null),
-      "Eject_Note",
-      ejectNoteCommand(),
-      "Seek_Angle_Setpoint",
-      seekAngleSetpointCommand(),
+      // "Toggle_Intake",
+      // toggleIntakeInAndOutCommand(),
+      // "Intake_Note_For_2_Seconds",
+      // intakeNoteForTime(1.25, 1),
+      // "Intake_Note_For_3_Seconds",
+      // intakeNoteForTime(3.2, 1),
+      // "Outtake_Note_For_2_Seconds",
+      // outtakeNoteForTime(2, -0.5)
+      "Set_Intake_Out",
+      setIntakeOutCommand(),
       "Set_Intake_In",
       setIntakeInCommand(),
-      "Stop_Intake_Rollers",
+      "Start_Note_Intake",
+      setRollersSpeedCommand(() -> 1),
+      "Stop_Note_Intake",
       stopRollersCommand()
     );
   }
