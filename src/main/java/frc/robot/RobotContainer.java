@@ -44,9 +44,7 @@ public class RobotContainer {
     .withSize(3, 0)
     .withPosition(12, 0)
     .withWidget(BuiltInWidgets.kBooleanBox)
-    .withProperties(
-      Map.of("Color when true", "#FF0000", "Color when false", "#0000FF")
-    )
+    .withProperties(Map.of("Color when true", "#FF0000", "Color when false", "#0000FF"))
     .getEntry();
 
   public Drivetrain Drivetrain;
@@ -104,30 +102,17 @@ public class RobotContainer {
       NamedCommands.registerCommands(Intake.getNamedCommands());
 
       // Register the combined named commands that use multiple subsystems
-      NamedCommands.registerCommands(
-        CombinedCommands.getNamedCommands(Shooter, Intake)
-      );
+      NamedCommands.registerCommands(CombinedCommands.getNamedCommands(Shooter, Intake));
     } catch (Exception e) {
-      DriverStation.reportError(
-        "[ERROR] >> Failed to configure robot: " + e.getMessage(),
-        e.getStackTrace()
-      );
+      DriverStation.reportError("[ERROR] >> Failed to configure robot: " + e.getMessage(), e.getStackTrace());
     }
   }
 
   public void configureRobotDashboard() {
-    d_driverTab
-      .add("Power Hub", PDH)
-      .withSize(2, 3)
-      .withPosition(1, 0)
-      .withWidget(BuiltInWidgets.kPowerDistribution);
+    d_driverTab.add("Power Hub", PDH).withSize(2, 3).withPosition(1, 0).withWidget(BuiltInWidgets.kPowerDistribution);
 
     d_driverTab
-      .addCamera(
-        "Limelight Stream",
-        "LL2",
-        "http://limelight.local:5800/stream.mjpg"
-      )
+      .addCamera("Limelight Stream", "LL2", "http://limelight.local:5800/stream.mjpg")
       .withSize(8, 4)
       .withPosition(3, 0)
       .withWidget(BuiltInWidgets.kCameraStream)
@@ -173,21 +158,11 @@ public class RobotContainer {
     m_driverController.a().onTrue(Drivetrain.resetGyroCommand());
 
     // Controls for Snap-To
-    m_driverController
-      .x()
-      .onTrue(Commands.runOnce(() -> Drivetrain.setSnapToGyroControl(false)));
-    m_driverController
-      .pov(Controls.up)
-      .onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(0)));
-    m_driverController
-      .pov(Controls.left)
-      .onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(270)));
-    m_driverController
-      .pov(Controls.down)
-      .onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(180)));
-    m_driverController
-      .pov(Controls.right)
-      .onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(90)));
+    m_driverController.x().onTrue(Commands.runOnce(() -> Drivetrain.setSnapToGyroControl(false)));
+    m_driverController.pov(Controls.up).onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(0)));
+    m_driverController.pov(Controls.left).onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(270)));
+    m_driverController.pov(Controls.down).onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(180)));
+    m_driverController.pov(Controls.right).onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(90)));
 
     // Climbers
     m_driverController.y().onTrue(Climbers.toggleClimbControlsCommand());
@@ -214,11 +189,7 @@ public class RobotContainer {
 
     m_operatorController // When the trigger is pressed, intake a note at a variable speed
       .leftTrigger(0.1)
-      .whileTrue(
-        Intake.runRollersWithSpeedCommand(() ->
-          m_operatorController.getLeftTriggerAxis()
-        )
-      )
+      .whileTrue(Intake.runRollersWithSpeedCommand(() -> m_operatorController.getLeftTriggerAxis()))
       .onFalse(Intake.stopRollersCommand());
 
     m_operatorController // When the trigger is pressed, eject a note at a constant speed
@@ -284,25 +255,26 @@ public class RobotContainer {
 
   public class CombinedCommands {
 
-    public static SequentialCommandGroup scoreInSpeakerSequentialGroup(
-      Shooter shooter,
-      Intake intake
-    ) {
+    public static SequentialCommandGroup scoreInSpeakerSequentialGroup(Shooter shooter, Intake intake) {
+      // return shooter
+      //   .startShootingNoteCommand() // Start the shooter
+      //   .andThen(new WaitCommand(0.75)) // Give it time to reach speed TODO: Velocity control later?
+      //   .andThen(intake.ejectNoteCommand()) // Eject from the intake into the shooter
+      //   .andThen(new WaitCommand(0.2)) // Give the note time to get into the shooter
+      //   .andThen(new WaitUntilCommand(() -> !shooter.isNoteLoaded()))
+      //   .withTimeout(0.5) // Wait until the note is shot with a max time
+      //   .andThen(new WaitCommand(0.1)) // Give the note time to get fully out of the shooter
+      //   .andThen(stopShooterAndIntakeCommand(shooter, intake)); // Stop both the shooter and intake
       return shooter
-        .startShootingNoteCommand() // Start the shooter
-        .andThen(new WaitCommand(0.75)) // Give it time to reach speed TODO: Velocity control later?
-        .andThen(intake.ejectNoteCommand()) // Eject from the intake into the shooter
-        .andThen(new WaitCommand(0.2)) // Give the note time to get into the shooter
-        .andThen(new WaitUntilCommand(() -> !shooter.isNoteLoaded()))
-        .withTimeout(0.5) // Wait until the note is shot with a max time
-        .andThen(new WaitCommand(0.1)) // Give the note time to get fully out of the shooter
-        .andThen(stopShooterAndIntakeCommand(shooter, intake)); // Stop both the shooter and intake
+        .startShootingNoteCommand()
+        .andThen(new WaitCommand(0.75))
+        .andThen(intake.ejectNoteCommand())
+        .andThen(new WaitCommand(0.75))
+        .andThen(shooter.stopMotorsCommand())
+        .andThen(intake.stopRollersCommand());
     }
 
-    public static SequentialCommandGroup loadNoteForAmp(
-      Shooter shooter,
-      Intake intake
-    ) {
+    public static SequentialCommandGroup loadNoteForAmp(Shooter shooter, Intake intake) {
       return Commands
         .runOnce(() -> intake.runIntakeRollers(-0.6)) // Eject from the intake
         .alongWith(Commands.runOnce(() -> shooter.runShooter(0.10))) // Load into the shooter
@@ -312,28 +284,14 @@ public class RobotContainer {
         .andThen(stopShooterAndIntakeCommand(shooter, intake)); // Stop both the shooter and intake
     }
 
-    public static SequentialCommandGroup stopShooterAndIntakeCommand(
-      Shooter shooter,
-      Intake intake
-    ) {
+    public static SequentialCommandGroup stopShooterAndIntakeCommand(Shooter shooter, Intake intake) {
       return shooter.stopMotorsCommand().andThen(intake.stopRollersCommand());
     }
 
-    public static Map<String, Command> getNamedCommands(
-      Shooter shooter,
-      Intake intake
-    ) {
+    public static Map<String, Command> getNamedCommands(Shooter shooter, Intake intake) {
       return Map.of(
         "Score_In_Speaker",
-        // CombinedCommands.scoreInSpeakerSequentialGroup(shooter, intake),
-          // .scoreInSpeakerCommand()
-          shooter
-          .startShootingNoteCommand()
-          .andThen(new WaitCommand(0.75))
-          .andThen(intake.ejectNoteCommand())
-          .andThen(new WaitCommand(0.75))
-          .andThen(shooter.stopMotorsCommand())
-          .andThen(intake.stopRollersCommand()),
+        CombinedCommands.scoreInSpeakerSequentialGroup(shooter, intake),
         "Load_Note_For_Amp",
         CombinedCommands.loadNoteForAmp(shooter, intake),
         "Stop_Shooter_And_Intake",
