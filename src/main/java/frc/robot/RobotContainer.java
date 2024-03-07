@@ -6,6 +6,7 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -37,8 +38,10 @@ public class RobotContainer {
   private PrimeXboxController m_driverController;
   private PrimeXboxController m_operatorController;
 
-  private ShuffleboardTab d_driverTab = Shuffleboard.getTab("Driver");
-  // private SendableChooser<Command> m_autoChooser;
+  public ShuffleboardTab d_driverTab = Shuffleboard.getTab("Driver");
+  public ShuffleboardTab d_autoTab = Shuffleboard.getTab("Auto");
+
+  private SendableChooser<Command> m_autoChooser;
   public GenericEntry d_allianceEntry = d_driverTab
     .add("Alliance Color", false)
     .withSize(3, 0)
@@ -91,25 +94,25 @@ public class RobotContainer {
       LEDs = new LEDStrips(m_config.LEDs);
       PDH = new PowerDistribution();
 
+      // Register the named commands from each subsystem that may be used in PathPlanner
+      NamedCommands.registerCommands(Intake.getNamedCommands());
+
+      // Register the combined named commands that use multiple subsystems
+      NamedCommands.registerCommands(CombinedCommands.getNamedCommands(Shooter, Intake));
+
       // Create driver dashboard
       configureRobotDashboard();
 
       // Reconfigure bindings
       configureDriverControls();
       configureOperatorControls();
-
-      // Register the named commands from each subsystem that may be used in PathPlanner
-      NamedCommands.registerCommands(Intake.getNamedCommands());
-
-      // Register the combined named commands that use multiple subsystems
-      NamedCommands.registerCommands(CombinedCommands.getNamedCommands(Shooter, Intake));
     } catch (Exception e) {
       DriverStation.reportError("[ERROR] >> Failed to configure robot: " + e.getMessage(), e.getStackTrace());
     }
   }
 
   public void configureRobotDashboard() {
-    d_driverTab.add("Power Hub", PDH).withSize(2, 3).withPosition(1, 0).withWidget(BuiltInWidgets.kPowerDistribution);
+    d_driverTab.add("Power Hub", PDH).withSize(3, 3).withPosition(0, 0).withWidget(BuiltInWidgets.kPowerDistribution);
 
     d_driverTab
       .addCamera("Limelight Stream", "LL2", "http://limelight.local:5800/stream.mjpg")
@@ -117,20 +120,22 @@ public class RobotContainer {
       .withPosition(3, 0)
       .withWidget(BuiltInWidgets.kCameraStream)
       .withProperties(Map.of("Show controls", false, "Show crosshair", false));
+
     // Build an auto chooser. This will use Commands.none() as the default option.
-    // m_autoChooser = AutoBuilder.buildAutoChooser("Park Auto");
-    // d_driverTab
-    //   .add(m_autoChooser)
-    //   .withWidget(BuiltInWidgets.kComboBoxChooser)
-    //   .withSize(3, 1)
-    //   .withPosition(3, 4);
-    //
+    m_autoChooser = AutoBuilder.buildAutoChooser("Park Auto");
+    var possibleAutos = AutoBuilder.getAllAutoNames();
+    for (int i = 0; i < possibleAutos.size(); i++) {
+      var autoCommand = new PathPlannerAuto(possibleAutos.get(i));
+      d_autoTab.add(possibleAutos.get(i), autoCommand).withWidget(BuiltInWidgets.kCommand).withSize(2, 1);
+    }
+
+    d_driverTab.add(m_autoChooser).withWidget(BuiltInWidgets.kComboBoxChooser).withSize(3, 1).withPosition(3, 4);
     // TODO: Add more important items from subsystems here
   }
 
-  // public Command getAutonomousCommand() {
-  //   return m_autoChooser.getSelected();
-  // }
+  public Command getAutonomousCommand() {
+    return m_autoChooser.getSelected();
+  }
 
   /**
    * Creates the controller and configures the driver's controls
