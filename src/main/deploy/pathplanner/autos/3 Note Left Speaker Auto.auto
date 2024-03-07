@@ -14,44 +14,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Run_Shooter_For_2_Seconds"
+            "name": "Score_In_Speaker"
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "Toggle_Intake"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.5
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Speaker to Left Note"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Intake_Note_For_2_Seconds"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Toggle_Intake"
+            "pathName": "Speaker to Left Note"
           }
         },
         {
@@ -63,38 +32,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Run_Shooter_For_2_Seconds"
+            "name": "Score_In_Speaker"
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "Toggle_Intake"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Speaker to Far Left Note"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Intake_Note_For_3_Seconds"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Toggle_Intake"
+            "pathName": "Speaker to Far Left Note"
           }
         },
         {
@@ -106,7 +50,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Run_Shooter_For_2_Seconds"
+            "name": "Score_In_Speaker"
           }
         }
       ]

@@ -18,27 +18,9 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "Toggle_Intake"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.5
-          }
-        },
-        {
-          "type": "parallel",
+          "type": "path",
           "data": {
             "pathName": "Speaker To Center Note"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Toggle_Intake"
           }
         },
         {
@@ -54,34 +36,9 @@
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "Toggle_Intake"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Speaker To Far Center Note"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Intake_Note_For_3_Seconds"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Toggle_Intake"
+            "pathName": "Speaker To Far Center Note"
           }
         },
         {

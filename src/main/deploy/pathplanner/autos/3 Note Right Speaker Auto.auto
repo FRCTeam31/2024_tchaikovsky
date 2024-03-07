@@ -8,38 +8,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Run_Shooter_For_2_Seconds"
+            "name": "Score_In_Speaker"
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "Toggle_Intake"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Speaker to Right Note"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Intake_Note_For_2_Seconds"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Toggle_Intake"
+            "pathName": "Speaker to Right Note"
           }
         },
         {
@@ -51,38 +26,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Run_Shooter_For_2_Seconds"
+            "name": "Score_In_Speaker"
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "Toggle_Intake"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Speaker to Far Right Note"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Intake_Note_For_3_Seconds"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Toggle_Intake"
+            "pathName": "Speaker to Far Right Note"
           }
         },
         {
@@ -94,7 +44,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Run_Shooter_For_2_Seconds"
+            "name": "Score_In_Speaker"
           }
         }
       ]

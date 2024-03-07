@@ -32,7 +32,24 @@
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "New Event Marker",
+      "name": "Set Intake Out",
+      "waypointRelativePos": 0.45,
+      "command": {
+        "type": "sequential",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Set_Intake_Out"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Intake note",
       "waypointRelativePos": 0.85,
       "command": {
         "type": "sequential",
@@ -41,7 +58,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Intake_Note_For_2_Seconds"
+                "name": "Start_Note_Intake"
               }
             }
           ]
@@ -51,7 +68,7 @@
   ],
   "globalConstraints": {
     "maxVelocity": 4.0,
-    "maxAcceleration": 8.0,
+    "maxAcceleration": 4.0,
     "maxAngularVelocity": 180.0,
     "maxAngularAcceleration": 360.0
   },
