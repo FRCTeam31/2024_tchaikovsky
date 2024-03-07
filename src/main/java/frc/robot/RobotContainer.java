@@ -325,7 +325,15 @@ public class RobotContainer {
     ) {
       return Map.of(
         "Score_In_Speaker",
-        CombinedCommands.scoreInSpeakerSequentialGroup(shooter, intake),
+        // CombinedCommands.scoreInSpeakerSequentialGroup(shooter, intake),
+          // .scoreInSpeakerCommand()
+          shooter
+          .startShootingNoteCommand()
+          .andThen(new WaitCommand(0.75))
+          .andThen(intake.ejectNoteCommand())
+          .andThen(new WaitCommand(0.75))
+          .andThen(shooter.stopMotorsCommand())
+          .andThen(intake.stopRollersCommand()),
         "Load_Note_For_Amp",
         CombinedCommands.loadNoteForAmp(shooter, intake),
         "Stop_Shooter_And_Intake",
