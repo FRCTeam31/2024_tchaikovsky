@@ -237,9 +237,18 @@ public class RobotContainer {
       .onFalse(Shooter.stopMotorsCommand());
 
     // Combined shooter and intake commands ===========
-    m_operatorController // Run speaker shot sequence
+    m_operatorController // score in speaker
       .b()
-      .onTrue(CombinedCommands.scoreInSpeakerSequentialGroup(Shooter, Intake));
+      .onTrue(
+        Shooter
+          // .scoreInSpeakerCommand()
+          .startShootingNoteCommand()
+          .andThen(new WaitCommand(0.75))
+          .andThen(Intake.ejectNoteCommand())
+          .andThen(new WaitCommand(0.75))
+          .andThen(Shooter.stopMotorsCommand())
+          .andThen(Intake.stopRollersCommand())
+      );
 
     m_operatorController // Run sequence to load a note into the shooter for scoring in the amp
       .y()
