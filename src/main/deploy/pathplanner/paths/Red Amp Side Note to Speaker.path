@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 15.88,
-        "y": 6.67
+        "x": 14.2,
+        "y": 7.0
       },
       "prevControl": null,
       "nextControl": {
-        "x": 15.712242595655207,
-        "y": 6.831835645650256
+        "x": 14.621367621113622,
+        "y": 7.035219115483277
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 14.2,
-        "y": 7.0
+        "x": 15.88,
+        "y": 6.67
       },
       "prevControl": {
-        "x": 15.34634319358613,
-        "y": 7.009244703171072
+        "x": 15.40716739091136,
+        "y": 6.924282677394184
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,7 +32,7 @@
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Set Intake Out",
+      "name": "Prepare to Shoot",
       "waypointRelativePos": 0,
       "command": {
         "type": "sequential",
@@ -41,24 +41,13 @@
             {
               "type": "named",
               "data": {
-                "name": "Set_Intake_Out"
+                "name": "Set_Intake_In"
               }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "Intake Note",
-      "waypointRelativePos": 0.85,
-      "command": {
-        "type": "sequential",
-        "data": {
-          "commands": [
+            },
             {
               "type": "named",
               "data": {
-                "name": "Start_Note_Intake"
+                "name": "Stop_Note_Intake"
               }
             }
           ]
@@ -74,13 +63,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 90.0,
+    "rotation": 30.0,
     "rotateFast": true
   },
   "reversed": false,
   "folder": "Red Amp Side Auto Paths",
   "previewStartingState": {
-    "rotation": 30.0,
+    "rotation": 90.0,
     "velocity": 0
   },
   "useDefaultConstraints": true

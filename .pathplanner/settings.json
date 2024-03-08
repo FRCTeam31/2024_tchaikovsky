@@ -12,9 +12,9 @@
   ],
   "autoFolders": [
     "Center Speaker Autos",
-    "Left Speaker Autos",
+    "Amp Side Speaker Autos",
     "Park Autos",
-    "Right Speaker Autos"
+    "Feed Side Speaker Autos"
   ],
   "defaultMaxVel": 4.0,
   "defaultMaxAccel": 4.0,
