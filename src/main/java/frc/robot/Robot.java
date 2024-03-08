@@ -58,9 +58,6 @@ public class Robot extends TimedRobot {
     // Set auto LED pattern
     m_robotContainer.LEDs.setSection(0, LEDSection.blinkColor(onRedAlliance() ? Color.RED : Color.BLUE, 100));
 
-    // Get the selected auto command
-    m_robotContainer.Drivetrain.resetGyro();
-
     var autoCommand = m_robotContainer.getAutonomousCommand();
     m_autonomousCommand = autoCommand; // Save the command for cancelling later if needed
 
