@@ -59,6 +59,8 @@ public class Robot extends TimedRobot {
     m_robotContainer.LEDs.setSection(0, LEDSection.blinkColor(onRedAlliance() ? Color.RED : Color.BLUE, 100));
 
     // Get the selected auto command
+    m_robotContainer.Drivetrain.resetGyro();
+
     var autoCommand = m_robotContainer.getAutonomousCommand();
     m_autonomousCommand = autoCommand; // Save the command for cancelling later if needed
 
@@ -69,9 +71,8 @@ public class Robot extends TimedRobot {
     }
 
     // Get the auto's starting pose, reset the gyro and odometry
-    var startingPose = PathPlannerAuto.getStaringPoseFromAutoFile(autoCommand.getName());
-    m_robotContainer.Drivetrain.resetGyro();
-    m_robotContainer.Drivetrain.resetOdometry(startingPose);
+    // var startingPose = PathPlannerAuto.getStaringPoseFromAutoFile(autoCommand.getName());
+    // m_robotContainer.Drivetrain.resetOdometry(startingPose);
 
     // Schedule the auto command
     autoCommand.schedule();

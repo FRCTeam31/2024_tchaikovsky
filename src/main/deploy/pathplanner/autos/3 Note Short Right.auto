@@ -20,13 +20,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Middle Speaker To Right Note"
+            "pathName": "Blue Middle Speaker To Source Side Note"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Right Note To Middle Speaker"
+            "pathName": "Blue Source Side Note To Middle Speaker"
           }
         },
         {
@@ -38,13 +38,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Speaker To Center Note"
+            "pathName": "Blue Speaker To Center Note"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Center Note To Speaker"
+            "pathName": "Blue Center Note To Speaker"
           }
         },
         {

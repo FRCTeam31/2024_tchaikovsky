@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.3,
-        "y": 5.5
+        "x": 7.85,
+        "y": 5.787184186980988
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.4199314885116257,
-        "y": 4.455946929911878
+        "x": 4.76651403753258,
+        "y": 8.394190482074658
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.5,
-        "y": 4.113892912470511
+        "x": 1.3,
+        "y": 5.5
       },
       "prevControl": {
-        "x": 1.5216232234266267,
-        "y": 4.169361131515056
+        "x": 3.9344907518643866,
+        "y": 5.204767887013252
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,8 +32,8 @@
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Intake Down",
-      "waypointRelativePos": 0,
+      "name": "Bring Note In",
+      "waypointRelativePos": 0.15,
       "command": {
         "type": "sequential",
         "data": {
@@ -41,24 +41,13 @@
             {
               "type": "named",
               "data": {
-                "name": "Set_Intake_Out"
+                "name": "Stop_Note_Intake"
               }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "Intake Note",
-      "waypointRelativePos": 0.7,
-      "command": {
-        "type": "sequential",
-        "data": {
-          "commands": [
+            },
             {
               "type": "named",
               "data": {
-                "name": "Start_Note_Intake"
+                "name": "Set_Intake_In"
               }
             }
           ]
@@ -67,8 +56,8 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 1.75,
-    "maxAcceleration": 1.75,
+    "maxVelocity": 4.0,
+    "maxAcceleration": 4.0,
     "maxAngularVelocity": 180.0,
     "maxAngularAcceleration": 360.0
   },
@@ -78,10 +67,10 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "Center Auto Paths",
+  "folder": "Blue Center Auto Paths",
   "previewStartingState": {
     "rotation": -90.0,
     "velocity": 0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

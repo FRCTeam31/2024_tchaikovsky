@@ -74,7 +74,7 @@
   ],
   "globalConstraints": {
     "maxVelocity": 4.0,
-    "maxAcceleration": 8.0,
+    "maxAcceleration": 4.0,
     "maxAngularVelocity": 180.0,
     "maxAngularAcceleration": 360.0
   },
@@ -84,7 +84,7 @@
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "Park Autos",
+  "folder": "Blue Park Auto Paths",
   "previewStartingState": {
     "rotation": -150.0,
     "velocity": 0

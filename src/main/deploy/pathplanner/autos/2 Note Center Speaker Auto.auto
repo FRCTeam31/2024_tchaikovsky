@@ -20,13 +20,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Speaker To Center Note"
+            "pathName": "Blue Speaker To Center Note"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Center Note To Speaker"
+            "pathName": "Blue Center Note To Speaker"
           }
         },
         {
@@ -38,7 +38,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Get Out of The Way"
+            "pathName": "Blue Get Out of The Way"
           }
         }
       ]

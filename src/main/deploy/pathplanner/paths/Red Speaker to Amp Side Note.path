@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.4,
-        "y": 1.5
+        "x": 15.88,
+        "y": 6.67
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.8605753327000683,
-        "y": 1.5
+        "x": 15.712242595655207,
+        "y": 6.831835645650256
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 3.5,
-        "y": 1.5
+        "x": 14.2,
+        "y": 7.0
       },
       "prevControl": {
-        "x": 2.3166418821455848,
-        "y": 1.5
+        "x": 15.34634319358613,
+        "y": 7.009244703171072
       },
       "nextControl": null,
       "isLocked": false,
@@ -39,13 +39,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -90.83355380862889,
-    "rotateFast": false
+    "rotation": 90.0,
+    "rotateFast": true
   },
   "reversed": false,
-  "folder": "Blue Park Auto Paths",
+  "folder": null,
   "previewStartingState": {
-    "rotation": -89.74037818393563,
+    "rotation": 30.0,
     "velocity": 0
   },
   "useDefaultConstraints": true

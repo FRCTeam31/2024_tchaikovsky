@@ -111,7 +111,7 @@ public class RobotConfig {
         0.1
       );
 
-    config.Intake = new IntakeConfig(16, 15, 14, false, false, true, new PrimePIDConstants(0.032, 0, 0), 50, 4, 5);
+    config.Intake = new IntakeConfig(16, 15, 14, false, false, true, new PrimePIDConstants(0.05, 0, 0), 50, 4, 5);
 
     config.Shooter = new ShooterConfig(20, 19, false, false, 21, 0, 22, 1, 7, 0, 0.85);
 

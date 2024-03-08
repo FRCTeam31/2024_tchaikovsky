@@ -20,13 +20,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Speaker to Left Note"
+            "pathName": "Speaker to Amp Side Note"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Left Note to Speaker"
+            "pathName": "Amp Side Note to Speaker"
           }
         },
         {
@@ -38,13 +38,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Speaker to Far Left Note"
+            "pathName": "Speaker to Far Amp Side Note"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Far Left Note to Speaker"
+            "pathName": "Far Amp Side Note to Speaker"
           }
         },
         {

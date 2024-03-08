@@ -244,6 +244,10 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     // var xSpeed = desiredChassisSpeeds.vxMetersPerSecond;
     // var ySpeed = desiredChassisSpeeds.vyMetersPerSecond;
 
+    if (DriverStation.isAutonomousEnabled() && Robot.onRedAlliance()) {
+      // desiredChassisSpeeds.vxMetersPerSecond = -desiredChassisSpeeds.vxMetersPerSecond;
+    }
+
     var swerveModuleStates = m_kinematics.toSwerveModuleStates(desiredChassisSpeeds);
     SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, m_config.Drivetrain.MaxSpeedMetersPerSecond);
 

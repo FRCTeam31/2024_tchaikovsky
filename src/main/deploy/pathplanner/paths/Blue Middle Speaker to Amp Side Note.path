@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.5,
-        "y": 7.0
+        "x": 1.3,
+        "y": 5.5
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.5493573329488999,
-        "y": 7.06295322500555
+        "x": 1.530867926600718,
+        "y": 6.6561862853455445
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 0.82,
-        "y": 6.48
+        "x": 2.5,
+        "y": 7.0
       },
       "prevControl": {
-        "x": 0.9529834075884366,
-        "y": 6.609962769475088
+        "x": 1.540112629774809,
+        "y": 6.6931650980419075
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,8 +32,8 @@
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Prepare to Shoot",
-      "waypointRelativePos": 0.25,
+      "name": "Intake Down",
+      "waypointRelativePos": 0,
       "command": {
         "type": "sequential",
         "data": {
@@ -41,13 +41,24 @@
             {
               "type": "named",
               "data": {
-                "name": "Stop_Note_Intake"
+                "name": "Set_Intake_Out"
               }
-            },
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Intake Note",
+      "waypointRelativePos": 0.6,
+      "command": {
+        "type": "sequential",
+        "data": {
+          "commands": [
             {
               "type": "named",
               "data": {
-                "name": "Set_Intake_In"
+                "name": "Start_Note_Intake"
               }
             }
           ]
@@ -56,20 +67,20 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 2.5,
-    "maxAcceleration": 2.5,
+    "maxVelocity": 1.75,
+    "maxAcceleration": 1.75,
     "maxAngularVelocity": 180.0,
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -29.40442228083992,
+    "rotation": -90.0,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "Left Auto Paths",
+  "folder": "Blue Center Auto Paths",
   "previewStartingState": {
-    "rotation": -89.74000000000001,
+    "rotation": -90.0,
     "velocity": 0
   },
   "useDefaultConstraints": false

@@ -20,13 +20,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Speaker to Right Note"
+            "pathName": "Speaker to Feed Side Note"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Right Note to Speaker"
+            "pathName": "Feed Side Note to Speaker"
           }
         },
         {

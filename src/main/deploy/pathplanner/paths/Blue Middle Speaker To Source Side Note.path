@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.3,
-        "y": 5.5
+        "x": 1.4199314885116257,
+        "y": 4.455946929911878
       },
       "isLocked": false,
       "linkedName": null
@@ -17,11 +17,11 @@
     {
       "anchor": {
         "x": 2.5,
-        "y": 5.5
+        "y": 4.113892912470511
       },
       "prevControl": {
-        "x": 1.5,
-        "y": 5.5
+        "x": 1.5216232234266267,
+        "y": 4.169361131515056
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,8 +32,8 @@
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Bring out intake",
-      "waypointRelativePos": 0.0,
+      "name": "Intake Down",
+      "waypointRelativePos": 0,
       "command": {
         "type": "sequential",
         "data": {
@@ -50,7 +50,7 @@
     },
     {
       "name": "Intake Note",
-      "waypointRelativePos": 0.55,
+      "waypointRelativePos": 0.7,
       "command": {
         "type": "sequential",
         "data": {
@@ -78,7 +78,7 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "Center Auto Paths",
+  "folder": "Blue Center Auto Paths",
   "previewStartingState": {
     "rotation": -90.0,
     "velocity": 0
