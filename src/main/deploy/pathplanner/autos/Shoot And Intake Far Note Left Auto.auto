@@ -1,0 +1,43 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 0.8,
+      "y": 4.6
+    },
+    "rotation": -150.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Shoot And Intake Far Note Left"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.2
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stop_Note_Intake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Set_Intake_In"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "Park Autos",
+  "choreoAuto": false
+}
