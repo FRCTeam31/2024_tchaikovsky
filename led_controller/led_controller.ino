@@ -80,7 +80,7 @@ class LEDSection {
     }
 };
 
-#define PIN1 6 // D2
+#define PIN1 10 // D10
 #define NUMPIXELS 78
 #define SECTION_COUNT 3
 #define LEDS_PER_SECTION 26
@@ -88,9 +88,9 @@ class LEDSection {
 Adafruit_NeoPixel strip(NUMPIXELS, PIN1, NEO_GRB + NEO_KHZ800);
 LEDSection sectionStateBuffer[SECTION_COUNT] = {
   // Section, R, G, B, Pattern, Speed, Direction
-  LEDSection(255, 0, 0, Solid, 1000 / 25, true),
-  LEDSection(255, 0, 0, Blink, 1000, 0),
-  LEDSection(255, 0, 0, Pulse, 1000 / 25, false),
+  LEDSection(255, 255, 0, Pulse, 100, false),
+  LEDSection(255, 255, 0, Pulse, 100, false),
+  LEDSection(255, 255, 0, Pulse, 100, false),
 };
 LEDSection sectionStates[SECTION_COUNT] = {
   // Section, R, G, B, Pattern, Speed, Direction

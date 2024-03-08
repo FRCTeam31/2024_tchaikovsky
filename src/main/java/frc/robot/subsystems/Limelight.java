@@ -21,7 +21,6 @@ public class Limelight extends SubsystemBase {
 
   private NetworkTable m_limelightTable;
 
-  private ShuffleboardTab d_robotTab = Shuffleboard.getTab("Robot");
   private ShuffleboardTab d_tab = Shuffleboard.getTab("Limelight");
   private GenericEntry d_txEntry = d_tab
     .add("Horizontal Target Offset", 0)
@@ -42,10 +41,7 @@ public class Limelight extends SubsystemBase {
     .add("Pipeline Latency (ms)", 0)
     .withWidget(BuiltInWidgets.kTextView)
     .getEntry();
-  private GenericEntry d_clEntry = d_tab
-    .add("Capture Latency (ms)", 0)
-    .withWidget(BuiltInWidgets.kTextView)
-    .getEntry();
+  private GenericEntry d_clEntry = d_tab.add("Capture Latency (ms)", 0).withWidget(BuiltInWidgets.kTextView).getEntry();
   private GenericEntry d_tidEntry = d_tab
     .add("Primary In-View AprilTag ID", 0)
     .withWidget(BuiltInWidgets.kTextView)
@@ -58,17 +54,6 @@ public class Limelight extends SubsystemBase {
   public Limelight(Pose3d cameraPose) {
     m_limelightTable = NetworkTableInstance.getDefault().getTable("limelight");
     setCameraPose(cameraPose);
-
-    d_robotTab
-      .addCamera(
-        "Limelight Stream",
-        "LL2",
-        "http://limelight.local:5800/stream.mjpg"
-      )
-      .withSize(5, 4)
-      .withPosition(6, 0)
-      .withWidget(BuiltInWidgets.kCameraStream)
-      .withProperties(Map.of("Show controls", false, "Show crosshair", false));
   }
 
   //#region Basic Targeting Data
@@ -77,18 +62,14 @@ public class Limelight extends SubsystemBase {
    * Returns Horizontal Offset From Crosshair To Target (LL1: -27 degrees to 27 degrees / LL2: -29.8 to 29.8 degrees)
    */
   public Rotation2d getHorizontalOffsetFromTarget() {
-    return Rotation2d.fromDegrees(
-      m_limelightTable.getEntry("tx").getDouble(0.0)
-    );
+    return Rotation2d.fromDegrees(m_limelightTable.getEntry("tx").getDouble(0.0));
   }
 
   /**
    * Returns Vertical Offset From Crosshair To Target (LL1: -20.5 degrees to 20.5 degrees / LL2: -24.85 to 24.85 degrees)
    */
   public Rotation2d getVerticalOffsetFromTarget() {
-    return Rotation2d.fromDegrees(
-      m_limelightTable.getEntry("ty").getDouble(0.0)
-    );
+    return Rotation2d.fromDegrees(m_limelightTable.getEntry("ty").getDouble(0.0));
   }
 
   /**
@@ -127,9 +108,7 @@ public class Limelight extends SubsystemBase {
    * Robot transform in field-space.
    */
   public Pose3d getRobotPose() {
-    var poseData = m_limelightTable
-      .getEntry("botpose")
-      .getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
+    var poseData = m_limelightTable.getEntry("botpose").getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
 
     return toPose3d(poseData);
   }
@@ -140,15 +119,11 @@ public class Limelight extends SubsystemBase {
    */
   public Pose3d getRobotPose(DriverStation.Alliance alliance) {
     if (alliance == DriverStation.Alliance.Blue) {
-      var poseData = m_limelightTable
-        .getEntry("botpose_wpiblue")
-        .getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
+      var poseData = m_limelightTable.getEntry("botpose_wpiblue").getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
 
       return toPose3d(poseData);
     } else {
-      var poseData = m_limelightTable
-        .getEntry("botpose_wpired")
-        .getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
+      var poseData = m_limelightTable.getEntry("botpose_wpired").getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
 
       return toPose3d(poseData);
     }
@@ -158,9 +133,7 @@ public class Limelight extends SubsystemBase {
    * 3D transform of the robot in the coordinate system of the primary in-view AprilTag
    */
   public Pose3d getRobotPoseInTargetSpace() {
-    var poseData = m_limelightTable
-      .getEntry("botpose_targetspace")
-      .getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
+    var poseData = m_limelightTable.getEntry("botpose_targetspace").getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
 
     return toPose3d(poseData);
   }
@@ -169,9 +142,7 @@ public class Limelight extends SubsystemBase {
    * 3D transform of the camera in the coordinate system of the primary in-view AprilTag
    */
   public Pose3d getCameraPoseInTargetSpace() {
-    var poseData = m_limelightTable
-      .getEntry("camerapose_targetspace")
-      .getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
+    var poseData = m_limelightTable.getEntry("camerapose_targetspace").getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
 
     return toPose3d(poseData);
   }
@@ -180,9 +151,7 @@ public class Limelight extends SubsystemBase {
    * 3D transform of the camera in the coordinate system of the robot
    */
   public Pose3d getCameraPoseInRobotSpace() {
-    var poseData = m_limelightTable
-      .getEntry("camerapose_robotspace")
-      .getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
+    var poseData = m_limelightTable.getEntry("camerapose_robotspace").getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
 
     return toPose3d(poseData);
   }
@@ -191,9 +160,7 @@ public class Limelight extends SubsystemBase {
    * 3D transform of the primary in-view AprilTag in the coordinate system of the Camera
    */
   public Pose3d getTargetPoseInCameraSpace() {
-    var poseData = m_limelightTable
-      .getEntry("targetpose_cameraspace")
-      .getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
+    var poseData = m_limelightTable.getEntry("targetpose_cameraspace").getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
 
     return toPose3d(poseData);
   }
@@ -202,9 +169,7 @@ public class Limelight extends SubsystemBase {
    * 3D transform of the primary in-view AprilTag in the coordinate system of the Robot
    */
   public Pose3d getTargetPoseInRobotSpace() {
-    var poseData = m_limelightTable
-      .getEntry("targetpose_robotspace")
-      .getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
+    var poseData = m_limelightTable.getEntry("targetpose_robotspace").getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
 
     return toPose3d(poseData);
   }
@@ -275,9 +240,7 @@ public class Limelight extends SubsystemBase {
       Units.radiansToDegrees(pose.getRotation().getZ()),
     };
 
-    m_limelightTable
-      .getEntry("camerapose_robotspace_set")
-      .setDoubleArray(poseData);
+    m_limelightTable.getEntry("camerapose_robotspace_set").setDoubleArray(poseData);
   }
 
   //#endregion

@@ -4,68 +4,39 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.shuffleboard.ComplexWidget;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.config.RobotConfig;
-import java.util.Map;
-import prime.config.PrimeConfigurator;
 import prime.control.LEDs.Color;
-import prime.control.LEDs.SectionState;
+import prime.control.LEDs.LEDSection;
 
 public class Robot extends TimedRobot {
 
-  private ShuffleboardTab d_robotTab = Shuffleboard.getTab("Robot");
-  private GenericEntry d_allianceEntry = d_robotTab
-    .add("Alliance Color", false)
-    .withSize(3, 0)
-    .withPosition(12, 0)
-    .withWidget(BuiltInWidgets.kBooleanBox)
-    .withProperties(
-      Map.of("Color when true", "#FF0000", "Color when false", "#0000FF")
-    )
-    .getEntry();
-
-  public boolean autoEnabled = false;
-
-  private final String m_defaultAutoName = "Copy of Speaker Auto 1";
-  public static SendableChooser<Command> m_autoChooser;
-  private Command m_autonomousCommand;
-
   private RobotContainer m_robotContainer;
+  private Command m_autonomousCommand;
 
   @Override
   public void robotInit() {
     m_robotContainer = new RobotContainer(RobotConfig.getDefault());
-    m_robotContainer.LEDs.setLeftSection(
-      0,
-      SectionState.solidColor(Color.GREEN)
-    );
-    m_robotContainer.LEDs.setRightSection(
-      0,
-      SectionState.solidColor(Color.GREEN)
-    );
+    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
-    // Build an auto chooser. This will use Commands.none() as the default option.
-    m_autoChooser = AutoBuilder.buildAutoChooser(m_defaultAutoName);
-    d_robotTab
-      .add(m_autoChooser)
-      .withWidget(BuiltInWidgets.kComboBoxChooser)
-      .withSize(3, 1)
-      .withPosition(3, 3);
+    // Set LED startup pattern
+    m_robotContainer.LEDs.setSection(0, LEDSection.pulseColor(Color.ORANGE, 1000));
+  }
+
+  @Override
+  public void disabledInit() {
+    // Set disabled LED pattern
+    m_robotContainer.LEDs.setSection(0, LEDSection.pulseColor(onRedAlliance() ? Color.RED : Color.BLUE, 100));
   }
 
   /**
@@ -76,9 +47,7 @@ public class Robot extends TimedRobot {
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
 
-    d_allianceEntry.setBoolean(
-      DriverStation.getAlliance().get() == Alliance.Red
-    );
+    m_robotContainer.d_allianceEntry.setBoolean(onRedAlliance());
   }
 
   /**
@@ -86,35 +55,24 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    autoEnabled = true;
+    // Set auto LED pattern
+    m_robotContainer.LEDs.setSection(0, LEDSection.blinkColor(onRedAlliance() ? Color.RED : Color.BLUE, 100));
 
-    Pose2d startingPose;
-    if (m_autoChooser != null) {
-      m_autonomousCommand = m_autoChooser.getSelected();
-      startingPose =
-        PathPlannerAuto.getStaringPoseFromAutoFile(
-          m_autonomousCommand.getName()
-        );
-    } else {
-      m_autonomousCommand = new PathPlannerAuto(m_defaultAutoName);
-      startingPose = new Pose2d(1.4, 5.5, Rotation2d.fromDegrees(270));
-    }
+    var autoCommand = m_robotContainer.getAutonomousCommand();
+    m_autonomousCommand = autoCommand; // Save the command for cancelling later if needed
 
     // Exit without scheduling an auto command if none is selected
-    if (m_autonomousCommand == null || m_autonomousCommand == Commands.none()) {
+    if (autoCommand == null || autoCommand == Commands.none()) {
       DriverStation.reportError("[ERROR] >> No auto command selected", false);
       return;
     }
 
-    // m_robotContainer.LEDs.setLeftSection(0, SectionState.solidColor(Color.RED));
-    // m_robotContainer.LEDs.setRightSection(
-    //   0,
-    //   SectionState.solidColor(Color.RED)
-    // );
+    // Get the auto's starting pose, reset the gyro and odometry
+    // var startingPose = PathPlannerAuto.getStaringPoseFromAutoFile(autoCommand.getName());
+    // m_robotContainer.Drivetrain.resetOdometry(startingPose);
 
-    m_robotContainer.Drivetrain.resetGyro();
-    m_robotContainer.Drivetrain.resetOdometry(startingPose);
-    m_autonomousCommand.schedule();
+    // Schedule the auto command
+    autoCommand.schedule();
   }
 
   /**
@@ -123,21 +81,16 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {
     if (m_autonomousCommand != null) {
+      // Cancel the auto command if it's still running
       m_autonomousCommand.cancel();
+
+      // Stop the shooter and intake motors in case they're still running
+      m_robotContainer.Shooter.stopMotorsCommand().schedule();
+      m_robotContainer.Intake.stopRollersCommand().schedule();
     }
 
-    m_robotContainer.Drivetrain.resetGyro();
-    m_robotContainer.Drivetrain.resetOdometry(
-      new Pose2d(0, 0, Rotation2d.fromDegrees(0))
-    );
-    // m_robotContainer.LEDs.setLeftSection(
-    //   0,
-    //   SectionState.solidColor(Color.BLUE)
-    // );
-    // m_robotContainer.LEDs.setRightSection(
-    //   0,
-    //   SectionState.solidColor(Color.BLUE)
-    // );
+    // Set teleop LED pattern
+    m_robotContainer.LEDs.setSection(0, LEDSection.raceColor(onRedAlliance() ? Color.RED : Color.BLUE, 25, true));
   }
 
   /**
@@ -147,14 +100,18 @@ public class Robot extends TimedRobot {
   public void testInit() {
     CommandScheduler.getInstance().cancelAll();
 
-    m_robotContainer.Drivetrain.resetGyro();
-    m_robotContainer.Drivetrain.resetOdometry(
-      new Pose2d(0, 0, Rotation2d.fromDegrees(0))
-    );
     m_robotContainer.configureTestControls();
 
     // Start the data logger
     DataLogManager.start();
     DriverStation.startDataLog(DataLogManager.getLog());
+  }
+
+  public static boolean onRedAlliance() {
+    return DriverStation.getAlliance().get() == Alliance.Red;
+  }
+
+  public static boolean onBlueAlliance() {
+    return DriverStation.getAlliance().get() == Alliance.Blue;
   }
 }

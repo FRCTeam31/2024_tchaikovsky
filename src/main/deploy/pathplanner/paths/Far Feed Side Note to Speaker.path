@@ -42,7 +42,31 @@
       }
     }
   ],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "Prepare to Shoot",
+      "waypointRelativePos": 0.1,
+      "command": {
+        "type": "sequential",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Stop_Note_Intake"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "Set_Intake_In"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 4.0,
     "maxAcceleration": 4.0,
@@ -55,7 +79,7 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "Right Auto Paths",
+  "folder": "Blue Feed Side Auto Paths",
   "previewStartingState": {
     "rotation": -90.35590006281613,
     "velocity": 0

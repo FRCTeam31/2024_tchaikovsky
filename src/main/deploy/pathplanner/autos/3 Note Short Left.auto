@@ -2,7 +2,7 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.4,
+      "x": 1.3,
       "y": 5.5
     },
     "rotation": -90.0
@@ -38,7 +38,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Blue Get Out of The Way"
+            "pathName": "Blue Middle Speaker to Amp Side Note"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue Amp Side Note to Middle Speaker"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Score_In_Speaker"
           }
         }
       ]

@@ -6,11 +6,11 @@ import edu.wpi.first.wpilibj.SerialPort.Port;
 public class PrimeLEDController implements AutoCloseable {
 
   private SerialPort m_serial;
-  private SectionState[] m_lastPackets;
+  private LEDSection[] m_lastPackets;
 
   public PrimeLEDController(Port port, int sectionCount) {
     m_serial = new SerialPort(115200, port);
-    m_lastPackets = new SectionState[sectionCount];
+    m_lastPackets = new LEDSection[sectionCount];
   }
 
   /**
@@ -23,8 +23,8 @@ public class PrimeLEDController implements AutoCloseable {
    * @param pattern
    * @param speed
    */
-  public void setSectionState(byte section, SectionState state) {
-    if (section < 0 || section > 3) {
+  public void setSectionState(byte section, LEDSection state) {
+    if (section < 0 || section > 2) {
       System.out.println("Invalid section number");
       return;
     }
@@ -32,6 +32,7 @@ public class PrimeLEDController implements AutoCloseable {
     var packet = state.toSectionPacket(section);
 
     // Write the data packet to the controller
+    System.out.println("Writing " + packet.length + " bytes to LEDs for section " + section);
     m_serial.write(packet, packet.length);
   }
 

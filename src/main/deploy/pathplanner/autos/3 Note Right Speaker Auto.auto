@@ -1,6 +1,12 @@
 {
   "version": 1.0,
-  "startingPose": null,
+  "startingPose": {
+    "position": {
+      "x": 0.8,
+      "y": 4.6
+    },
+    "rotation": -150.0
+  },
   "command": {
     "type": "sequential",
     "data": {
@@ -8,98 +14,48 @@
         {
           "type": "named",
           "data": {
-            "name": "Run_Shooter_For_2_Seconds"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Toggle_Intake"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Speaker to Right Note"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Intake_Note_For_2_Seconds"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Toggle_Intake"
+            "name": "Score_In_Speaker"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Right Note to Speaker"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Run_Shooter_For_2_Seconds"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Toggle_Intake"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Speaker to Far Right Note"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Intake_Note_For_3_Seconds"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Toggle_Intake"
+            "pathName": "Speaker to Feed Side Note"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Far Right Note to Speaker"
+            "pathName": "Feed Side Note to Speaker"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Run_Shooter_For_2_Seconds"
+            "name": "Score_In_Speaker"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Speaker to Far Feed Side Note"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Far Feed Side Note to Speaker"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Score_In_Speaker"
           }
         }
       ]
     }
   },
-  "folder": "Right Speaker Autos",
+  "folder": "Feed Side Speaker Autos",
   "choreoAuto": false
 }

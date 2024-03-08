@@ -14,104 +14,48 @@
         {
           "type": "named",
           "data": {
-            "name": "Run_Shooter_For_2_Seconds"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Toggle_Intake"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.5
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Speaker to Left Note"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Intake_Note_For_2_Seconds"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Toggle_Intake"
+            "name": "Score_In_Speaker"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Left Note to Speaker"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Run_Shooter_For_2_Seconds"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Toggle_Intake"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Speaker to Far Left Note"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Intake_Note_For_3_Seconds"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Toggle_Intake"
+            "pathName": "Speaker to Amp Side Note"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Far Left Note to Speaker"
+            "pathName": "Amp Side Note to Speaker"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Run_Shooter_For_2_Seconds"
+            "name": "Score_In_Speaker"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Speaker to Far Amp Side Note"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Far Amp Side Note to Speaker"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Score_In_Speaker"
           }
         }
       ]
     }
   },
-  "folder": "Left Speaker Autos",
+  "folder": "Amp Side Speaker Autos",
   "choreoAuto": false
 }

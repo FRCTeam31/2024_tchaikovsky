@@ -6,7 +6,6 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -31,10 +30,7 @@ public class Intake extends SubsystemBase implements IPlannable {
   private PIDController m_anglePid;
   private double m_angleStartPoint;
   public boolean m_angleToggledIn;
-  private Debouncer m_angleToggleDebouncer = new Debouncer(
-    0.1,
-    Debouncer.DebounceType.kBoth
-  );
+  private Debouncer m_angleToggleDebouncer = new Debouncer(0.1, Debouncer.DebounceType.kBoth);
 
   // #region ShuffleBoard
   private ShuffleboardTab d_intakeTab = Shuffleboard.getTab("Intake");
@@ -90,27 +86,19 @@ public class Intake extends SubsystemBase implements IPlannable {
     m_topLimitSwitch = new DigitalInput(m_config.TopLimitSwitchChannel);
     m_bottomLimitSwitch = new DigitalInput(m_config.BottomLimitSwitchChannel);
 
-    m_rollers =
-      new LazyCANSparkMax(m_config.RollersCanId, MotorType.kBrushless);
+    m_rollers = new LazyCANSparkMax(m_config.RollersCanId, MotorType.kBrushless);
     m_rollers.restoreFactoryDefaults();
     m_rollers.setInverted(m_config.RollersInverted);
 
-    m_angleLeft =
-      new LazyCANSparkMax(m_config.NeoLeftCanId, MotorType.kBrushless);
+    m_angleLeft = new LazyCANSparkMax(m_config.NeoLeftCanId, MotorType.kBrushless);
     m_angleLeft.restoreFactoryDefaults();
     m_angleLeft.setInverted(m_config.NeoLeftInverted);
 
-    m_angleRight =
-      new LazyCANSparkMax(m_config.NeoRightCanId, MotorType.kBrushless);
+    m_angleRight = new LazyCANSparkMax(m_config.NeoRightCanId, MotorType.kBrushless);
     m_angleRight.setInverted(m_config.NeoRightInverted);
 
     m_anglePid =
-      new PIDController(
-        m_config.IntakeAnglePid.kP,
-        m_config.IntakeAnglePid.kI,
-        m_config.IntakeAnglePid.kD,
-        0.02
-      );
+      new PIDController(m_config.IntakeAnglePid.kP, m_config.IntakeAnglePid.kI, m_config.IntakeAnglePid.kD, 0.02);
     m_angleStartPoint = getPositionRight();
     m_angleToggledIn = true;
     m_anglePid.setSetpoint(m_angleStartPoint);
@@ -165,26 +153,18 @@ public class Intake extends SubsystemBase implements IPlannable {
   public void setIntakeRotation() {
     var currentPosition = getPositionRight();
 
-    var setpoint = m_angleToggledIn
-      ? m_angleStartPoint
-      : (m_angleStartPoint - m_config.PositionDelta);
+    var setpoint = m_angleToggledIn ? m_angleStartPoint : (m_angleStartPoint - m_config.PositionDelta);
 
     var pidOutput = m_anglePid.calculate(currentPosition, setpoint);
 
     d_pidOutputEntry.setDouble(pidOutput);
     // artificial limits
-    if (
-      currentPosition < m_angleStartPoint &&
-      pidOutput > 0 &&
-      !m_topLimitSwitch.get()
-    ) {
-      setAngleMotorSpeed(MathUtil.clamp(pidOutput, 0, 0.5));
+    if (currentPosition < m_angleStartPoint && pidOutput > 0 && !m_topLimitSwitch.get()) {
+      setAngleMotorSpeed(MathUtil.clamp(pidOutput, 0, 1));
     } else if (
-      currentPosition > (m_angleStartPoint - m_config.PositionDelta) &&
-      pidOutput < 0 &&
-      !m_bottomLimitSwitch.get()
+      currentPosition > (m_angleStartPoint - m_config.PositionDelta) && pidOutput < 0 && !m_bottomLimitSwitch.get()
     ) {
-      setAngleMotorSpeed(MathUtil.clamp(pidOutput, -0.5, 0));
+      setAngleMotorSpeed(MathUtil.clamp(pidOutput, -1, 0));
     } else {
       setAngleMotorSpeed(0);
     }
@@ -237,13 +217,18 @@ public class Intake extends SubsystemBase implements IPlannable {
   }
 
   /**
+   * Command for setting the intake angle into ground position
+   */
+  public Command setIntakeOutCommand() {
+    return Commands.runOnce(() -> m_angleToggledIn = false);
+  }
+
+  /**
    * Toggles the intake angle setpoint between in/out
    * @return
    */
   public Command toggleIntakeInAndOutCommand() {
-    return Commands.runOnce(() ->
-      m_angleToggledIn = !m_angleToggleDebouncer.calculate(m_angleToggledIn)
-    );
+    return Commands.runOnce(() -> m_angleToggledIn = !m_angleToggleDebouncer.calculate(m_angleToggledIn));
   }
 
   // Command for stopping the Intake Motors
@@ -262,9 +247,7 @@ public class Intake extends SubsystemBase implements IPlannable {
   }
 
   public Command intakeNoteForTime(double seconds, double speed) {
-    return setRollersSpeedCommand(() -> speed)
-      .andThen(new WaitCommand(seconds))
-      .andThen(stopRollersCommand());
+    return setRollersSpeedCommand(() -> speed).andThen(new WaitCommand(seconds)).andThen(stopRollersCommand());
   }
 
   public Command outtakeNoteForTime(double seconds, double speed) {
@@ -278,27 +261,14 @@ public class Intake extends SubsystemBase implements IPlannable {
 
   public Map<String, Command> getNamedCommands() {
     return Map.of(
-      // "Example_Command", exampleCommand(),
-      "Toggle_Intake",
-      toggleIntakeInAndOutCommand(),
-      "Set_Roller_Speed",
-      setRollersSpeedCommand(null),
-      "Eject_Note",
-      ejectNoteCommand(),
-      "Seek_Angle_Setpoint",
-      seekAngleSetpointCommand(),
+      "Set_Intake_Out",
+      setIntakeOutCommand(),
       "Set_Intake_In",
       setIntakeInCommand(),
-      "Stop_All_Intake_Motors",
-      stopArmMotorsCommand(),
-      "Stop_Intake_Rollers",
-      stopRollersCommand(),
-      "Intake_Note_For_2_Seconds",
-      intakeNoteForTime(1.25, 1),
-      "Intake_Note_For_3_Seconds",
-      intakeNoteForTime(3.2, 1),
-      "Outtake_Note_For_2_Seconds",
-      outtakeNoteForTime(2, -0.5)
+      "Start_Note_Intake",
+      setRollersSpeedCommand(() -> 1),
+      "Stop_Note_Intake",
+      stopRollersCommand()
     );
   }
 

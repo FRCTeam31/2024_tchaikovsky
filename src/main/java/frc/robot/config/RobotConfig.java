@@ -40,12 +40,12 @@ public class RobotConfig {
         0.67945,
         Math.PI * 0.7778174593052, // Wheelbase Circumference
         1,
-        Units.feetToMeters(20), // Max Speed MPS
+        Units.feetToMeters(17), // Max Speed MPS
         Units.feetToMeters(10), // Max Acceleration MPS^2
         Math.PI * 2, // Max Angular Speed in Radians
         0.5,
         false,
-        new PrimePIDConstants(0.019, 0, 0, 0, 0.095, 0, 0.05), // Drive PID
+        new PrimePIDConstants(0.019, 0, 0, 0, 0.091, 0, 0.05), // Drive PID
         new PrimePIDConstants(2, 0, 0), // Steering PID
         new PrimePIDConstants(4, 0, 0), // SnapTo PID,
         new PrimePIDConstants(1.75, 0, 0), // Pathing Translation PID
@@ -64,10 +64,7 @@ public class RobotConfig {
         0.164551 - 0.25,
         false,
         true,
-        new Translation2d(
-          -(config.Drivetrain.TrackWidthMeters / 2),
-          config.Drivetrain.WheelBaseMeters / 2
-        ),
+        new Translation2d(-(config.Drivetrain.TrackWidthMeters / 2), config.Drivetrain.WheelBaseMeters / 2),
         6.75,
         0.1
       );
@@ -81,10 +78,7 @@ public class RobotConfig {
         0.350098 - 0.25,
         true,
         true,
-        new Translation2d(
-          config.Drivetrain.TrackWidthMeters / 2,
-          config.Drivetrain.WheelBaseMeters / 2
-        ),
+        new Translation2d(config.Drivetrain.TrackWidthMeters / 2, config.Drivetrain.WheelBaseMeters / 2),
         6.75,
         0.1
       );
@@ -98,10 +92,7 @@ public class RobotConfig {
         0.717773 - 0.25,
         true,
         true,
-        new Translation2d(
-          config.Drivetrain.TrackWidthMeters / 2,
-          -(config.Drivetrain.WheelBaseMeters / 2)
-        ),
+        new Translation2d(config.Drivetrain.TrackWidthMeters / 2, -(config.Drivetrain.WheelBaseMeters / 2)),
         6.75,
         0.1
       );
@@ -115,37 +106,20 @@ public class RobotConfig {
         0.181152 - 0.25,
         false,
         true,
-        new Translation2d(
-          -(config.Drivetrain.TrackWidthMeters / 2),
-          -(config.Drivetrain.WheelBaseMeters / 2)
-        ),
+        new Translation2d(-(config.Drivetrain.TrackWidthMeters / 2), -(config.Drivetrain.WheelBaseMeters / 2)),
         6.75,
         0.1
       );
 
-    config.Intake =
-      new IntakeConfig(
-        16,
-        15,
-        14,
-        false,
-        false,
-        true,
-        new PrimePIDConstants(0.032, 0, 0),
-        50,
-        4,
-        5
-      );
+    config.Intake = new IntakeConfig(16, 15, 14, false, false, true, new PrimePIDConstants(0.05, 0, 0), 50, 4, 5);
 
-    config.Shooter =
-      new ShooterConfig(20, 19, false, false, 21, 0, 22, 1, 7, 0, 0.85);
+    config.Shooter = new ShooterConfig(20, 19, false, false, 21, 0, 22, 1, 7, 0, 0.85);
 
-    config.Climbers =
-      new ClimbersConfig(18, 17, true, true, 0.5, -1, 2, 3, 0, 1, 180, 150);
+    config.Climbers = new ClimbersConfig(18, 17, true, true, 0.5, -1, 2, 3, 0, 1, 180, 150);
 
     config.LimelightPose = new Pose3d(); // TODO: Find out what the pose (translation & rotation) of the camera lens is from the robot center -- ask Arseni to get it from the CAD model
 
-    config.LEDs = new LEDConfig(Port.kUSB, Port.kUSB);
+    config.LEDs = new LEDConfig(Port.kUSB);
 
     return config;
   }
