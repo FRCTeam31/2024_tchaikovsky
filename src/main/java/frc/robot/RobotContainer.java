@@ -56,7 +56,6 @@ public class RobotContainer {
   public Climbers Climbers;
   public Limelight Limelight;
   public LEDStrips LEDs;
-  public PowerDistribution PDH;
 
   public RobotContainer(RobotConfig config) {
     m_driverController = new PrimeXboxController(Controls.DRIVER_PORT);
@@ -83,7 +82,6 @@ public class RobotContainer {
       if (Intake != null) Intake.close();
       if (Climbers != null) Climbers.close();
       if (LEDs != null) LEDs.close();
-      if (PDH != null) PDH.close();
 
       // Create new subsystems
       Drivetrain = new Drivetrain(m_config);
@@ -92,7 +90,6 @@ public class RobotContainer {
       Climbers = new Climbers(m_config.Climbers);
       Limelight = new Limelight(m_config.LimelightPose);
       LEDs = new LEDStrips(m_config.LEDs);
-      PDH = new PowerDistribution();
 
       // Register the named commands from each subsystem that may be used in PathPlanner
       NamedCommands.registerCommands(Intake.getNamedCommands());
@@ -112,8 +109,6 @@ public class RobotContainer {
   }
 
   public void configureRobotDashboard() {
-    d_driverTab.add("Power Hub", PDH).withSize(3, 3).withPosition(0, 0).withWidget(BuiltInWidgets.kPowerDistribution);
-
     d_driverTab
       .addCamera("Limelight Stream", "LL2", "http://limelight.local:5800/stream.mjpg")
       .withSize(8, 4)

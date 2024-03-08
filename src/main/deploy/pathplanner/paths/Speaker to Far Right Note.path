@@ -28,13 +28,7 @@
       "linkedName": null
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.0,
-      "rotationDegrees": -30.67272172348717,
-      "rotateFast": false
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
@@ -81,7 +75,7 @@
   "goalEndState": {
     "velocity": 0,
     "rotation": -89.77223798922577,
-    "rotateFast": false
+    "rotateFast": true
   },
   "reversed": false,
   "folder": "Right Auto Paths",

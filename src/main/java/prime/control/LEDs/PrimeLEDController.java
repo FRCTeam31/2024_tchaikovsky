@@ -24,7 +24,7 @@ public class PrimeLEDController implements AutoCloseable {
    * @param speed
    */
   public void setSectionState(byte section, LEDSection state) {
-    if (section < 0 || section > 3) {
+    if (section < 0 || section > 2) {
       System.out.println("Invalid section number");
       return;
     }
@@ -32,6 +32,7 @@ public class PrimeLEDController implements AutoCloseable {
     var packet = state.toSectionPacket(section);
 
     // Write the data packet to the controller
+    System.out.println("Writing " + packet.length + " bytes to LEDs for section " + section);
     m_serial.write(packet, packet.length);
   }
 

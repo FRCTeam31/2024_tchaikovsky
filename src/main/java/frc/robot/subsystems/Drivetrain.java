@@ -31,6 +31,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
+import frc.robot.Robot;
 import frc.robot.config.RobotConfig;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
@@ -152,7 +153,9 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
       this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
       this::drive, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
       m_config.Drivetrain.getHolonomicPathFollowerConfig(),
-      () -> false, // Method to determine whether or not to flip the path
+      () -> {
+        return Robot.onRedAlliance();
+      }, // Method to determine whether or not to flip the path
       this // Reference to this subsystem to set requirements
     );
     // Robot.m_autoChooser = AutoBuilder.buildAutoChooser("1m Auto");

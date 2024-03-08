@@ -36,7 +36,7 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledInit() {
     // Set disabled LED pattern
-    m_robotContainer.LEDs.setSection(0, LEDSection.pulseColor(onRedAlliance() ? Color.RED : Color.BLUE, 500));
+    m_robotContainer.LEDs.setSection(0, LEDSection.pulseColor(onRedAlliance() ? Color.RED : Color.BLUE, 100));
   }
 
   /**
@@ -56,7 +56,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     // Set auto LED pattern
-    m_robotContainer.LEDs.setSection(0, LEDSection.blinkColor(onRedAlliance() ? Color.RED : Color.BLUE, 250));
+    m_robotContainer.LEDs.setSection(0, LEDSection.blinkColor(onRedAlliance() ? Color.RED : Color.BLUE, 100));
 
     // Get the selected auto command
     var autoCommand = m_robotContainer.getAutonomousCommand();
@@ -92,7 +92,7 @@ public class Robot extends TimedRobot {
     }
 
     // Set teleop LED pattern
-    m_robotContainer.LEDs.setSection(0, LEDSection.raceColor(onRedAlliance() ? Color.RED : Color.BLUE, 500, true));
+    m_robotContainer.LEDs.setSection(0, LEDSection.raceColor(onRedAlliance() ? Color.RED : Color.BLUE, 25, true));
   }
 
   /**
