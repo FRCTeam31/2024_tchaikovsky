@@ -17,7 +17,7 @@ public class LEDSection {
   public LEDSection(Color color, LEDPattern pattern, int speed, boolean reversed) {
     this.color = color;
     this.pattern = pattern;
-    this.speed = (byte) (((double) speed) * (255d / 1000d));
+    this.speed = (byte) speed;
     this.directionReversed = reversed;
   }
 

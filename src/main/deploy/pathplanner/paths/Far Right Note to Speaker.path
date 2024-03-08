@@ -44,7 +44,7 @@
   ],
   "eventMarkers": [
     {
-      "name": "New Event Marker",
+      "name": "Prepare to Shoot",
       "waypointRelativePos": 0.1,
       "command": {
         "type": "sequential",
@@ -53,7 +53,7 @@
             {
               "type": "named",
               "data": {
-                "name": "Start_Note_Intake"
+                "name": "Stop_Note_Intake"
               }
             },
             {

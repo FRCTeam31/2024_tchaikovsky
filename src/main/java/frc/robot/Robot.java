@@ -5,10 +5,13 @@
 package frc.robot;
 
 import com.pathplanner.lib.commands.PathPlannerAuto;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.ComplexWidget;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -24,21 +27,16 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     m_robotContainer = new RobotContainer(RobotConfig.getDefault());
+    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     // Set LED startup pattern
-    m_robotContainer.LEDs.setSection(
-      0,
-      LEDSection.pulseColor(Color.ORANGE, 1000)
-    );
+    m_robotContainer.LEDs.setSection(0, LEDSection.pulseColor(Color.ORANGE, 1000));
   }
 
   @Override
   public void disabledInit() {
     // Set disabled LED pattern
-    m_robotContainer.LEDs.setSection(
-      0,
-      LEDSection.pulseColor(onRedAlliance() ? Color.RED : Color.BLUE, 500)
-    );
+    m_robotContainer.LEDs.setSection(0, LEDSection.pulseColor(onRedAlliance() ? Color.RED : Color.BLUE, 100));
   }
 
   /**
@@ -58,29 +56,25 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     // Set auto LED pattern
-    m_robotContainer.LEDs.setSection(
-      0,
-      LEDSection.blinkColor(onRedAlliance() ? Color.RED : Color.BLUE, 250)
-    );
+    m_robotContainer.LEDs.setSection(0, LEDSection.blinkColor(onRedAlliance() ? Color.RED : Color.BLUE, 100));
+
     // Get the selected auto command
-    // var autoCommand = m_robotContainer.getAutonomousCommand();
-    // m_autonomousCommand = autoCommand; // Save the command for cancelling later if needed
+    var autoCommand = m_robotContainer.getAutonomousCommand();
+    m_autonomousCommand = autoCommand; // Save the command for cancelling later if needed
 
     // Exit without scheduling an auto command if none is selected
-    // if (autoCommand == null || autoCommand == Commands.none()) {
-    //   DriverStation.reportError("[ERROR] >> No auto command selected", false);
-    //   return;
-    // }
+    if (autoCommand == null || autoCommand == Commands.none()) {
+      DriverStation.reportError("[ERROR] >> No auto command selected", false);
+      return;
+    }
 
-    // // Get the auto's starting pose, reset the gyro and odometry
-    // var startingPose = PathPlannerAuto.getStaringPoseFromAutoFile(
-    //   autoCommand.getName()
-    // );
-    // m_robotContainer.Drivetrain.resetGyro();
-    // m_robotContainer.Drivetrain.resetOdometry(startingPose);
+    // Get the auto's starting pose, reset the gyro and odometry
+    var startingPose = PathPlannerAuto.getStaringPoseFromAutoFile(autoCommand.getName());
+    m_robotContainer.Drivetrain.resetGyro();
+    m_robotContainer.Drivetrain.resetOdometry(startingPose);
 
-    // // Schedule the auto command
-    // autoCommand.schedule();
+    // Schedule the auto command
+    autoCommand.schedule();
   }
 
   /**
@@ -98,10 +92,7 @@ public class Robot extends TimedRobot {
     }
 
     // Set teleop LED pattern
-    m_robotContainer.LEDs.setSection(
-      0,
-      LEDSection.raceColor(onRedAlliance() ? Color.RED : Color.BLUE, 500, true)
-    );
+    m_robotContainer.LEDs.setSection(0, LEDSection.raceColor(onRedAlliance() ? Color.RED : Color.BLUE, 25, true));
   }
 
   /**
