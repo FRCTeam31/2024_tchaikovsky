@@ -93,9 +93,8 @@ public class RobotContainer {
 
       // Register the named commands from each subsystem that may be used in PathPlanner
       NamedCommands.registerCommands(Intake.getNamedCommands());
-
-      // Register the combined named commands that use multiple subsystems
-      NamedCommands.registerCommands(CombinedCommands.getNamedCommands(Shooter, Intake));
+      NamedCommands.registerCommands(Shooter.getNamedCommands());
+      NamedCommands.registerCommands(CombinedCommands.getNamedCommands(Shooter, Intake)); // Register the combined named commands that use multiple subsystems
 
       // Create driver dashboard
       configureRobotDashboard();

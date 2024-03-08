@@ -34,10 +34,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
 
   public boolean m_shooterIsUp;
   private PIDController m_elevationPidController;
-  private Debouncer m_elevationToggleDebouncer = new Debouncer(
-    0.1,
-    Debouncer.DebounceType.kBoth
-  );
+  private Debouncer m_elevationToggleDebouncer = new Debouncer(0.1, Debouncer.DebounceType.kBoth);
 
   // #region Shuffleboard
   // Shuffleboard configuration
@@ -96,23 +93,15 @@ public class Shooter extends SubsystemBase implements IPlannable {
     m_victorSPX.setNeutralMode(NeutralMode.Brake);
 
     m_leftLinearActuator =
-      new LinearActuator(
-        m_config.LeftLinearActuatorCanID,
-        m_config.LeftLinearActuatorAnalogChannel
-      );
+      new LinearActuator(m_config.LeftLinearActuatorCanID, m_config.LeftLinearActuatorAnalogChannel);
     m_rightLinearActuator =
-      new LinearActuator(
-        m_config.RightLinearActuatorCanID,
-        m_config.RightLinearActuatorAnalogChannel
-      );
+      new LinearActuator(m_config.RightLinearActuatorCanID, m_config.RightLinearActuatorAnalogChannel);
 
     m_noteDetector = new DigitalInput(m_config.NoteDetectorDIOChannel);
     m_shooterIsUp = false;
     m_elevationPidController = new PIDController(25, 0, 0, 0.02);
     m_elevationPidController.setSetpoint(m_config.MinimumElevation);
-    d_shooterTab
-      .add("Elevation PID", m_elevationPidController)
-      .withWidget(BuiltInWidgets.kPIDController);
+    d_shooterTab.add("Elevation PID", m_elevationPidController).withWidget(BuiltInWidgets.kPIDController);
   }
 
   //#region Control Methods
@@ -162,20 +151,13 @@ public class Shooter extends SubsystemBase implements IPlannable {
     double currentPosition = getRightActuatorPosition();
 
     // if the shooter is up, set the setpoint to the maximum elevation
-    var setpoint = m_shooterIsUp
-      ? m_config.MaximumElevation
-      : m_config.MinimumElevation;
+    var setpoint = m_shooterIsUp ? m_config.MaximumElevation : m_config.MinimumElevation;
 
-    var pidOutput = m_elevationPidController.calculate(
-      currentPosition,
-      setpoint
-    );
+    var pidOutput = m_elevationPidController.calculate(currentPosition, setpoint);
 
     d_pidOutputEntry.setDouble(pidOutput);
-    var canGoHigher =
-      currentPosition < m_config.MaximumElevation && pidOutput > 0;
-    var canGoLower =
-      currentPosition > m_config.MinimumElevation && pidOutput < 0;
+    var canGoHigher = currentPosition < m_config.MaximumElevation && pidOutput > 0;
+    var canGoLower = currentPosition > m_config.MinimumElevation && pidOutput < 0;
 
     if (canGoHigher) {
       m_leftLinearActuator.set(pidOutput);
@@ -275,7 +257,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
   }
 
   public Map<String, Command> getNamedCommands() {
-    return Map.of();
+    return Map.of("Set_Elevation_Up", setElevationUpCommand(), "Set_Elevation_Down", setElevationDownCommand());
   }
 
   //#endregion

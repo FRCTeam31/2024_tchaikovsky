@@ -1,0 +1,61 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.3,
+      "y": 5.5
+    },
+    "rotation": -90.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "Score_In_Speaker"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Middle Speaker To Right Note"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Right Note To Middle Speaker"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Score_In_Speaker"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Speaker To Center Note"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Center Note To Speaker"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Score_In_Speaker"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "Center Speaker Autos",
+  "choreoAuto": false
+}
