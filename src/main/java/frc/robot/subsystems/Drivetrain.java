@@ -154,7 +154,8 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
       this::drive, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
       m_config.Drivetrain.getHolonomicPathFollowerConfig(),
       () -> {
-        return Robot.onRedAlliance();
+        // return Robot.onRedAlliance();
+        return false;
       }, // Method to determine whether or not to flip the path
       this // Reference to this subsystem to set requirements
     );

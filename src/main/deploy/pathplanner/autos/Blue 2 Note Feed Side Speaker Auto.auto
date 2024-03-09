@@ -34,28 +34,10 @@
           "data": {
             "name": "Score_In_Speaker"
           }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Speaker to Far Feed Side Note"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Far Feed Side Note to Speaker"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Score_In_Speaker"
-          }
         }
       ]
     }
   },
-  "folder": "Feed Side Speaker Autos",
+  "folder": "Blue Feed Side Speaker Autos",
   "choreoAuto": false
 }

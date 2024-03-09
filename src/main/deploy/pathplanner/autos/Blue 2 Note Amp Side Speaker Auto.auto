@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.4,
-      "y": 5.5
+      "x": 0.76,
+      "y": 6.48
     },
-    "rotation": -90.0
+    "rotation": -30.0
   },
   "command": {
     "type": "sequential",
@@ -20,13 +20,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Blue Speaker To Center Note"
+            "pathName": "Blue Speaker to Amp Side Note"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Blue Center Note To Speaker"
+            "pathName": "Blue Amp Side Note to Speaker"
           }
         },
         {
@@ -34,16 +34,10 @@
           "data": {
             "name": "Score_In_Speaker"
           }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Blue Get Out of The Way"
-          }
         }
       ]
     }
   },
-  "folder": "Blue Center Speaker Autos",
+  "folder": "Blue Amp Side Speaker Autos",
   "choreoAuto": false
 }

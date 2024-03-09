@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.76,
-      "y": 6.48
+      "x": 15.27,
+      "y": 5.52
     },
-    "rotation": -30.0
+    "rotation": 30.0
   },
   "command": {
     "type": "sequential",
@@ -20,13 +20,31 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Speaker to Amp Side Note"
+            "pathName": "Red Speaker to Amp Side Note"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Amp Side Note to Speaker"
+            "pathName": "Red Amp Side Note to Speaker"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Score_In_Speaker"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red Speaker to Far Amp Side Note"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red Far Amp Side Note to Speaker"
           }
         },
         {
@@ -38,6 +56,6 @@
       ]
     }
   },
-  "folder": "Amp Side Speaker Autos",
+  "folder": null,
   "choreoAuto": false
 }
