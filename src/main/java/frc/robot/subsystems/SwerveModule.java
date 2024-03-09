@@ -34,11 +34,11 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
   private SwerveModuleConfig m_config;
 
   // Shuffleboard configuration
-  private ShuffleboardTab d_moduleTab;
-  private GenericEntry d_driveVelocityEntry;
-  private GenericEntry d_driveVoltageEntry;
-  private GenericEntry d_moduleHeadingEntry;
-  private GenericEntry d_desiredVelocityEntry;
+  // private ShuffleboardTab d_moduleTab;
+  // private GenericEntry d_driveVelocityEntry;
+  // private GenericEntry d_driveVoltageEntry;
+  // private GenericEntry d_moduleHeadingEntry;
+  // private GenericEntry d_desiredVelocityEntry;
 
   // Devices
   private LazyCANSparkMax m_SteeringMotor;
@@ -68,27 +68,27 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
 
   // Sets up the shuffleboard tab for the module and the simple entries
   private void setupDashboard() {
-    d_moduleTab = Shuffleboard.getTab(getName() + " Module");
-    d_driveVelocityEntry =
-      d_moduleTab
-        .add("Velocity (MPS)", 0)
-        .withWidget(BuiltInWidgets.kNumberBar)
-        .withProperties(Map.of("min", 0, "max", 20))
-        .getEntry();
-    d_driveVoltageEntry = d_moduleTab.add("Voltage (V)", 0).withWidget(BuiltInWidgets.kVoltageView).getEntry();
-    d_moduleHeadingEntry =
-      d_moduleTab
-        .add("Heading (Degrees)", 0)
-        .withWidget(BuiltInWidgets.kGyro)
-        .withProperties(Map.of("major tick spacing", 15, "starting angle", 0))
-        .getEntry();
+    // d_moduleTab = Shuffleboard.getTab(getName() + " Module");
+    // d_driveVelocityEntry =
+    //   d_moduleTab
+    //     .add("Velocity (MPS)", 0)
+    //     .withWidget(BuiltInWidgets.kNumberBar)
+    //     .withProperties(Map.of("min", 0, "max", 20))
+    //     .getEntry();
+    // d_driveVoltageEntry = d_moduleTab.add("Voltage (V)", 0).withWidget(BuiltInWidgets.kVoltageView).getEntry();
+    // d_moduleHeadingEntry =
+    //   d_moduleTab
+    //     .add("Heading (Degrees)", 0)
+    //     .withWidget(BuiltInWidgets.kGyro)
+    //     .withProperties(Map.of("major tick spacing", 15, "starting angle", 0))
+    //     .getEntry();
 
-    d_desiredVelocityEntry =
-      d_moduleTab
-        .add("Desired Velocity", 0)
-        .withWidget(BuiltInWidgets.kNumberBar)
-        .withProperties(Map.of("min", 0, "max", 20))
-        .getEntry();
+    // d_desiredVelocityEntry =
+    //   d_moduleTab
+    //     .add("Desired Velocity", 0)
+    //     .withWidget(BuiltInWidgets.kNumberBar)
+    //     .withProperties(Map.of("min", 0, "max", 20))
+    //     .getEntry();
   }
 
   // Sets up the steering motor and PID controller
@@ -105,7 +105,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
     m_steeringPidController = new PIDController(pid.kP, pid.kI, pid.kD, 0.020);
     m_steeringPidController.enableContinuousInput(0, 1); // 0 to 1 rotation
     m_steeringPidController.setTolerance((1 / 360.0) * 5); // 5 degrees in units of rotations
-    d_moduleTab.add("Steering PID", m_steeringPidController).withWidget(BuiltInWidgets.kPIDController);
+    // d_moduleTab.add("Steering PID", m_steeringPidController).withWidget(BuiltInWidgets.kPIDController);
   }
 
   // Sets up the drive motors
@@ -172,7 +172,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
       )
     );
 
-    d_desiredVelocityEntry.setDouble(desiredState.speedMetersPerSecond);
+    // d_desiredVelocityEntry.setDouble(desiredState.speedMetersPerSecond);
 
     setDesiredAngle(desiredState.angle);
   }
@@ -296,9 +296,9 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
    */
   @Override
   public void periodic() {
-    d_driveVelocityEntry.setDouble(getModuleState().speedMetersPerSecond);
-    d_driveVoltageEntry.setDouble(m_driveMotor.getMotorVoltage().getValueAsDouble());
-    d_moduleHeadingEntry.setDouble(getEncoderHeadingRotation2d().getDegrees());
+    // d_driveVelocityEntry.setDouble(getModuleState().speedMetersPerSecond);
+    // d_driveVoltageEntry.setDouble(m_driveMotor.getMotorVoltage().getValueAsDouble());
+    // d_moduleHeadingEntry.setDouble(getEncoderHeadingRotation2d().getDegrees());
   }
 
   /**

@@ -38,40 +38,40 @@ public class Shooter extends SubsystemBase implements IPlannable {
 
   // #region Shuffleboard
   // Shuffleboard configuration
-  private ShuffleboardTab d_shooterTab = Shuffleboard.getTab("Shooter");
-  private GenericEntry d_talonFXSpeed = d_shooterTab
-    .add("TalonFX Speed", 0)
-    .withWidget(BuiltInWidgets.kDial)
-    .withProperties(Map.of("Min", -1, "Max", 1))
-    .getEntry();
-  private GenericEntry d_victorSPXSpeed = d_shooterTab
-    .add("VictorSPX Speed", 0)
-    .withWidget(BuiltInWidgets.kDial)
-    .withProperties(Map.of("Min", -1, "Max", 1))
-    .getEntry();
-  private GenericEntry d_leftLinearActuator = d_shooterTab
-    .add("Left Actuator Position", 0)
-    .withWidget(BuiltInWidgets.kNumberBar)
-    .withProperties(Map.of("Min", 0, "Max", 1))
-    .getEntry();
-  private GenericEntry d_rightLinearActuator = d_shooterTab
-    .add("Right Actuator Position", 0)
-    .withWidget(BuiltInWidgets.kNumberBar)
-    .withProperties(Map.of("Min", 0, "Max", 1))
-    .getEntry();
-  private GenericEntry d_noteDetector = d_shooterTab
-    .add("Note Detected", false)
-    .withWidget(BuiltInWidgets.kBooleanBox)
-    .getEntry();
-  private GenericEntry d_shooterIsUp = d_shooterTab
-    .add("Shooter is up", false)
-    .withWidget(BuiltInWidgets.kBooleanBox)
-    .getEntry();
-  private GenericEntry d_pidOutputEntry = d_shooterTab
-    .add("PID output", 0)
-    .withWidget(BuiltInWidgets.kNumberBar)
-    .withProperties(Map.of("Max", 2, "Min", -2))
-    .getEntry();
+  // private ShuffleboardTab d_shooterTab = Shuffleboard.getTab("Shooter");
+  // private GenericEntry d_talonFXSpeed = d_shooterTab
+  //   .add("TalonFX Speed", 0)
+  //   .withWidget(BuiltInWidgets.kDial)
+  //   .withProperties(Map.of("Min", -1, "Max", 1))
+  //   .getEntry();
+  // private GenericEntry d_victorSPXSpeed = d_shooterTab
+  //   .add("VictorSPX Speed", 0)
+  //   .withWidget(BuiltInWidgets.kDial)
+  //   .withProperties(Map.of("Min", -1, "Max", 1))
+  //   .getEntry();
+  // private GenericEntry d_leftLinearActuator = d_shooterTab
+  //   .add("Left Actuator Position", 0)
+  //   .withWidget(BuiltInWidgets.kNumberBar)
+  //   .withProperties(Map.of("Min", 0, "Max", 1))
+  //   .getEntry();
+  // private GenericEntry d_rightLinearActuator = d_shooterTab
+  //   .add("Right Actuator Position", 0)
+  //   .withWidget(BuiltInWidgets.kNumberBar)
+  //   .withProperties(Map.of("Min", 0, "Max", 1))
+  //   .getEntry();
+  // private GenericEntry d_noteDetector = d_shooterTab
+  //   .add("Note Detected", false)
+  //   .withWidget(BuiltInWidgets.kBooleanBox)
+  //   .getEntry();
+  // private GenericEntry d_shooterIsUp = d_shooterTab
+  //   .add("Shooter is up", false)
+  //   .withWidget(BuiltInWidgets.kBooleanBox)
+  //   .getEntry();
+  // private GenericEntry d_pidOutputEntry = d_shooterTab
+  //   .add("PID output", 0)
+  //   .withWidget(BuiltInWidgets.kNumberBar)
+  //   .withProperties(Map.of("Max", 2, "Min", -2))
+  //   .getEntry();
 
   // #endregion
 
@@ -101,7 +101,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
     m_shooterIsUp = false;
     m_elevationPidController = new PIDController(25, 0, 0, 0.02);
     m_elevationPidController.setSetpoint(m_config.MinimumElevation);
-    d_shooterTab.add("Elevation PID", m_elevationPidController).withWidget(BuiltInWidgets.kPIDController);
+    // d_shooterTab.add("Elevation PID", m_elevationPidController).withWidget(BuiltInWidgets.kPIDController);
   }
 
   //#region Control Methods
@@ -155,7 +155,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
 
     var pidOutput = m_elevationPidController.calculate(currentPosition, setpoint);
 
-    d_pidOutputEntry.setDouble(pidOutput);
+    // d_pidOutputEntry.setDouble(pidOutput);
     var canGoHigher = currentPosition < m_config.MaximumElevation && pidOutput > 0;
     var canGoLower = currentPosition > m_config.MinimumElevation && pidOutput < 0;
 
@@ -175,12 +175,12 @@ public class Shooter extends SubsystemBase implements IPlannable {
 
   @Override
   public void periodic() {
-    d_talonFXSpeed.setDouble(m_talonFX.get());
-    d_victorSPXSpeed.setDouble(m_victorSPX.getMotorOutputPercent());
-    d_leftLinearActuator.setDouble(m_leftLinearActuator.getPosition());
-    d_rightLinearActuator.setDouble(m_rightLinearActuator.getPosition());
-    d_noteDetector.setBoolean(isNoteLoaded());
-    d_shooterIsUp.setBoolean(m_shooterIsUp);
+    // d_talonFXSpeed.setDouble(m_talonFX.get());
+    // d_victorSPXSpeed.setDouble(m_victorSPX.getMotorOutputPercent());
+    // d_leftLinearActuator.setDouble(m_leftLinearActuator.getPosition());
+    // d_rightLinearActuator.setDouble(m_rightLinearActuator.getPosition());
+    // d_noteDetector.setBoolean(isNoteLoaded());
+    // d_shooterIsUp.setBoolean(m_shooterIsUp);
   }
 
   //#region Shooter Commands
