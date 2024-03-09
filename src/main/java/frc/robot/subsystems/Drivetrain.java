@@ -177,7 +177,7 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
 
   // Resets the Gyro
   public void resetGyro() {
-    m_gyro.reset();
+    m_gyro.setYaw(Robot.onRedAlliance() ? 0 : 180);
   }
 
   /**

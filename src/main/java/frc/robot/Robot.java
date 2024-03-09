@@ -61,6 +61,8 @@ public class Robot extends TimedRobot {
     // Exit without scheduling an auto command if none is selected
     if (autoCommand == null || autoCommand == Commands.none()) {
       DriverStation.reportError("[ERROR] >> No auto command selected", false);
+      // reset the gyro to 0 or 180 depending on which alliance we're on
+      m_robotContainer.Drivetrain.m_gyro.setYaw(onRedAlliance() ? 0 : 180);
       return;
     }
 

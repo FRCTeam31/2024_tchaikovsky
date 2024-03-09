@@ -1,6 +1,7 @@
 package frc.robot.config;
 
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.SerialPort.Port;
@@ -117,7 +118,7 @@ public class RobotConfig {
 
     config.Climbers = new ClimbersConfig(18, 17, true, true, 0.5, -1, 2, 3, 0, 1, 180, 150);
 
-    config.LimelightPose = new Pose3d(); // TODO: Find out what the pose (translation & rotation) of the camera lens is from the robot center -- ask Arseni to get it from the CAD model
+    config.LimelightPose = new Pose3d(0.251079, 0.0583184, 0.0180594, new Rotation3d(0, 65, 0)); // TODO: Find out if this x Y and Z is correct for the orientation of the robot
 
     config.LEDs = new LEDConfig(Port.kUSB);
 
