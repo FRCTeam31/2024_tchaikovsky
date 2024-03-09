@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -123,7 +124,8 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
 
     // Configure field
     m_field = new Field2d();
-    d_driveTab.add("Field", m_field).withWidget(BuiltInWidgets.kField).withPosition(2, 3).withSize(4, 3);
+    d_driveTab.add("Field", m_field).withWidget(BuiltInWidgets.kField).withPosition(2, 3).withSize(8, 5);
+    PathPlannerLogging.setLogActivePathCallback(poses -> m_field.getObject("path").setPoses(poses));
 
     // Configure snap-to PID
 

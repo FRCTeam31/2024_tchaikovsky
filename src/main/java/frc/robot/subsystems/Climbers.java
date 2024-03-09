@@ -29,35 +29,36 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
 
   private boolean m_climbControlsEnabled = false;
 
-  private ShuffleboardTab d_tab = Shuffleboard.getTab("Climbers");
-  private GenericEntry d_leftLimitEntry = d_tab
-    .add("Left Climber Limit Switch", false)
-    .withWidget(BuiltInWidgets.kBooleanBox)
-    .withPosition(1, 1)
-    .withSize(2, 1)
-    .getEntry();
-  private GenericEntry d_rightLimitEntry = d_tab
-    .add("Right Climber Limit Switch", false)
-    .withWidget(BuiltInWidgets.kBooleanBox)
-    .withPosition(1, 2)
-    .withSize(2, 1)
-    .getEntry();
+  private ShuffleboardTab d_tab = Shuffleboard.getTab("Driver");
+  // private GenericEntry d_leftLimitEntry = d_tab
+  //   .add("Left Climber Limit Switch", false)
+  //   .withWidget(BuiltInWidgets.kBooleanBox)
+  //   .withPosition(1, 1)
+  //   .withSize(2, 1)
+  //   .getEntry();
+  // private GenericEntry d_rightLimitEntry = d_tab
+  //   .add("Right Climber Limit Switch", false)
+  //   .withWidget(BuiltInWidgets.kBooleanBox)
+  //   .withPosition(1, 2)
+  //   .withSize(2, 1)
+  //   .getEntry();
   public GenericEntry d_climbControlsActiveEntry = d_tab
-    .add("Climb Controls Active", false)
+    .add("Climbers Enabled", false)
     .withWidget(BuiltInWidgets.kBooleanBox)
-    .withPosition(1, 3)
+    .withPosition(4, 4)
     .withSize(3, 1)
     .getEntry();
-  private GenericEntry d_leftServoAngleEntry = d_tab
-    .add("Left Servo Angle", 0)
-    .withWidget(BuiltInWidgets.kGyro)
-    .withPosition(1, 4)
-    .getEntry();
-  private GenericEntry d_rightServoAngleEntry = d_tab
-    .add("Right Servo Angle", 0)
-    .withWidget(BuiltInWidgets.kGyro)
-    .withPosition(1, 5)
-    .getEntry();
+
+  // private GenericEntry d_leftServoAngleEntry = d_tab
+  //   .add("Left Servo Angle", 0)
+  //   .withWidget(BuiltInWidgets.kGyro)
+  //   .withPosition(1, 4)
+  //   .getEntry();
+  // private GenericEntry d_rightServoAngleEntry = d_tab
+  //   .add("Right Servo Angle", 0)
+  //   .withWidget(BuiltInWidgets.kGyro)
+  //   .withPosition(1, 5)
+  //   .getEntry();
 
   /**
    * Creates a new Climbers subsystem
@@ -137,11 +138,11 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
 
   @Override
   public void periodic() {
-    d_leftLimitEntry.setBoolean(m_leftLimitSwitch.get());
-    d_rightLimitEntry.setBoolean(m_rightLimitSwitch.get());
+    // d_leftLimitEntry.setBoolean(m_leftLimitSwitch.get());
+    // d_rightLimitEntry.setBoolean(m_rightLimitSwitch.get());
     d_climbControlsActiveEntry.setBoolean(m_climbControlsEnabled);
-    d_leftServoAngleEntry.setDouble(m_leftClimberServo.getAngle());
-    d_rightServoAngleEntry.setDouble(m_rightClimberServo.getAngle());
+    // d_leftServoAngleEntry.setDouble(m_leftClimberServo.getAngle());
+    // d_rightServoAngleEntry.setDouble(m_rightClimberServo.getAngle());
   }
 
   //#endregion
