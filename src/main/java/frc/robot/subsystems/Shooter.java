@@ -210,7 +210,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * @return
    */
   public Command startShootingNoteCommand() {
-    return Commands.runOnce(() -> runShooter(0.85));
+    return Commands.runOnce(() -> runShooter(1));
   }
 
   /**

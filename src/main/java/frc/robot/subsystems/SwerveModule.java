@@ -35,10 +35,10 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
 
   // Shuffleboard configuration
   // private ShuffleboardTab d_moduleTab;
-  private GenericEntry d_driveVelocityEntry;
-  private GenericEntry d_driveVoltageEntry;
-  private GenericEntry d_moduleHeadingEntry;
-  private GenericEntry d_desiredVelocityEntry;
+  // private GenericEntry d_driveVelocityEntry;
+  // private GenericEntry d_driveVoltageEntry;
+  // private GenericEntry d_moduleHeadingEntry;
+  // private GenericEntry d_desiredVelocityEntry;
 
   // Devices
   private LazyCANSparkMax m_SteeringMotor;
@@ -172,7 +172,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
       )
     );
 
-    d_desiredVelocityEntry.setDouble(desiredState.speedMetersPerSecond);
+    // d_desiredVelocityEntry.setDouble(desiredState.speedMetersPerSecond);
 
     setDesiredAngle(desiredState.angle);
   }
@@ -296,9 +296,9 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
    */
   @Override
   public void periodic() {
-    d_driveVelocityEntry.setDouble(getModuleState().speedMetersPerSecond);
-    d_driveVoltageEntry.setDouble(m_driveMotor.getMotorVoltage().getValueAsDouble());
-    d_moduleHeadingEntry.setDouble(getEncoderHeadingRotation2d().getDegrees());
+    // d_driveVelocityEntry.setDouble(getModuleState().speedMetersPerSecond);
+    // d_driveVoltageEntry.setDouble(m_driveMotor.getMotorVoltage().getValueAsDouble());
+    // d_moduleHeadingEntry.setDouble(getEncoderHeadingRotation2d().getDegrees());
   }
 
   /**
