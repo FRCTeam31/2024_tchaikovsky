@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.4486398158381903,
-        "y": 7.136910850398278
+        "x": 1.4485986605099839,
+        "y": 7.136950264295352
       },
       "isLocked": false,
       "linkedName": null
@@ -74,13 +74,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -90.0,
+    "rotation": -0.32879961776107325,
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "Blue Amp Side Auto Paths",
+  "folder": "Amp Side Auto Paths",
   "previewStartingState": {
-    "rotation": -29.879999999999995,
+    "rotation": 59.93162821859144,
     "velocity": 0
   },
   "useDefaultConstraints": false

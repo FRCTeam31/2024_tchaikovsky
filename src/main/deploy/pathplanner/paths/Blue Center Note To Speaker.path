@@ -63,13 +63,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -90.0,
+    "rotation": 0.06625737421959517,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "Blue Center Auto Paths",
+  "folder": "Center Auto Paths",
   "previewStartingState": {
-    "rotation": -90.0,
+    "rotation": 0.20411815615214718,
     "velocity": 0
   },
   "useDefaultConstraints": false

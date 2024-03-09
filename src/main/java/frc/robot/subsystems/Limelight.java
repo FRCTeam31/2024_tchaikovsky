@@ -15,36 +15,17 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import java.util.Map;
 
 public class Limelight extends SubsystemBase {
 
   private NetworkTable m_limelightTable;
 
-  private ShuffleboardTab d_tab = Shuffleboard.getTab("Limelight");
-  private GenericEntry d_txEntry = d_tab
-    .add("Horizontal Target Offset", 0)
-    .withWidget(BuiltInWidgets.kDial)
-    .withProperties(Map.of("Max", 30, "Min", -30))
-    .getEntry();
-  private GenericEntry d_tyEntry = d_tab
-    .add("Vertical Target Offset", 0)
-    .withWidget(BuiltInWidgets.kNumberBar)
-    .withProperties(Map.of("Max", 25, "Min", -25))
-    .getEntry();
-  private GenericEntry d_taEntry = d_tab
-    .add("Target Area", 0)
-    .withWidget(BuiltInWidgets.kNumberBar)
-    .withProperties(Map.of("100", 100, "Min", 0))
-    .getEntry();
-  private GenericEntry d_tlEntry = d_tab
-    .add("Pipeline Latency (ms)", 0)
+  private ShuffleboardTab d_driverTab = Shuffleboard.getTab("Driver");
+  private GenericEntry d_tidEntry = d_driverTab
+    .add("Primary AprilTag #", 0)
     .withWidget(BuiltInWidgets.kTextView)
-    .getEntry();
-  private GenericEntry d_clEntry = d_tab.add("Capture Latency (ms)", 0).withWidget(BuiltInWidgets.kTextView).getEntry();
-  private GenericEntry d_tidEntry = d_tab
-    .add("Primary In-View AprilTag ID", 0)
-    .withWidget(BuiltInWidgets.kTextView)
+    .withPosition(12, 3)
+    .withSize(1, 1)
     .getEntry();
 
   /**
@@ -246,11 +227,6 @@ public class Limelight extends SubsystemBase {
   //#endregion
 
   public void periodic() {
-    d_txEntry.setDouble(getHorizontalOffsetFromTarget().getDegrees());
-    d_tyEntry.setDouble(getVerticalOffsetFromTarget().getDegrees());
-    d_taEntry.setDouble(getTargetArea());
-    d_tlEntry.setDouble(getPipelineLatencyMs());
-    d_clEntry.setDouble(getCapturePipelineLatencyMs());
     d_tidEntry.setDouble(getApriltagId());
   }
 

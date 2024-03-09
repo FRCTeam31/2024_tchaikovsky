@@ -5,13 +5,10 @@
 package frc.robot;
 
 import com.pathplanner.lib.commands.PathPlannerAuto;
-import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.ComplexWidget;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -30,7 +27,7 @@ public class Robot extends TimedRobot {
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     // Set LED startup pattern
-    m_robotContainer.LEDs.setSection(0, LEDSection.pulseColor(Color.ORANGE, 1000));
+    m_robotContainer.LEDs.setSection(0, LEDSection.pulseColor(Color.ORANGE, 100));
   }
 
   @Override
@@ -67,9 +64,9 @@ public class Robot extends TimedRobot {
       return;
     }
 
-    // Get the auto's starting pose, reset the gyro and odometry
-    // var startingPose = PathPlannerAuto.getStaringPoseFromAutoFile(autoCommand.getName());
-    // m_robotContainer.Drivetrain.resetOdometry(startingPose);
+    // Get the auto's starting pose and reset the gyro to the initial direction the robot is facing
+    var startingPose = PathPlannerAuto.getStaringPoseFromAutoFile(autoCommand.getName());
+    m_robotContainer.Drivetrain.m_gyro.setYaw(startingPose.getRotation().getDegrees());
 
     // Schedule the auto command
     autoCommand.schedule();

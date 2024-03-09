@@ -74,13 +74,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -90.0,
+    "rotation": 0.11435317127614646,
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "Blue Amp Side Auto Paths",
+  "folder": "Amp Side Auto Paths",
   "previewStartingState": {
-    "rotation": -29.875992691689373,
+    "rotation": 60.3619986852921,
     "velocity": 0
   },
   "useDefaultConstraints": true

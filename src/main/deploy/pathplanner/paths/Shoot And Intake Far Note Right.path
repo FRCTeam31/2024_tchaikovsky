@@ -80,13 +80,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -90.83355380862889,
+    "rotation": -0.5993813123565495,
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "Blue Park Auto Paths",
+  "folder": "Park Auto Paths",
   "previewStartingState": {
-    "rotation": -150.0,
+    "rotation": -60.33820888426131,
     "velocity": 0
   },
   "useDefaultConstraints": true

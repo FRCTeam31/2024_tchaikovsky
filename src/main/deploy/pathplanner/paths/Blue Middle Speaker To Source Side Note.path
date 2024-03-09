@@ -16,11 +16,11 @@
     },
     {
       "anchor": {
-        "x": 2.5,
+        "x": 2.41,
         "y": 4.113892912470511
       },
       "prevControl": {
-        "x": 1.5216232234266267,
+        "x": 1.4316232234266268,
         "y": 4.169361131515056
       },
       "nextControl": null,
@@ -74,13 +74,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -90.0,
+    "rotation": 0.0,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "Blue Center Auto Paths",
+  "folder": "Center Auto Paths",
   "previewStartingState": {
-    "rotation": -90.0,
+    "rotation": 0.10916378845756709,
     "velocity": 0
   },
   "useDefaultConstraints": false

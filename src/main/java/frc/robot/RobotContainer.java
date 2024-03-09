@@ -6,10 +6,8 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -39,13 +37,13 @@ public class RobotContainer {
   private PrimeXboxController m_operatorController;
 
   public ShuffleboardTab d_driverTab = Shuffleboard.getTab("Driver");
-  public ShuffleboardTab d_autoTab = Shuffleboard.getTab("Auto");
+  // public ShuffleboardTab d_autoTab = Shuffleboard.getTab("Auto");
 
   private SendableChooser<Command> m_autoChooser;
   public GenericEntry d_allianceEntry = d_driverTab
     .add("Alliance Color", false)
     .withSize(3, 0)
-    .withPosition(12, 0)
+    .withPosition(0, 4)
     .withWidget(BuiltInWidgets.kBooleanBox)
     .withProperties(Map.of("Color when true", "#FF0000", "Color when false", "#0000FF"))
     .getEntry();
@@ -111,20 +109,22 @@ public class RobotContainer {
     d_driverTab
       .addCamera("Limelight Stream", "LL2", "http://limelight.local:5800/stream.mjpg")
       .withSize(8, 4)
-      .withPosition(3, 0)
+      .withPosition(0, 0)
       .withWidget(BuiltInWidgets.kCameraStream)
       .withProperties(Map.of("Show controls", false, "Show crosshair", false));
 
     // Build an auto chooser. This will use Commands.none() as the default option.
     m_autoChooser = AutoBuilder.buildAutoChooser("Park Auto");
-    var possibleAutos = AutoBuilder.getAllAutoNames();
-    for (int i = 0; i < possibleAutos.size(); i++) {
-      var autoCommand = new PathPlannerAuto(possibleAutos.get(i));
-      d_autoTab.add(possibleAutos.get(i), autoCommand).withWidget(BuiltInWidgets.kCommand).withSize(2, 1);
-    }
+    d_driverTab.add(m_autoChooser).withWidget(BuiltInWidgets.kComboBoxChooser).withSize(3, 1).withPosition(1, 4);
+    // var possibleAutos = AutoBuilder.getAllAutoNames();
+    // for (int i = 0; i < possibleAutos.size(); i++) {
+    //   var autoCommand = new PathPlannerAuto(possibleAutos.get(i));
+    //   d_autoTab.add(possibleAutos.get(i), autoCommand).withWidget(BuiltInWidgets.kCommand).withSize(2, 1);
+    // }
 
-    d_driverTab.add(m_autoChooser).withWidget(BuiltInWidgets.kComboBoxChooser).withSize(3, 1).withPosition(3, 4);
-    // TODO: Add more important items from subsystems here
+    // Add more important items from subsystems here ===========
+    d_driverTab.add("Field", Drivetrain.m_field).withWidget(BuiltInWidgets.kField).withPosition(8, 0).withSize(5, 3);
+    d_driverTab.add("Robot Gyro", Drivetrain.m_gyro).withWidget(BuiltInWidgets.kGyro).withPosition(8, 3).withSize(2, 2);
   }
 
   public Command getAutonomousCommand() {

@@ -39,13 +39,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": 90.0,
     "rotateFast": false
   },
   "reversed": false,
   "folder": "Test Autos",
   "previewStartingState": {
-    "rotation": -90.0,
+    "rotation": 0.5256346064576232,
     "velocity": 0
   },
   "useDefaultConstraints": true

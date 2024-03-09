@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -100,7 +101,6 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     // Create gyro
     m_gyro = new Pigeon2(config.Drivetrain.PigeonId);
     m_gyro.getConfigurator().apply(new Pigeon2Configuration());
-    m_gyro.reset();
 
     // Create swerve modules, kinematics, and odometry
     m_measuredSwerveStatesPublisher =
@@ -121,10 +121,6 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     createSwerveModulesAndOdometry();
     m_inHighGear = config.Drivetrain.StartInHighGear;
 
-    // Configure field
-    m_field = new Field2d();
-    d_driveTab.add("Field", m_field).withWidget(BuiltInWidgets.kField).withPosition(2, 3).withSize(4, 3);
-
     // Configure snap-to PID
 
     m_snapToRotationController =
@@ -134,11 +130,6 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
         m_config.Drivetrain.SnapToPID.kD,
         0.02
       );
-
-    // m_snapToRotationController.setTolerance(
-    //   Math.toRadians(30),
-    //   Math.toRadians(30)
-    // );
 
     m_snapToRotationController.enableContinuousInput(-Math.PI, Math.PI);
     m_snapToRotationController.setSetpoint(0);
@@ -158,8 +149,12 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
       }, // Method to determine whether or not to flip the path
       this // Reference to this subsystem to set requirements
     );
-    // Robot.m_autoChooser = AutoBuilder.buildAutoChooser("1m Auto");
 
+    // Configure field
+    m_field = new Field2d();
+    d_driveTab.add("Field", m_field).withWidget(BuiltInWidgets.kField).withPosition(2, 3).withSize(8, 5);
+
+    PathPlannerLogging.setLogActivePathCallback(poses -> m_field.getObject("path").setPoses(poses));
   }
 
   // #region Methods
@@ -174,13 +169,7 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     m_rearRightModule =
       new SwerveModule(m_config.RearRightSwerveModule, m_config.Drivetrain.DrivePID, m_config.Drivetrain.SteeringPID);
 
-    m_odometry =
-      new SwerveDriveOdometry(
-        m_kinematics,
-        m_gyro.getRotation2d(),
-        getModulePositions(),
-        new Pose2d(0, 0, Rotation2d.fromDegrees(0))
-      );
+    m_odometry = new SwerveDriveOdometry(m_kinematics, m_gyro.getRotation2d(), getModulePositions());
 
     // in CCW order from FL to FR
     m_swerveModules = new SwerveModule[] { m_frontLeftModule, m_frontLeftModule, m_rearLeftModule, m_rearRightModule };
@@ -206,20 +195,24 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
   ) {
     ChassisSpeeds desiredChassisSpeeds;
 
-    // if (!m_inHighGear) {
-    //   strafeXMetersPerSecond *= m_config.Drivetrain.LowGearScalar;
-    //   forwardMetersPerSecond *= m_config.Drivetrain.LowGearScalar;
-    //   rotationRadiansPerSecond *= m_config.Drivetrain.LowGearScalar;
-    // }
-
     if (fieldRelative) {
-      desiredChassisSpeeds =
-        ChassisSpeeds.fromFieldRelativeSpeeds(
-          strafeXMetersPerSecond,
-          forwardMetersPerSecond,
-          rotationRadiansPerSecond,
-          m_gyro.getRotation2d()
-        );
+      if (Robot.onBlueAlliance()) {
+        desiredChassisSpeeds =
+          ChassisSpeeds.fromFieldRelativeSpeeds(
+            forwardMetersPerSecond,
+            -strafeXMetersPerSecond,
+            rotationRadiansPerSecond,
+            m_gyro.getRotation2d()
+          );
+      } else {
+        desiredChassisSpeeds =
+          ChassisSpeeds.fromFieldRelativeSpeeds(
+            -forwardMetersPerSecond,
+            strafeXMetersPerSecond,
+            rotationRadiansPerSecond,
+            m_gyro.getRotation2d()
+          );
+      }
     } else {
       desiredChassisSpeeds =
         new ChassisSpeeds(strafeXMetersPerSecond, forwardMetersPerSecond, rotationRadiansPerSecond);
@@ -373,14 +366,6 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
       }
     );
 
-    // m_desiredSwerveStatesPublisher.set(SwerveModuleState[]{
-    //     m_frontLeftModule.getModuleState(),
-    //     m_frontRightModule.getModuleState(),
-    //     m_rearLeftModule.getModuleState(),
-    //     m_rearRightModule.getModuleState(),
-
-    // });
-
     m_desiredSwerveStatesPublisher.set(
       new SwerveModuleState[] {
         m_frontLeftModule.getModuleState(),
@@ -390,8 +375,8 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
       }
     );
 
-    var robotPose = m_odometry.update(gyroAngle, getModulePositions());
-    m_field.setRobotPose(robotPose);
+    m_odometry.update(gyroAngle, getModulePositions());
+    m_field.setRobotPose(m_odometry.getPoseMeters());
 
     // Update shuffleboard entries
     d_snapToEnabledEntry.setBoolean(m_snapToGyroEnabled);

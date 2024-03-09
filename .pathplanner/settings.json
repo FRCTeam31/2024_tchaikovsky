@@ -1,13 +1,12 @@
 {
-  "robotWidth": 0.51,
-  "robotLength": 0.68,
+  "robotWidth": 0.68,
+  "robotLength": 0.51,
   "holonomicMode": true,
   "pathFolders": [
-    "Blue Amp Side Auto Paths",
-    "Blue Center Auto Paths",
-    "Blue Feed Side Auto Paths",
-    "Blue Park Auto Paths",
-    "Red Amp Side Auto Paths",
+    "Amp Side Auto Paths",
+    "Center Auto Paths",
+    "Park Auto Paths",
+    "Source Side Auto Paths",
     "Test Autos"
   ],
   "autoFolders": [
