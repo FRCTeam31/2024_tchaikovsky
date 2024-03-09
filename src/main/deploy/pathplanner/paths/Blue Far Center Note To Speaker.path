@@ -4,12 +4,12 @@
     {
       "anchor": {
         "x": 7.85,
-        "y": 5.787184186980988
+        "y": 5.89
       },
       "prevControl": null,
       "nextControl": {
         "x": 4.76651403753258,
-        "y": 8.394190482074658
+        "y": 8.49700629509367
       },
       "isLocked": false,
       "linkedName": null
@@ -69,7 +69,7 @@
   "reversed": false,
   "folder": "Center Auto Paths",
   "previewStartingState": {
-    "rotation": -90.0,
+    "rotation": -105.0,
     "velocity": 0
   },
   "useDefaultConstraints": true
