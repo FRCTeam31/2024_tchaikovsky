@@ -6,13 +6,10 @@ import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -20,7 +17,6 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.config.ShooterConfig;
 import java.util.Map;
 import prime.movers.IPlannable;
-import prime.movers.LinearActuator;
 
 public class Shooter extends SubsystemBase implements IPlannable {
 
@@ -28,13 +24,8 @@ public class Shooter extends SubsystemBase implements IPlannable {
 
   private TalonFX m_talonFX;
   private VictorSPX m_victorSPX;
-  private LinearActuator m_leftLinearActuator;
-  private LinearActuator m_rightLinearActuator;
+  private DoubleSolenoid m_elevationSolenoid;
   private DigitalInput m_noteDetector;
-
-  public boolean m_shooterIsUp;
-  private PIDController m_elevationPidController;
-  private Debouncer m_elevationToggleDebouncer = new Debouncer(0.1, Debouncer.DebounceType.kBoth);
 
   // #region Shuffleboard
   // Shuffleboard configuration
@@ -92,16 +83,14 @@ public class Shooter extends SubsystemBase implements IPlannable {
     m_victorSPX.configFactoryDefault();
     m_victorSPX.setNeutralMode(NeutralMode.Brake);
 
-    m_leftLinearActuator =
-      new LinearActuator(m_config.LeftLinearActuatorCanID, m_config.LeftLinearActuatorAnalogChannel);
-    m_rightLinearActuator =
-      new LinearActuator(m_config.RightLinearActuatorCanID, m_config.RightLinearActuatorAnalogChannel);
+    m_elevationSolenoid =
+      new DoubleSolenoid(
+        PneumaticsModuleType.REVPH,
+        m_config.ElevationSolenoidForwardChannel,
+        m_config.ElevationSolenoidReverseChannel
+      );
 
     m_noteDetector = new DigitalInput(m_config.NoteDetectorDIOChannel);
-    m_shooterIsUp = false;
-    m_elevationPidController = new PIDController(25, 0, 0, 0.02);
-    m_elevationPidController.setSetpoint(m_config.MinimumElevation);
-    // d_shooterTab.add("Elevation PID", m_elevationPidController).withWidget(BuiltInWidgets.kPIDController);
   }
 
   //#region Control Methods
@@ -128,13 +117,6 @@ public class Shooter extends SubsystemBase implements IPlannable {
   }
 
   /**
-   * Gets the position of the right linear actuator
-   */
-  public double getRightActuatorPosition() {
-    return m_rightLinearActuator.getPosition();
-  }
-
-  /**
    * Gets a boolean indicating whether a note is blocking the beam sensor
    * @return
    */
@@ -143,32 +125,16 @@ public class Shooter extends SubsystemBase implements IPlannable {
     // return false;
   }
 
-  /**
-   * Sets the elevation of the shooter
-   * @param percentRaised How far, in percentage, the shooter should be raised
-   */
-  public void seekElevationSetpoint() {
-    double currentPosition = getRightActuatorPosition();
+  public void setElevator(Value value) {
+    m_elevationSolenoid.set(value);
+  }
 
-    // if the shooter is up, set the setpoint to the maximum elevation
-    var setpoint = m_shooterIsUp ? m_config.MaximumElevation : m_config.MinimumElevation;
+  public void setElevatorUp() {
+    setElevator(Value.kForward);
+  }
 
-    var pidOutput = m_elevationPidController.calculate(currentPosition, setpoint);
-
-    // d_pidOutputEntry.setDouble(pidOutput);
-    var canGoHigher = currentPosition < m_config.MaximumElevation && pidOutput > 0;
-    var canGoLower = currentPosition > m_config.MinimumElevation && pidOutput < 0;
-
-    if (canGoHigher) {
-      m_leftLinearActuator.set(pidOutput);
-      m_rightLinearActuator.set(pidOutput);
-    } else if (canGoLower) {
-      m_leftLinearActuator.set(pidOutput);
-      m_rightLinearActuator.set(pidOutput);
-    } else {
-      m_leftLinearActuator.stop();
-      m_rightLinearActuator.stop();
-    }
+  public void setElevatorDown() {
+    setElevator(Value.kReverse);
   }
 
   //#endregion
@@ -218,7 +184,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * @return
    */
   public Command setElevationUpCommand() {
-    return Commands.runOnce(() -> m_shooterIsUp = true);
+    return Commands.runOnce(this::setElevatorUp);
   }
 
   /**
@@ -226,7 +192,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * @return
    */
   public Command setElevationDownCommand() {
-    return Commands.runOnce(() -> m_shooterIsUp = false);
+    return Commands.runOnce(this::setElevatorDown);
   }
 
   /**
@@ -235,16 +201,8 @@ public class Shooter extends SubsystemBase implements IPlannable {
    */
   public Command toggleElevationCommand() {
     return Commands.runOnce(() -> {
-      m_shooterIsUp = !m_elevationToggleDebouncer.calculate(m_shooterIsUp);
+      setElevator(m_elevationSolenoid.get() == Value.kForward ? Value.kReverse : Value.kForward);
     });
-  }
-
-  /**
-   * Constantly seeks the elevation setpoint until cancelled
-   * @return
-   */
-  public Command seekElevationSetpointCommand() {
-    return this.run(() -> seekElevationSetpoint());
   }
 
   public Command runShooterForTime(double seconds, double speed) {

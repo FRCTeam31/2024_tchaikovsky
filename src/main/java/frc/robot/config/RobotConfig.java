@@ -19,6 +19,7 @@ public class RobotConfig {
   public ClimbersConfig Climbers;
   public Pose3d LimelightPose;
   public LEDConfig LEDs;
+  public int PneumaticsModuleId;
 
   public RobotConfig() {
     Name = "[none]";
@@ -47,10 +48,9 @@ public class RobotConfig {
         false,
         new PrimePIDConstants(0.019, 0, 0, 0, 0.091, 0, 0.05), // Drive PID
         new PrimePIDConstants(2, 0, 0), // Steering PID
-        new PrimePIDConstants(4, 0, 0), // SnapTo PID,
+        new PrimePIDConstants(4, 0, 0), // SnapTo PID
         new PrimePIDConstants(1.75, 0, 0), // Pathing Translation PID
-        // new PrimePIDConstants(0.0425, 0, 0.004)
-        new PrimePIDConstants(0.5, 0, 0), // Pathing Rotation PID$
+        new PrimePIDConstants(0.5, 0, 0), // Pathing Rotation PID
         0.15,
         0.5
       );
@@ -113,13 +113,15 @@ public class RobotConfig {
 
     config.Intake = new IntakeConfig(16, 15, 14, false, false, true, new PrimePIDConstants(0.05, 0, 0), 50, 4, 5);
 
-    config.Shooter = new ShooterConfig(20, 19, false, false, 21, 0, 22, 1, 7, 0, 0.85);
+    config.Shooter = new ShooterConfig(20, 19, false, false, 7, 6, 7);
 
-    config.Climbers = new ClimbersConfig(18, 17, true, true, 0.5, -1, 2, 3, 0, 1, 180, 150);
+    config.Climbers = new ClimbersConfig(18, 17, true, true, 0.5, -1, 2, 3, 8, 9, 10, 11);
 
     config.LimelightPose = new Pose3d(); // TODO: Find out what the pose (translation & rotation) of the camera lens is from the robot center -- ask Arseni to get it from the CAD model
 
     config.LEDs = new LEDConfig(Port.kUSB);
+
+    config.PneumaticsModuleId = 30;
 
     return config;
   }
