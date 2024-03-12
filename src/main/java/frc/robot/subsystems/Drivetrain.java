@@ -18,20 +18,15 @@ import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import frc.robot.Robot;
 import frc.robot.config.RobotConfig;
 import java.util.Map;
@@ -121,6 +116,11 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     createSwerveModulesAndOdometry();
     m_inHighGear = config.Drivetrain.StartInHighGear;
 
+    // Configure field
+    m_field = new Field2d();
+    d_driveTab.add("Field", m_field).withWidget(BuiltInWidgets.kField).withPosition(2, 3).withSize(8, 5);
+    PathPlannerLogging.setLogActivePathCallback(poses -> m_field.getObject("path").setPoses(poses));
+
     // Configure snap-to PID
 
     m_snapToRotationController =
@@ -145,16 +145,11 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
       this::drive, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
       m_config.Drivetrain.getHolonomicPathFollowerConfig(),
       () -> {
-        return Robot.onRedAlliance();
+        // return Robot.onRedAlliance();
+        return false;
       }, // Method to determine whether or not to flip the path
       this // Reference to this subsystem to set requirements
     );
-
-    // Configure field
-    m_field = new Field2d();
-    d_driveTab.add("Field", m_field).withWidget(BuiltInWidgets.kField).withPosition(2, 3).withSize(8, 5);
-
-    PathPlannerLogging.setLogActivePathCallback(poses -> m_field.getObject("path").setPoses(poses));
   }
 
   // #region Methods
@@ -456,75 +451,6 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     return Map.of(
       // "Example_Command", exampleCommand(),
     );
-  }
-
-  //#endregion
-
-  //#region SysID Routines
-
-  /**
-   * Factory method for creating a quasistatic SysID routine for the drivetrain
-   * @param direction
-   */
-  public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-    return generateSysIdRoutine().quasistatic(direction);
-  }
-
-  /**
-   * Factory method for creating a dynamic SysID routine for the drivetrain
-   * @param direction
-   */
-  public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-    return generateSysIdRoutine().dynamic(direction);
-  }
-
-  /**
-   * Generates a SysID routine for the drivetrain
-   * @return
-   */
-  public SysIdRoutine generateSysIdRoutine() {
-    var config = new SysIdRoutine.Config(
-      Units.Volts.per(Units.Second).of(1),
-      Units.Volts.of(5),
-      Units.Seconds.of(15),
-      state -> {
-        SmartDashboard.putString("Drive/SysID Current Routine", state.toString());
-      }
-    );
-
-    var mechanism = new Mechanism(this::setModuleDriveVoltages, this::logMotors, this, getName());
-
-    return new SysIdRoutine(config, mechanism);
-  }
-
-  /**
-   * Logs the voltage, distance, and velocity of each swerve module to SysID
-   * @param log
-   */
-  private void logMotors(SysIdRoutineLog log) {
-    log
-      .motor(m_frontLeftModule.getName())
-      .voltage(Units.Volts.of(m_frontLeftModule.getDriveVoltage()))
-      .linearPosition(Units.Meters.of(m_frontLeftModule.getPosition().distanceMeters))
-      .linearVelocity(Units.MetersPerSecond.of(m_frontLeftModule.getModuleState().speedMetersPerSecond));
-
-    log
-      .motor(m_frontRightModule.getName())
-      .voltage(Units.Volts.of(m_frontRightModule.getDriveVoltage()))
-      .linearPosition(Units.Meters.of(m_frontRightModule.getPosition().distanceMeters))
-      .linearVelocity(Units.MetersPerSecond.of(m_frontRightModule.getModuleState().speedMetersPerSecond));
-
-    log
-      .motor(m_rearLeftModule.getName())
-      .voltage(Units.Volts.of(m_rearLeftModule.getDriveVoltage()))
-      .linearPosition(Units.Meters.of(m_rearLeftModule.getPosition().distanceMeters))
-      .linearVelocity(Units.MetersPerSecond.of(m_rearLeftModule.getModuleState().speedMetersPerSecond));
-
-    log
-      .motor(m_rearRightModule.getName())
-      .voltage(Units.Volts.of(m_rearRightModule.getDriveVoltage()))
-      .linearPosition(Units.Meters.of(m_rearRightModule.getPosition().distanceMeters))
-      .linearVelocity(Units.MetersPerSecond.of(m_rearRightModule.getModuleState().speedMetersPerSecond));
   }
 
   //#endregion

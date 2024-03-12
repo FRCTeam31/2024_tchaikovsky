@@ -99,8 +99,6 @@ public class Robot extends TimedRobot {
   public void testInit() {
     CommandScheduler.getInstance().cancelAll();
 
-    m_robotContainer.configureTestControls();
-
     // Start the data logger
     DataLogManager.start();
     DriverStation.startDataLog(DataLogManager.getLog());

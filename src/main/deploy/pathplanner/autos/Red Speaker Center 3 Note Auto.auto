@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.8,
-      "y": 4.6
+      "x": 15.27,
+      "y": 5.52
     },
-    "rotation": -60.0
+    "rotation": 90.0
   },
   "command": {
     "type": "sequential",
@@ -20,13 +20,31 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Speaker to Feed Side Note"
+            "pathName": "Red Speaker to Center Note"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Feed Side Note to Speaker"
+            "pathName": "Red Center Note to Speaker"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Score_In_Speaker"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red Speaker to Far Center Note"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red Far Center Note to Speaker"
           }
         },
         {
@@ -38,6 +56,6 @@
       ]
     }
   },
-  "folder": "Feed Side Speaker Autos",
+  "folder": null,
   "choreoAuto": false
 }

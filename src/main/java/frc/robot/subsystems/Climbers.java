@@ -5,12 +5,15 @@ import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.ClimbersConfig;
 import java.util.function.BooleanSupplier;
@@ -24,12 +27,24 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
   private VictorSPX m_rightVictorSPX;
   private DigitalInput m_leftLimitSwitch;
   private DigitalInput m_rightLimitSwitch;
-  private Servo m_leftClimberServo;
-  private Servo m_rightClimberServo;
+  private DoubleSolenoid m_clutchSolenoidLeft;
+  private DoubleSolenoid m_clutchSolenoidRight;
 
   private boolean m_climbControlsEnabled = false;
 
   private ShuffleboardTab d_tab = Shuffleboard.getTab("Driver");
+  // private GenericEntry d_leftLimitEntry = d_tab
+  //   .add("Left Climber Limit Switch", false)
+  //   .withWidget(BuiltInWidgets.kBooleanBox)
+  //   .withPosition(1, 1)
+  //   .withSize(2, 1)
+  //   .getEntry();
+  // private GenericEntry d_rightLimitEntry = d_tab
+  //   .add("Right Climber Limit Switch", false)
+  //   .withWidget(BuiltInWidgets.kBooleanBox)
+  //   .withPosition(1, 2)
+  //   .withSize(2, 1)
+  //   .getEntry();
   public GenericEntry d_climbControlsActiveEntry = d_tab
     .add("Climbers Enabled", false)
     .withWidget(BuiltInWidgets.kBooleanBox)
@@ -55,8 +70,18 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
     m_leftLimitSwitch = new DigitalInput(config.LeftLimitSwitchDIOChannel);
     m_rightLimitSwitch = new DigitalInput(config.RightLimitSwitchDIOChannel);
 
-    m_leftClimberServo = new Servo(config.LeftServoChannel);
-    m_rightClimberServo = new Servo(config.RightServoChannel);
+    m_clutchSolenoidLeft =
+      new DoubleSolenoid(
+        PneumaticsModuleType.REVPH,
+        m_config.LeftSolenoidForwardChannel,
+        m_config.LeftSolenoidReverseChannel
+      );
+    m_clutchSolenoidRight =
+      new DoubleSolenoid(
+        PneumaticsModuleType.REVPH,
+        m_config.RightSolenoidForwardChannel,
+        m_config.RightSolenoidReverseChannel
+      );
   }
 
   //#region Control Methods
@@ -65,9 +90,7 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
    * Raises the Left Climber
    */
   public void raiseLeftArm() {
-    // if (!m_leftLimitSwitch.get()) {
     m_leftVictorSPX.set(VictorSPXControlMode.PercentOutput, m_config.ClimberUpSpeed);
-    // }
   }
 
   /**
@@ -105,16 +128,26 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
     m_rightVictorSPX.set(VictorSPXControlMode.PercentOutput, 0);
   }
 
-  public void setLeftServoPosition(double servoAngleDegrees) {
-    m_leftClimberServo.setAngle(servoAngleDegrees);
+  /**
+   * Engages / disengages the left clutch
+   * @param engaged
+   */
+  public void setLeftClutch(boolean engaged) {
+    m_clutchSolenoidLeft.set(engaged ? Value.kForward : Value.kReverse);
   }
 
-  public void setRightServoPosition(double servoAngleDegrees) {
-    m_rightClimberServo.setAngle(servoAngleDegrees);
+  /**
+   * Engages / disengages the right clutch
+   * @param engaged
+   */
+  public void setRightClutch(boolean engaged) {
+    m_clutchSolenoidRight.set(engaged ? Value.kForward : Value.kReverse);
   }
 
   @Override
   public void periodic() {
+    // d_leftLimitEntry.setBoolean(m_leftLimitSwitch.get());
+    // d_rightLimitEntry.setBoolean(m_rightLimitSwitch.get());
     d_climbControlsActiveEntry.setBoolean(m_climbControlsEnabled);
   }
 
@@ -124,7 +157,6 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
 
   /**
    * Toggles the Climbers Controls
-   * @return
    */
   public Command toggleClimbControlsCommand() {
     return Commands.runOnce(() -> {
@@ -132,6 +164,9 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
     });
   }
 
+  /**
+   * Continually raises / lowers the two arms based on controller inputs
+   */
   public Command defaultClimbingCommand(
     BooleanSupplier raiseRightArm,
     BooleanSupplier raiseLeftArm,
@@ -139,12 +174,11 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
     DoubleSupplier lowerLeftArm
   ) {
     return this.run(() -> {
-        // Raise Right
-
         // Raise only if climbing controls is enabled
         if (m_climbControlsEnabled) {
+          // Raise Right
           if (raiseRightArm.getAsBoolean() && !m_rightLimitSwitch.get()) {
-            m_rightClimberServo.setAngle(m_config.ServoUnlockAngle);
+            setRightClutch(false);
             raiseRightArm();
           } else {
             stopRightArm();
@@ -152,7 +186,7 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
 
           // Raise left
           if (raiseLeftArm.getAsBoolean() && !m_leftLimitSwitch.get()) {
-            m_leftClimberServo.setAngle(m_config.ServoUnlockAngle);
+            setLeftClutch(false);
             raiseLeftArm();
           } else {
             stopLeftArm();
@@ -160,17 +194,48 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
 
           // Lower Right
           if (!raiseRightArm.getAsBoolean() && !raiseLeftArm.getAsBoolean()) {
-            m_rightClimberServo.setAngle(m_config.ServoLockAngle);
+            setRightClutch(true);
             lowerRightArm(MathUtil.applyDeadband(lowerRightArm.getAsDouble(), 0.1));
           }
 
           // Lower left
           if (!raiseRightArm.getAsBoolean() && !raiseLeftArm.getAsBoolean()) {
-            m_leftClimberServo.setAngle(m_config.ServoLockAngle);
+            setLeftClutch(true);
             lowerLeftArm(MathUtil.applyDeadband(lowerLeftArm.getAsDouble(), 0, 1));
           }
         }
       });
+  }
+
+  /**
+   * Sequentially disengages the clutches and raises the arms until both limit switches have been hit.
+   */
+  public SequentialCommandGroup setArmsUpCommand() {
+    return this.runOnce(() -> {
+        setLeftClutch(false);
+        setRightClutch(false);
+      })
+      .andThen(Commands.waitSeconds(0.075))
+      .andThen(
+        this.run(() -> {
+            if (!m_leftLimitSwitch.get()) {
+              raiseLeftArm();
+            } else {
+              stopLeftArm();
+            }
+
+            if (!m_rightLimitSwitch.get()) {
+              raiseRightArm();
+            } else {
+              stopRightArm();
+            }
+          })
+          .until(() -> m_leftLimitSwitch.get() && m_rightLimitSwitch.get())
+          .finallyDo(() -> {
+            stopLeftArm();
+            stopRightArm();
+          })
+      );
   }
 
   //#endregion

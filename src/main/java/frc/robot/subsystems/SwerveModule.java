@@ -16,15 +16,9 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Robot;
 import frc.robot.config.SwerveModuleConfig;
-import java.util.Map;
 import prime.control.PrimePIDConstants;
 import prime.movers.LazyCANSparkMax;
 import prime.utilities.CTREConverter;
@@ -35,10 +29,10 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
 
   // Shuffleboard configuration
   // private ShuffleboardTab d_moduleTab;
-  private GenericEntry d_driveVelocityEntry;
-  private GenericEntry d_driveVoltageEntry;
-  private GenericEntry d_moduleHeadingEntry;
-  private GenericEntry d_desiredVelocityEntry;
+  // private GenericEntry d_driveVelocityEntry;
+  // private GenericEntry d_driveVoltageEntry;
+  // private GenericEntry d_moduleHeadingEntry;
+  // private GenericEntry d_desiredVelocityEntry;
 
   // Devices
   private LazyCANSparkMax m_SteeringMotor;
@@ -172,7 +166,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
       )
     );
 
-    d_desiredVelocityEntry.setDouble(desiredState.speedMetersPerSecond);
+    // d_desiredVelocityEntry.setDouble(desiredState.speedMetersPerSecond);
 
     setDesiredAngle(desiredState.angle);
   }
@@ -296,9 +290,9 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
    */
   @Override
   public void periodic() {
-    d_driveVelocityEntry.setDouble(getModuleState().speedMetersPerSecond);
-    d_driveVoltageEntry.setDouble(m_driveMotor.getMotorVoltage().getValueAsDouble());
-    d_moduleHeadingEntry.setDouble(getEncoderHeadingRotation2d().getDegrees());
+    // d_driveVelocityEntry.setDouble(getModuleState().speedMetersPerSecond);
+    // d_driveVoltageEntry.setDouble(m_driveMotor.getMotorVoltage().getValueAsDouble());
+    // d_moduleHeadingEntry.setDouble(getEncoderHeadingRotation2d().getDegrees());
   }
 
   /**

@@ -7,7 +7,9 @@ package frc.robot;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -18,7 +20,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.config.RobotConfig;
 import frc.robot.subsystems.Climbers;
 import frc.robot.subsystems.Drivetrain;
@@ -54,6 +55,7 @@ public class RobotContainer {
   public Climbers Climbers;
   public Limelight Limelight;
   public LEDStrips LEDs;
+  public Compressor Compressor;
 
   public RobotContainer(RobotConfig config) {
     m_driverController = new PrimeXboxController(Controls.DRIVER_PORT);
@@ -80,6 +82,7 @@ public class RobotContainer {
       if (Intake != null) Intake.close();
       if (Climbers != null) Climbers.close();
       if (LEDs != null) LEDs.close();
+      if (Compressor != null) Compressor.close();
 
       // Create new subsystems
       Drivetrain = new Drivetrain(m_config);
@@ -88,6 +91,8 @@ public class RobotContainer {
       Climbers = new Climbers(m_config.Climbers);
       Limelight = new Limelight(m_config.LimelightPose);
       LEDs = new LEDStrips(m_config.LEDs);
+      Compressor = new Compressor(m_config.PneumaticsModuleId, PneumaticsModuleType.REVPH);
+      Compressor.enableDigital();
 
       // Register the named commands from each subsystem that may be used in PathPlanner
       NamedCommands.registerCommands(Intake.getNamedCommands());
@@ -122,7 +127,7 @@ public class RobotContainer {
     //   d_autoTab.add(possibleAutos.get(i), autoCommand).withWidget(BuiltInWidgets.kCommand).withSize(2, 1);
     // }
 
-    // Add more important items from subsystems here ===========
+    // TODO: Add more important items from subsystems here
     d_driverTab.add("Field", Drivetrain.m_field).withWidget(BuiltInWidgets.kField).withPosition(8, 0).withSize(5, 3);
     d_driverTab.add("Robot Gyro", Drivetrain.m_gyro).withWidget(BuiltInWidgets.kGyro).withPosition(8, 3).withSize(2, 2);
   }
@@ -165,6 +170,7 @@ public class RobotContainer {
 
     // Climbers
     m_driverController.y().onTrue(Climbers.toggleClimbControlsCommand());
+    m_driverController.start().onTrue(Climbers.setArmsUpCommand());
     Climbers.setDefaultCommand(
       Climbers.defaultClimbingCommand(
         m_driverController.button(Controls.RB),
@@ -181,7 +187,6 @@ public class RobotContainer {
   public void configureOperatorControls() {
     // Default commands for seeking PID setpoints
     Intake.setDefaultCommand(Intake.seekAngleSetpointCommand());
-    Shooter.setDefaultCommand(Shooter.seekElevationSetpointCommand());
 
     // Intake ========================================
     m_operatorController.a().onTrue(Intake.toggleIntakeInAndOutCommand()); // Set intake angle in/out
@@ -223,33 +228,6 @@ public class RobotContainer {
     m_operatorController // Run sequence to load a note into the shooter for scoring in the amp
       .y()
       .onTrue(CombinedCommands.loadNoteForAmp(Shooter, Intake));
-  }
-
-  /**
-   * Configures the controllers and binds test & SysID commands to buttons
-   */
-  public void configureTestControls() {
-    m_driverController = new PrimeXboxController(Controls.DRIVER_PORT);
-
-    m_driverController
-      .start()
-      .whileTrue(Drivetrain.sysIdQuasistatic(Direction.kForward))
-      .onFalse(Commands.runOnce(() -> Drivetrain.stopMotors(), Drivetrain));
-
-    m_driverController
-      .back()
-      .whileTrue(Drivetrain.sysIdQuasistatic(Direction.kReverse))
-      .onFalse(Commands.runOnce(() -> Drivetrain.stopMotors(), Drivetrain));
-
-    m_driverController
-      .rightBumper()
-      .whileTrue(Drivetrain.sysIdDynamic(Direction.kForward))
-      .onFalse(Commands.runOnce(() -> Drivetrain.stopMotors(), Drivetrain));
-
-    m_driverController
-      .leftBumper()
-      .whileTrue(Drivetrain.sysIdDynamic(Direction.kReverse))
-      .onFalse(Commands.runOnce(() -> Drivetrain.stopMotors(), Drivetrain));
   }
 
   public class CombinedCommands {
