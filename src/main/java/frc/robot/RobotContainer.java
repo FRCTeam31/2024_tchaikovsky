@@ -227,33 +227,6 @@ public class RobotContainer {
       .onTrue(CombinedCommands.loadNoteForAmp(Shooter, Intake));
   }
 
-  /**
-   * Configures the controllers and binds test & SysID commands to buttons
-   */
-  public void configureTestControls() {
-    m_driverController = new PrimeXboxController(Controls.DRIVER_PORT);
-
-    m_driverController
-      .start()
-      .whileTrue(Drivetrain.sysIdQuasistatic(Direction.kForward))
-      .onFalse(Commands.runOnce(() -> Drivetrain.stopMotors(), Drivetrain));
-
-    m_driverController
-      .back()
-      .whileTrue(Drivetrain.sysIdQuasistatic(Direction.kReverse))
-      .onFalse(Commands.runOnce(() -> Drivetrain.stopMotors(), Drivetrain));
-
-    m_driverController
-      .rightBumper()
-      .whileTrue(Drivetrain.sysIdDynamic(Direction.kForward))
-      .onFalse(Commands.runOnce(() -> Drivetrain.stopMotors(), Drivetrain));
-
-    m_driverController
-      .leftBumper()
-      .whileTrue(Drivetrain.sysIdDynamic(Direction.kReverse))
-      .onFalse(Commands.runOnce(() -> Drivetrain.stopMotors(), Drivetrain));
-  }
-
   public class CombinedCommands {
 
     public static SequentialCommandGroup scoreInSpeakerSequentialGroup(Shooter shooter, Intake intake) {
