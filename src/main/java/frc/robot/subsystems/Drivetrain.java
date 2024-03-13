@@ -7,7 +7,6 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
@@ -223,17 +222,6 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     m_frontRightModule.stopMotors();
     m_rearLeftModule.stopMotors();
     m_rearRightModule.stopMotors();
-  }
-
-  /**
-   * Sets the swerve modules all to a single heading
-   * @param angle
-   */
-  public void setWheelAngles(Rotation2d angle) {
-    m_frontLeftModule.setDesiredAngle(angle);
-    m_frontRightModule.setDesiredAngle(angle);
-    m_rearLeftModule.setDesiredAngle(angle);
-    m_rearRightModule.setDesiredAngle(angle);
   }
 
   /**

@@ -122,7 +122,6 @@ public class Shooter extends SubsystemBase implements IPlannable {
    */
   public boolean isNoteLoaded() {
     return !m_noteDetector.get();
-    // return false;
   }
 
   public void setElevator(Value value) {
@@ -225,5 +224,6 @@ public class Shooter extends SubsystemBase implements IPlannable {
    */
   public void close() {
     m_talonFX.close();
+    m_victorSPX.DestroyObject();
   }
 }

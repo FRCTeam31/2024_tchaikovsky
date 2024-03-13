@@ -189,15 +189,12 @@ public class RobotContainer {
    * Creates the controller and configures the operator's controls
    */
   public void configureOperatorControls() {
-    // Default commands for seeking PID setpoints
-    Intake.setDefaultCommand(Intake.seekAngleSetpointCommand());
-
     // Intake ========================================
     m_operatorController.a().onTrue(Intake.toggleIntakeInAndOutCommand()); // Set intake angle in/out
 
     m_operatorController // When the trigger is pressed, intake a note at a variable speed
       .leftTrigger(0.1)
-      .whileTrue(Intake.runRollersWithSpeedCommand(() -> m_operatorController.getLeftTriggerAxis()))
+      .whileTrue(Intake.runRollersAtSpeedCommand(() -> m_operatorController.getLeftTriggerAxis()))
       .onFalse(Intake.stopRollersCommand());
 
     m_operatorController // When the trigger is pressed, eject a note at a constant speed
