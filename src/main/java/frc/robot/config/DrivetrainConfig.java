@@ -19,7 +19,6 @@ public class DrivetrainConfig {
 
   // Control properties
   public double LowGearScalar;
-  public boolean StartInHighGear;
   public double DriveDeadband;
   public double DeadbandCurveWeight;
 
@@ -39,7 +38,6 @@ public class DrivetrainConfig {
     double maxAccelerationMetersPerSecondSquared,
     double maxAngularSpeedRadians,
     double lowGearScalar,
-    boolean startInHighGear,
     PrimePIDConstants drivePID,
     PrimePIDConstants steeringPID,
     PrimePIDConstants snapToPID,
@@ -58,7 +56,6 @@ public class DrivetrainConfig {
     PigeonId = pigeonId;
 
     LowGearScalar = lowGearScalar;
-    StartInHighGear = startInHighGear;
     DriveDeadband = driveDeadband;
     DeadbandCurveWeight = deadbandCurveWeight;
 

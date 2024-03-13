@@ -46,7 +46,6 @@ public class RobotConfig {
         Units.feetToMeters(15), // Max Acceleration MPS^2
         Math.PI * 2, // Max Angular Speed in Radians
         0.5,
-        false,
         new PrimePIDConstants(0.019, 0, 0, 0, 0.091, 0, 0.05), // Drive PID
         new PrimePIDConstants(2, 0, 0), // Steering PID
         new PrimePIDConstants(4, 0, 0), // SnapTo PID
@@ -62,7 +61,7 @@ public class RobotConfig {
         2,
         3,
         4,
-        0.164551,
+        0.164551 - 0.25,
         false,
         true,
         new Translation2d(-(config.Drivetrain.TrackWidthMeters / 2), config.Drivetrain.WheelBaseMeters / 2),
@@ -76,7 +75,7 @@ public class RobotConfig {
         5,
         6,
         7,
-        0.350098,
+        0.350098 - 0.25,
         true,
         true,
         new Translation2d(config.Drivetrain.TrackWidthMeters / 2, config.Drivetrain.WheelBaseMeters / 2),
@@ -90,7 +89,7 @@ public class RobotConfig {
         8,
         9,
         10,
-        0.717773,
+        0.717773 - 0.25,
         true,
         true,
         new Translation2d(config.Drivetrain.TrackWidthMeters / 2, -(config.Drivetrain.WheelBaseMeters / 2)),
@@ -104,7 +103,7 @@ public class RobotConfig {
         11,
         12,
         13,
-        0.181152,
+        0.181152 - 0.25,
         false,
         true,
         new Translation2d(-(config.Drivetrain.TrackWidthMeters / 2), -(config.Drivetrain.WheelBaseMeters / 2)),

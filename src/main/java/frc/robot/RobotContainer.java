@@ -128,7 +128,11 @@ public class RobotContainer {
     // }
 
     // TODO: Add more important items from subsystems here
-    d_driverTab.add("Field", Drivetrain.m_field).withWidget(BuiltInWidgets.kField).withPosition(8, 0).withSize(5, 3);
+    d_driverTab
+      .add("Field", Drivetrain.m_fieldWidget)
+      .withWidget(BuiltInWidgets.kField)
+      .withPosition(8, 0)
+      .withSize(5, 3);
     d_driverTab.add("Robot Gyro", Drivetrain.m_gyro).withWidget(BuiltInWidgets.kGyro).withPosition(8, 3).withSize(2, 2);
   }
 
@@ -162,7 +166,7 @@ public class RobotContainer {
     m_driverController.a().onTrue(Drivetrain.resetGyroCommand());
 
     // Controls for Snap-To
-    m_driverController.x().onTrue(Commands.runOnce(() -> Drivetrain.setSnapToGyroControl(false)));
+    m_driverController.x().onTrue(Commands.runOnce(() -> Drivetrain.setSnapToGyroEnabled(false)));
     m_driverController.pov(Controls.up).onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(0)));
     m_driverController.pov(Controls.left).onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(270)));
     m_driverController.pov(Controls.down).onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(180)));
