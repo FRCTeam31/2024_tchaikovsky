@@ -119,7 +119,7 @@ public class RobotConfig {
 
     config.LimelightPose = new Pose3d(0.251079, 0.0583184, 0.0180594, new Rotation3d(0, 65, 0)); // TODO: Find out if this x Y and Z is correct for the orientation of the robot
 
-    config.LEDs = new LEDConfig(Port.kUSB);
+    config.LEDs = new LEDConfig(Port.kUSB, 3);
 
     config.PneumaticsModuleId = 30;
 

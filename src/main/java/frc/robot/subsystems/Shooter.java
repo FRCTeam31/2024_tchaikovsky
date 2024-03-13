@@ -16,12 +16,15 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.config.ShooterConfig;
 import java.util.Map;
+import prime.control.LEDs.Color;
+import prime.control.LEDs.LEDSection;
 import prime.movers.IPlannable;
 
 public class Shooter extends SubsystemBase implements IPlannable {
 
   private ShooterConfig m_config;
 
+  private LEDs m_leds;
   private TalonFX m_talonFX;
   private VictorSPX m_victorSPX;
   private DoubleSolenoid m_elevationSolenoid;
@@ -70,8 +73,9 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * Creates a new Shooter with a given configuration
    * @param config
    */
-  public Shooter(ShooterConfig config) {
+  public Shooter(ShooterConfig config, LEDs leds) {
     m_config = config;
+    m_leds = leds;
     setName("Shooter");
 
     m_talonFX = new TalonFX(m_config.TalonFXCanID);
@@ -114,6 +118,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
   public void stopMotors() {
     m_talonFX.stopMotor();
     m_victorSPX.set(VictorSPXControlMode.PercentOutput, 0);
+    m_leds.restoreLastStripState();
   }
 
   /**
@@ -130,29 +135,34 @@ public class Shooter extends SubsystemBase implements IPlannable {
 
   public void setElevatorUp() {
     setElevator(Value.kForward);
+    m_leds.setSectionTemporary(1, LEDSection.solidColor(Color.WHITE));
   }
 
   public void setElevatorDown() {
     setElevator(Value.kReverse);
+    m_leds.restoreLastSectionState(1);
   }
 
   //#endregion
 
+  private boolean m_lastNoteDetectedValue = false;
+
   @Override
   public void periodic() {
-    // d_talonFXSpeed.setDouble(m_talonFX.get());
-    // d_victorSPXSpeed.setDouble(m_victorSPX.getMotorOutputPercent());
-    // d_leftLinearActuator.setDouble(m_leftLinearActuator.getPosition());
-    // d_rightLinearActuator.setDouble(m_rightLinearActuator.getPosition());
-    // d_noteDetector.setBoolean(isNoteLoaded());
-    // d_shooterIsUp.setBoolean(m_shooterIsUp);
+    var newNoteDetectedValue = isNoteLoaded();
+    if (newNoteDetectedValue != m_lastNoteDetectedValue) {
+      // Save the new value
+      m_lastNoteDetectedValue = newNoteDetectedValue;
+
+      if (newNoteDetectedValue) {
+        m_leds.setSectionTemporary(2, LEDSection.blinkColor(prime.control.LEDs.Color.ORANGE, 200));
+      } else {
+        m_leds.restoreLastSectionState(2);
+      }
+    }
   }
 
   //#region Shooter Commands
-
-  public Command setShooterSpeedCommand() {
-    return Commands.run(() -> {});
-  }
 
   /**
    * Stops the shooter motors
@@ -175,7 +185,10 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * @return
    */
   public Command startShootingNoteCommand() {
-    return Commands.runOnce(() -> runShooter(1));
+    return Commands.runOnce(() -> {
+      runShooter(1);
+      m_leds.setStripTemporary(LEDSection.raceColor(null, 25, isNoteLoaded()));
+    });
   }
 
   /**
@@ -200,17 +213,8 @@ public class Shooter extends SubsystemBase implements IPlannable {
    */
   public Command toggleElevationCommand() {
     return Commands.runOnce(() -> {
-      setElevator(m_elevationSolenoid.get() == Value.kForward ? Value.kReverse : Value.kForward);
+      if (m_elevationSolenoid.get() == Value.kForward) setElevatorDown(); else setElevatorUp();
     });
-  }
-
-  public Command runShooterForTime(double seconds, double speed) {
-    return Commands
-      .runOnce(() -> {
-        runShooter(speed);
-      })
-      .andThen(new WaitCommand(seconds))
-      .andThen(stopMotorsCommand());
   }
 
   public Map<String, Command> getNamedCommands() {

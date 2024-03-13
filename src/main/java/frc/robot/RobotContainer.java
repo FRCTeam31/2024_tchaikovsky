@@ -24,7 +24,7 @@ import frc.robot.config.RobotConfig;
 import frc.robot.subsystems.Climbers;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Intake;
-import frc.robot.subsystems.LEDStrips;
+import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Shooter;
 import java.util.Map;
@@ -54,7 +54,7 @@ public class RobotContainer {
   public Intake Intake;
   public Climbers Climbers;
   public Limelight Limelight;
-  public LEDStrips LEDs;
+  public LEDs LEDs;
   public Compressor Compressor;
 
   public RobotContainer(RobotConfig config) {
@@ -85,12 +85,12 @@ public class RobotContainer {
       if (Compressor != null) Compressor.close();
 
       // Create new subsystems
+      LEDs = new LEDs(m_config.LEDs);
       Drivetrain = new Drivetrain(m_config);
-      Shooter = new Shooter(m_config.Shooter);
+      Shooter = new Shooter(m_config.Shooter, LEDs);
       Intake = new Intake(m_config.Intake);
       Climbers = new Climbers(m_config.Climbers);
       Limelight = new Limelight(m_config.LimelightPose);
-      LEDs = new LEDStrips(m_config.LEDs);
       Compressor = new Compressor(m_config.PneumaticsModuleId, PneumaticsModuleType.REVPH);
       Compressor.enableDigital();
 
