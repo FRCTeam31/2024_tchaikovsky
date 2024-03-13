@@ -18,6 +18,11 @@ import prime.control.LEDs.LEDSection;
 
 public class Robot extends TimedRobot {
 
+  public enum Side {
+    kLeft,
+    kRight,
+  }
+
   private RobotContainer m_robotContainer;
   private Command m_autonomousCommand;
 

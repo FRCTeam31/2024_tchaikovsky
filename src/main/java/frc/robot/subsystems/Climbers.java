@@ -15,22 +15,15 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 import frc.robot.config.ClimbersConfig;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 public class Climbers extends SubsystemBase implements AutoCloseable {
 
+  // Configuration
   private ClimbersConfig m_config;
-
-  private VictorSPX m_leftVictorSPX;
-  private VictorSPX m_rightVictorSPX;
-  private DigitalInput m_leftLimitSwitch;
-  private DigitalInput m_rightLimitSwitch;
-  private DoubleSolenoid m_clutchSolenoidLeft;
-  private DoubleSolenoid m_clutchSolenoidRight;
-
-  private boolean m_climbControlsEnabled = false;
 
   private ShuffleboardTab d_tab = Shuffleboard.getTab("Driver");
   // private GenericEntry d_leftLimitEntry = d_tab
@@ -51,6 +44,21 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
     .withPosition(4, 4)
     .withSize(3, 1)
     .getEntry();
+
+  // Motors
+  private VictorSPX m_leftVictorSPX;
+  private VictorSPX m_rightVictorSPX;
+
+  // Limit Switches
+  private DigitalInput m_leftLimitSwitch;
+  private DigitalInput m_rightLimitSwitch;
+
+  // Clutch Solenoids
+  private DoubleSolenoid m_clutchSolenoidLeft;
+  private DoubleSolenoid m_clutchSolenoidRight;
+
+  // Member to track if the climb controls are enabled
+  private boolean m_climbControlsEnabled = false;
 
   /**
    * Creates a new Climbers subsystem
@@ -87,61 +95,61 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
   //#region Control Methods
 
   /**
-   * Raises the Left Climber
+   * Raises the desired climber arm
+   * @param side The side to raise
    */
-  public void raiseLeftArm() {
-    m_leftVictorSPX.set(VictorSPXControlMode.PercentOutput, m_config.ClimberUpSpeed);
+  public void raiseArm(Robot.Side side) {
+    if (side == Robot.Side.kLeft) {
+      m_leftVictorSPX.set(VictorSPXControlMode.PercentOutput, m_config.ClimberUpSpeed);
+    }
+
+    if (side == Robot.Side.kRight) {
+      m_rightVictorSPX.set(VictorSPXControlMode.PercentOutput, m_config.ClimberUpSpeed);
+    }
   }
 
   /**
-   * Raises the Right Climber
+   * Lowers the desired climber arm
+   * @param side The side to lower
+   * @param speed The speed to lower the arm at
    */
-  public void raiseRightArm() {
-    m_rightVictorSPX.set(VictorSPXControlMode.PercentOutput, m_config.ClimberUpSpeed);
+  public void lowerArm(Robot.Side side, double speed) {
+    if (side == Robot.Side.kLeft) {
+      m_leftVictorSPX.set(VictorSPXControlMode.PercentOutput, -speed);
+    }
+
+    if (side == Robot.Side.kRight) {
+      m_rightVictorSPX.set(VictorSPXControlMode.PercentOutput, -speed);
+    }
   }
 
   /**
-   * Lowers the Left Climber
+   * Stops the desired climber arm
+   * @param side
    */
-  public void lowerLeftArm(double speed) {
-    m_leftVictorSPX.set(VictorSPXControlMode.PercentOutput, -speed);
+  public void stopArm(Robot.Side side) {
+    if (side == Robot.Side.kLeft) {
+      m_leftVictorSPX.set(VictorSPXControlMode.PercentOutput, 0);
+    }
+
+    if (side == Robot.Side.kRight) {
+      m_rightVictorSPX.set(VictorSPXControlMode.PercentOutput, 0);
+    }
   }
 
   /**
-   * Lowers the Right Climber
+   * Engages / disengages the desired clutch
+   * @param side The side to engage / disengage
+   * @param engaged Whether to engage or disengage the clutch
    */
-  public void lowerRightArm(double speed) {
-    m_rightVictorSPX.set(VictorSPXControlMode.PercentOutput, -speed);
-  }
+  public void setClutch(Robot.Side side, boolean engaged) {
+    if (side == Robot.Side.kLeft) {
+      m_clutchSolenoidLeft.set(engaged ? Value.kForward : Value.kReverse);
+    }
 
-  /**
-   * Stops the Left Climber Motor
-   */
-  public void stopLeftArm() {
-    m_leftVictorSPX.set(VictorSPXControlMode.PercentOutput, 0);
-  }
-
-  /**
-   * Stops the Right Climber Motor
-   */
-  public void stopRightArm() {
-    m_rightVictorSPX.set(VictorSPXControlMode.PercentOutput, 0);
-  }
-
-  /**
-   * Engages / disengages the left clutch
-   * @param engaged
-   */
-  public void setLeftClutch(boolean engaged) {
-    m_clutchSolenoidLeft.set(engaged ? Value.kForward : Value.kReverse);
-  }
-
-  /**
-   * Engages / disengages the right clutch
-   * @param engaged
-   */
-  public void setRightClutch(boolean engaged) {
-    m_clutchSolenoidRight.set(engaged ? Value.kForward : Value.kReverse);
+    if (side == Robot.Side.kRight) {
+      m_clutchSolenoidRight.set(engaged ? Value.kForward : Value.kReverse);
+    }
   }
 
   @Override
@@ -178,30 +186,30 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
         if (m_climbControlsEnabled) {
           // Raise Right
           if (raiseRightArm.getAsBoolean() && !m_rightLimitSwitch.get()) {
-            setRightClutch(false);
-            raiseRightArm();
+            setClutch(Robot.Side.kRight, false);
+            raiseArm(Robot.Side.kRight);
           } else {
-            stopRightArm();
+            stopArm(Robot.Side.kRight);
           }
 
           // Raise left
           if (raiseLeftArm.getAsBoolean() && !m_leftLimitSwitch.get()) {
-            setLeftClutch(false);
-            raiseLeftArm();
+            setClutch(Robot.Side.kLeft, false);
+            raiseArm(Robot.Side.kLeft);
           } else {
-            stopLeftArm();
+            stopArm(Robot.Side.kLeft);
           }
 
           // Lower Right
           if (!raiseRightArm.getAsBoolean() && !raiseLeftArm.getAsBoolean()) {
-            setRightClutch(true);
-            lowerRightArm(MathUtil.applyDeadband(lowerRightArm.getAsDouble(), 0.1));
+            setClutch(Robot.Side.kRight, true);
+            lowerArm(Robot.Side.kRight, MathUtil.applyDeadband(lowerRightArm.getAsDouble(), 0.1));
           }
 
           // Lower left
           if (!raiseRightArm.getAsBoolean() && !raiseLeftArm.getAsBoolean()) {
-            setLeftClutch(true);
-            lowerLeftArm(MathUtil.applyDeadband(lowerLeftArm.getAsDouble(), 0, 1));
+            setClutch(Robot.Side.kLeft, true);
+            lowerArm(Robot.Side.kLeft, MathUtil.applyDeadband(lowerLeftArm.getAsDouble(), 0.1));
           }
         }
       });
@@ -212,28 +220,28 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
    */
   public SequentialCommandGroup setArmsUpCommand() {
     return this.runOnce(() -> {
-        setLeftClutch(false);
-        setRightClutch(false);
+        setClutch(Robot.Side.kLeft, false);
+        setClutch(Robot.Side.kRight, false);
       })
       .andThen(Commands.waitSeconds(0.075))
       .andThen(
         this.run(() -> {
             if (!m_leftLimitSwitch.get()) {
-              raiseLeftArm();
+              raiseArm(Robot.Side.kLeft);
             } else {
-              stopLeftArm();
+              stopArm(Robot.Side.kLeft);
             }
 
             if (!m_rightLimitSwitch.get()) {
-              raiseRightArm();
+              raiseArm(Robot.Side.kRight);
             } else {
-              stopRightArm();
+              stopArm(Robot.Side.kRight);
             }
           })
           .until(() -> m_leftLimitSwitch.get() && m_rightLimitSwitch.get())
           .finallyDo(() -> {
-            stopLeftArm();
-            stopRightArm();
+            stopArm(Robot.Side.kLeft);
+            stopArm(Robot.Side.kRight);
           })
       );
   }
