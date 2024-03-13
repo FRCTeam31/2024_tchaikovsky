@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.config.ShooterConfig;
 import java.util.Map;
 import prime.control.LEDs.Color;
@@ -135,12 +134,12 @@ public class Shooter extends SubsystemBase implements IPlannable {
 
   public void setElevatorUp() {
     setElevator(Value.kForward);
-    m_leds.setSectionTemporary(1, LEDSection.solidColor(Color.WHITE));
+    m_leds.setStripTemporary(LEDSection.solidColor(Color.WHITE));
   }
 
   public void setElevatorDown() {
     setElevator(Value.kReverse);
-    m_leds.restoreLastSectionState(1);
+    m_leds.restoreLastStripState();
   }
 
   //#endregion
@@ -155,9 +154,9 @@ public class Shooter extends SubsystemBase implements IPlannable {
       m_lastNoteDetectedValue = newNoteDetectedValue;
 
       if (newNoteDetectedValue) {
-        m_leds.setSectionTemporary(2, LEDSection.blinkColor(prime.control.LEDs.Color.ORANGE, 200));
+        m_leds.setStripTemporary(LEDSection.blinkColor(prime.control.LEDs.Color.ORANGE, 500));
       } else {
-        m_leds.restoreLastSectionState(2);
+        m_leds.restoreLastStripState();
       }
     }
   }
@@ -187,7 +186,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
   public Command startShootingNoteCommand() {
     return Commands.runOnce(() -> {
       runShooter(1);
-      m_leds.setStripTemporary(LEDSection.raceColor(null, 25, isNoteLoaded()));
+      m_leds.setStripTemporary(LEDSection.raceColor(Color.GREEN, 25, isNoteLoaded()));
     });
   }
 

@@ -29,6 +29,9 @@ import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Shooter;
 import java.util.Map;
 import prime.control.Controls;
+import prime.control.HolonomicControlStyle;
+import prime.control.LEDs.Color;
+import prime.control.LEDs.LEDSection;
 import prime.control.PrimeXboxController;
 
 public class RobotContainer {
@@ -145,17 +148,11 @@ public class RobotContainer {
    */
   public void configureDriverControls() {
     // Controls for Driving
+    m_driverController.a().onTrue(Drivetrain.resetGyroCommand());
     Drivetrain.setDefaultCommand(
       Drivetrain.defaultDriveCommand(
-        m_driverController.getRightStickYSupplier(
-          m_config.Drivetrain.DriveDeadband,
-          m_config.Drivetrain.DeadbandCurveWeight
-        ),
-        m_driverController.getRightStickXSupplier(
-          m_config.Drivetrain.DriveDeadband,
-          m_config.Drivetrain.DeadbandCurveWeight
-        ),
-        m_driverController.getLeftStickXSupplier(
+        m_driverController.getSwerveControlProfile(
+          HolonomicControlStyle.Drone,
           m_config.Drivetrain.DriveDeadband,
           m_config.Drivetrain.DeadbandCurveWeight
         ),
@@ -163,14 +160,47 @@ public class RobotContainer {
       )
     );
 
-    m_driverController.a().onTrue(Drivetrain.resetGyroCommand());
+    // While holding b, auto-aim the robot to the apriltag target using snap-to
+    m_driverController
+      .leftBumper()
+      .whileTrue(
+        Commands.run(
+          () -> {
+            var targetedAprilTag = Limelight.getApriltagId();
 
-    // Controls for Snap-To
-    m_driverController.x().onTrue(Commands.runOnce(() -> Drivetrain.setSnapToGyroEnabled(false)));
-    m_driverController.pov(Controls.up).onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(0)));
-    m_driverController.pov(Controls.left).onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(270)));
-    m_driverController.pov(Controls.down).onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(180)));
-    m_driverController.pov(Controls.right).onTrue(Drivetrain.setSnapToSetpoint(Math.toRadians(90)));
+            // If targetedAprilTag is in validTargets, snap to its offset
+            if (targetedAprilTag != -1 && Limelight.tagIdIsASpeakerTarget(targetedAprilTag)) {
+              // Calculate the target heading
+              var horizontalOffset = Limelight.getHorizontalOffsetFromTarget().getDegrees();
+              horizontalOffset += -2; // Adjust for offset from camera to shooter center
+              var robotHeading = Drivetrain.getHeading();
+              var targetHeading = robotHeading + horizontalOffset;
+
+              // Set the drivetrain to snap to the target heading
+              Drivetrain.setSnapToSetpoint(targetHeading);
+
+              // If the target is within 5 degrees, set the LEDs to indicate shoot, otherwise quickly pulse red
+              if (Math.abs(horizontalOffset) < 5) {
+                LEDs.setStripTemporary(LEDSection.solidColor(Color.GREEN));
+              } else {
+                LEDs.setStripTemporary(LEDSection.pulseColor(Color.RED, 100));
+              }
+            } else {
+              Drivetrain.setSnapToGyroEnabled(false);
+              LEDs.restoreLastStripState();
+            }
+          },
+          Drivetrain
+        )
+      )
+      .onFalse(Drivetrain.disableSnapTo().andThen(Commands.runOnce(() -> LEDs.restoreLastStripState())));
+
+    // Controls for Snap-To with field-relative setpoints
+    m_driverController.x().onTrue(Drivetrain.disableSnapTo());
+    m_driverController.pov(Controls.up).onTrue(Drivetrain.setSnapToSetpointCommand(Math.toRadians(0)));
+    m_driverController.pov(Controls.left).onTrue(Drivetrain.setSnapToSetpointCommand(Math.toRadians(90)));
+    m_driverController.pov(Controls.down).onTrue(Drivetrain.setSnapToSetpointCommand(Math.toRadians(180)));
+    m_driverController.pov(Controls.right).onTrue(Drivetrain.setSnapToSetpointCommand(Math.toRadians(270)));
 
     // Climbers
     m_driverController.y().onTrue(Climbers.toggleClimbControlsCommand());

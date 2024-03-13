@@ -22,8 +22,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.config.RobotConfig;
-import java.util.function.DoubleSupplier;
 import prime.control.Controls;
+import prime.control.SwerveControlSuppliers;
 
 public class Drivetrain extends SubsystemBase implements AutoCloseable {
 
@@ -35,17 +35,17 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
   public GenericEntry d_snapToEnabledEntry = d_driveTab
     .add("SnapTo Enabled", false)
     .withWidget(BuiltInWidgets.kBooleanBox)
-    .withPosition(1, 7)
-    .withSize(3, 1)
-    .getEntry();
-  public GenericEntry d_inHighGearEntry = d_driveTab
-    .add("In High Gear", false)
-    .withWidget(BuiltInWidgets.kBooleanBox)
-    .withPosition(1, 8)
-    .withSize(3, 1)
+    .withPosition(5, 7)
+    .withSize(1, 2)
     .getEntry();
   private GenericEntry d_gyroAngle = d_driveTab
     .add("Gyro Angle", 0)
+    .withWidget(BuiltInWidgets.kGyro)
+    .withPosition(6, 7)
+    .withSize(2, 2)
+    .getEntry();
+  private GenericEntry d_snapAngle = d_driveTab
+    .add("SnapTo Angle", 0)
     .withWidget(BuiltInWidgets.kGyro)
     .withPosition(2, 7)
     .withSize(2, 2)
@@ -167,8 +167,11 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
 
     // If we're using a snap-to angle, calculate and set the rotational speed to reach the desired angle
     if (m_snapToGyroEnabled) {
+      d_snapAngle.setDouble(m_snapToRotationController.getSetpoint());
       desiredChassisSpeeds.omegaRadiansPerSecond =
         m_snapToRotationController.calculate(MathUtil.angleModulus(m_gyro.getRotation2d().getRadians()));
+    } else {
+      d_snapAngle.setDouble(0);
     }
 
     drive(desiredChassisSpeeds);
@@ -249,7 +252,18 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
    */
   public void toggleSnapToGyroEnabled() {
     m_snapToGyroEnabled = !m_snapToGyroEnabled;
-    m_snapToRotationController.close();
+  }
+
+  public void setSnapToSetpoint(double angle) {
+    var snapAngle = angle;
+    if (Robot.onRedAlliance()) {
+      snapAngle = snapAngle + 180;
+    }
+
+    if (angle >= 360) angle -= 360;
+
+    m_snapToRotationController.setSetpoint(snapAngle);
+    setSnapToGyroEnabled(true);
   }
 
   /**
@@ -284,32 +298,25 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
   //#region Commands
 
   /**
-   * Creates a command that drives the robot using the default controls
-   * @param ySupplier Controller Y input
-   * @param xSupplier Controller X input
-   * @param rotationSupplier Controller rotation input
+   * Creates a command that drives the robot using the input controls
+   * @param controlSuppliers Controller input
    * @param fieldRelative Whether or not the input is field relative or robot relative
    */
-  public Command defaultDriveCommand(
-    DoubleSupplier ySupplier,
-    DoubleSupplier xSupplier,
-    DoubleSupplier rotationSupplier,
-    boolean fieldRelative
-  ) {
+  public Command defaultDriveCommand(SwerveControlSuppliers controlSuppliers, boolean fieldRelative) {
     return this.run(() -> {
-        if (Math.abs(rotationSupplier.getAsDouble()) > 0.2) {
+        if (Math.abs(controlSuppliers.Rotation.getAsDouble()) > 0.2) {
           setSnapToGyroEnabled(false);
         }
 
         // Scale speeds cubic
-        var forwardY = Controls.cubicScaledDeadband(ySupplier.getAsDouble(), 0.1, 0.3);
-        var strafeX = Controls.cubicScaledDeadband(xSupplier.getAsDouble(), 0.1, 0.3);
-        var rotation = Controls.cubicScaledDeadband(rotationSupplier.getAsDouble(), 0.1, 0.3);
+        var forwardY = Controls.cubicScaledDeadband(controlSuppliers.Forward.getAsDouble(), 0.1, 0.3);
+        var strafeX = Controls.cubicScaledDeadband(controlSuppliers.Strafe.getAsDouble(), 0.1, 0.3);
+        var rotation = Controls.cubicScaledDeadband(controlSuppliers.Rotation.getAsDouble(), 0.1, 0.3);
 
         // Set speeds to MPS
-        strafeX = -xSupplier.getAsDouble() * m_config.Drivetrain.MaxSpeedMetersPerSecond;
-        forwardY = -ySupplier.getAsDouble() * m_config.Drivetrain.MaxSpeedMetersPerSecond;
-        rotation = -rotationSupplier.getAsDouble() * m_config.Drivetrain.MaxAngularSpeedRadians;
+        strafeX = -controlSuppliers.Strafe.getAsDouble() * m_config.Drivetrain.MaxSpeedMetersPerSecond;
+        forwardY = -controlSuppliers.Forward.getAsDouble() * m_config.Drivetrain.MaxSpeedMetersPerSecond;
+        rotation = -controlSuppliers.Rotation.getAsDouble() * m_config.Drivetrain.MaxAngularSpeedRadians;
 
         driveFromCartesianSpeeds(-strafeX, forwardY, rotation, fieldRelative);
       });
@@ -326,11 +333,15 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
    * Enables snap-to control and sets an angle setpoint
    * @param angle
    */
-  public Command setSnapToSetpoint(double angle) {
-    return Commands.runOnce(() -> {
-      setSnapToGyroEnabled(true);
-      m_snapToRotationController.setSetpoint(angle);
-    });
+  public Command setSnapToSetpointCommand(double angle) {
+    return Commands.runOnce(() -> setSnapToSetpoint(angle));
+  }
+
+  /**
+   * Disables snap-to control
+   */
+  public Command disableSnapTo() {
+    return Commands.runOnce(() -> setSnapToGyroEnabled(false));
   }
 
   //#endregion

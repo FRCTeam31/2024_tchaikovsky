@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.Map;
 
 public class Limelight extends SubsystemBase {
 
@@ -26,6 +27,13 @@ public class Limelight extends SubsystemBase {
     .withWidget(BuiltInWidgets.kTextView)
     .withPosition(12, 3)
     .withSize(1, 1)
+    .getEntry();
+  private GenericEntry d_txEntry = d_driverTab
+    .add("Target Rotation Offset", 0)
+    .withWidget(BuiltInWidgets.kDial)
+    .withProperties(Map.of("Min", -29.8, "Max", 29.8))
+    .withPosition(13, 3)
+    .withSize(2, 1)
     .getEntry();
 
   /**
@@ -82,7 +90,7 @@ public class Limelight extends SubsystemBase {
    * ID of the primary in-view AprilTag
    */
   public int getApriltagId() {
-    return (int) m_limelightTable.getEntry("tid").getDouble(0.0);
+    return (int) m_limelightTable.getEntry("tid").getDouble(-1);
   }
 
   /**
@@ -228,6 +236,11 @@ public class Limelight extends SubsystemBase {
 
   public void periodic() {
     d_tidEntry.setDouble(getApriltagId());
+    d_txEntry.setDouble(getHorizontalOffsetFromTarget().getDegrees());
+  }
+
+  public boolean tagIdIsASpeakerTarget(int apriltagId) {
+    return apriltagId == 4 || apriltagId == 7;
   }
 
   private Pose3d toPose3d(double[] poseData) {

@@ -28,7 +28,11 @@ public class LEDs extends SubsystemBase implements AutoCloseable {
    * @param section The section to set
    * @param state The state to set the section to
    */
-  public void setSectionAndSave(int section, LEDSection state) {
+  private void setSectionAndSave(int section, LEDSection state) {
+    if (section < 0 || section >= m_config.SectionCount) {
+      System.out.println("[LEDs:WARNING] Invalid LED section: " + section);
+    }
+
     if (m_controller != null) {
       // If the last state isTheSameAs the new state, don't set it
       if (m_lastStates[section] != null && m_lastStates[section].isTheSameAs(state)) {
@@ -46,7 +50,11 @@ public class LEDs extends SubsystemBase implements AutoCloseable {
    * @param section The section to set
    * @param state The state to set the section to temporarily
    */
-  public void setSectionTemporary(int section, LEDSection state) {
+  private void setSectionTemporary(int section, LEDSection state) {
+    if (section < 0 || section >= m_config.SectionCount) {
+      System.out.println("[LEDs:WARNING] Invalid LED section: " + section);
+    }
+
     if (m_controller != null) {
       m_controller.setSectionState((byte) section, state);
     }
@@ -83,7 +91,11 @@ public class LEDs extends SubsystemBase implements AutoCloseable {
    * @param section The section to set
    * @param state The state to set the section to
    */
-  public void restoreLastSectionState(int section) {
+  private void restoreLastSectionState(int section) {
+    if (section < 0 || section >= m_config.SectionCount) {
+      System.out.println("[LEDs:WARNING] Invalid LED section: " + section);
+    }
+
     if (m_lastStates[section] != null) {
       setSectionAndSave(section, m_lastStates[section]);
     }
