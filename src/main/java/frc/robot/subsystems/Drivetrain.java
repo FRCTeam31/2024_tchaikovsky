@@ -6,13 +6,14 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -22,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.config.RobotConfig;
+import java.util.Map;
 import prime.control.Controls;
 import prime.control.SwerveControlSuppliers;
 
@@ -35,20 +37,22 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
   public GenericEntry d_snapToEnabledEntry = d_driveTab
     .add("SnapTo Enabled", false)
     .withWidget(BuiltInWidgets.kBooleanBox)
-    .withPosition(5, 7)
-    .withSize(1, 2)
-    .getEntry();
-  private GenericEntry d_gyroAngle = d_driveTab
-    .add("Gyro Angle", 0)
-    .withWidget(BuiltInWidgets.kGyro)
-    .withPosition(6, 7)
+    .withPosition(0, 0)
     .withSize(2, 2)
+    .getEntry();
+  private GenericEntry d_currentHeading = d_driveTab
+    .add("Current Heading", 0)
+    .withWidget(BuiltInWidgets.kGyro)
+    .withPosition(14, 0)
+    .withSize(4, 5)
+    .withProperties(Map.of("Counter clockwise", true, "Major tick spacing", 45.0, "Minor tick spacing", 15.0))
     .getEntry();
   private GenericEntry d_snapAngle = d_driveTab
     .add("SnapTo Angle", 0)
     .withWidget(BuiltInWidgets.kGyro)
-    .withPosition(2, 7)
-    .withSize(2, 2)
+    .withPosition(2, 0)
+    .withSize(4, 5)
+    .withProperties(Map.of("Counter clockwise", true, "Major tick spacing", 45.0, "Minor tick spacing", 15.0))
     .getEntry();
 
   // Gyro and swerve modules in CCW order from FL to FR
@@ -57,7 +61,7 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
 
   // Kinematics, odometry, and field widget
   private SwerveDriveKinematics m_kinematics;
-  private SwerveDriveOdometry m_odometry;
+  private SwerveDrivePoseEstimator m_poseEstimator;
   public Field2d m_fieldWidget;
 
   // Snap to Gyro Angle PID
@@ -93,11 +97,13 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
         m_config.RearLeftSwerveModule.getModuleLocation(),
         m_config.RearRightSwerveModule.getModuleLocation()
       );
-    m_odometry = new SwerveDriveOdometry(m_kinematics, m_gyro.getRotation2d(), getModulePositions());
+    // m_odometry = new SwerveDriveOdometry(m_kinematics, m_gyro.getRotation2d(), getModulePositions());
+    m_poseEstimator =
+      new SwerveDrivePoseEstimator(m_kinematics, m_gyro.getRotation2d(), getModulePositions(), new Pose2d());
 
     // Configure field widget and feed it PathPlanner's current path poses
     m_fieldWidget = new Field2d();
-    d_driveTab.add("Field", m_fieldWidget).withWidget(BuiltInWidgets.kField).withPosition(2, 3).withSize(8, 5);
+    d_driveTab.add("Field", m_fieldWidget).withWidget(BuiltInWidgets.kField).withPosition(6, 0).withSize(8, 5);
     PathPlannerLogging.setLogActivePathCallback(poses -> m_fieldWidget.getObject("path").setPoses(poses));
 
     // Configure snap-to PID
@@ -106,11 +112,11 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     d_driveTab
       .add("SnapTo PID", m_snapToRotationController)
       .withWidget(BuiltInWidgets.kPIDController)
-      .withPosition(0, 0);
+      .withPosition(0, 2);
 
     AutoBuilder.configureHolonomic(
       this::getPose, // Robot pose supplier
-      this::resetOdometry, // Method to reset odometry (will be called if your auto has a starting pose)
+      this::setOdometryPose, // Method to reset odometry (will be called if your auto has a starting pose)
       this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
       this::drive, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
       m_config.Drivetrain.getHolonomicPathFollowerConfig(),
@@ -198,15 +204,15 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
    * Gets the current pose of the drivetrain from odometry
    */
   public Pose2d getPose() {
-    return m_odometry.getPoseMeters();
+    return m_poseEstimator.getEstimatedPosition();
   }
 
   /**
    * Resets the position of odometry to the input pose
    * @param pose
    */
-  public void resetOdometry(Pose2d pose) {
-    m_odometry.resetPosition(m_gyro.getRotation2d(), getModulePositions(), pose);
+  public void setOdometryPose(Pose2d pose) {
+    m_poseEstimator.resetPosition(m_gyro.getRotation2d(), getModulePositions(), pose);
   }
 
   /**
@@ -278,6 +284,17 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     );
   }
 
+  /**
+   * Takes an input pose and latency and feeds it into the pose estimator
+   * @param pose The pose of the robot
+   * @param cameraLatencyMs The latency of the camera's pipeline in milliseconds
+   */
+  public void feedRobotPoseEstimation(Pose2d pose, long cameraLatencyMs) {
+    var currentEpochSeconds = Timer.getFPGATimestamp();
+    var poseTimestampSeconds = currentEpochSeconds - (cameraLatencyMs / 1000.0);
+    m_poseEstimator.addVisionMeasurement(pose, poseTimestampSeconds);
+  }
+
   //#endregion
 
   /**
@@ -287,9 +304,9 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
   public void periodic() {
     // Update odometry
     var gyroAngle = m_gyro.getRotation2d();
-    d_gyroAngle.setDouble(gyroAngle.getDegrees());
-    m_odometry.update(gyroAngle, getModulePositions());
-    m_fieldWidget.setRobotPose(m_odometry.getPoseMeters());
+    d_currentHeading.setDouble(gyroAngle.getDegrees());
+    m_poseEstimator.update(gyroAngle, getModulePositions());
+    m_fieldWidget.setRobotPose(m_poseEstimator.getEstimatedPosition());
 
     // Update shuffleboard entries
     d_snapToEnabledEntry.setBoolean(m_snapToGyroEnabled);
@@ -340,7 +357,7 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
   /**
    * Disables snap-to control
    */
-  public Command disableSnapTo() {
+  public Command disableSnapToCommand() {
     return Commands.runOnce(() -> setSnapToGyroEnabled(false));
   }
 
@@ -360,7 +377,7 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
 
     // release memory resources
     m_kinematics = null;
-    m_odometry = null;
+    m_poseEstimator = null;
     m_fieldWidget = null;
   }
 }

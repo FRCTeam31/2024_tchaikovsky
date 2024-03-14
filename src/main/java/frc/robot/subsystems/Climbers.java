@@ -41,8 +41,8 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
   public GenericEntry d_climbControlsActiveEntry = d_tab
     .add("Climbers Enabled", false)
     .withWidget(BuiltInWidgets.kBooleanBox)
-    .withPosition(4, 4)
-    .withSize(3, 1)
+    .withPosition(5, 4)
+    .withSize(3, 2)
     .getEntry();
 
   // Motors

@@ -23,17 +23,17 @@ public class Limelight extends SubsystemBase {
 
   private ShuffleboardTab d_driverTab = Shuffleboard.getTab("Driver");
   private GenericEntry d_tidEntry = d_driverTab
-    .add("Primary AprilTag #", 0)
+    .add("Targeted APTag", 0)
     .withWidget(BuiltInWidgets.kTextView)
-    .withPosition(12, 3)
-    .withSize(1, 1)
+    .withPosition(11, 3)
+    .withSize(2, 1)
     .getEntry();
   private GenericEntry d_txEntry = d_driverTab
-    .add("Target Rotation Offset", 0)
+    .add("Target X Offset", 0)
     .withWidget(BuiltInWidgets.kDial)
     .withProperties(Map.of("Min", -29.8, "Max", 29.8))
-    .withPosition(13, 3)
-    .withSize(2, 1)
+    .withPosition(11, 4)
+    .withSize(2, 3)
     .getEntry();
 
   /**
@@ -80,6 +80,14 @@ public class Limelight extends SubsystemBase {
    */
   public long getCapturePipelineLatencyMs() {
     return (long) m_limelightTable.getEntry("cl").getDouble(0.0);
+  }
+
+  /**
+   * The total latency of the capture and pipeline processing in milliseconds.
+   * @return
+   */
+  public long getTotalLatencyMs() {
+    return getPipelineLatencyMs() + getCapturePipelineLatencyMs();
   }
 
   //#endregion

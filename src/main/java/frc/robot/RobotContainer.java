@@ -9,6 +9,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -41,13 +42,11 @@ public class RobotContainer {
   private PrimeXboxController m_operatorController;
 
   public ShuffleboardTab d_driverTab = Shuffleboard.getTab("Driver");
-  // public ShuffleboardTab d_autoTab = Shuffleboard.getTab("Auto");
-
   private SendableChooser<Command> m_autoChooser;
   public GenericEntry d_allianceEntry = d_driverTab
-    .add("Alliance Color", false)
-    .withSize(3, 0)
-    .withPosition(0, 4)
+    .add("Alliance", false)
+    .withSize(2, 3)
+    .withPosition(13, 0)
     .withWidget(BuiltInWidgets.kBooleanBox)
     .withProperties(Map.of("Color when true", "#FF0000", "Color when false", "#0000FF"))
     .getEntry();
@@ -59,6 +58,8 @@ public class RobotContainer {
   public Limelight Limelight;
   public LEDs LEDs;
   public Compressor Compressor;
+
+  private CombinedCommands m_combinedCommands;
 
   public RobotContainer(RobotConfig config) {
     m_driverController = new PrimeXboxController(Controls.DRIVER_PORT);
@@ -97,10 +98,12 @@ public class RobotContainer {
       Compressor = new Compressor(m_config.PneumaticsModuleId, PneumaticsModuleType.REVPH);
       Compressor.enableDigital();
 
+      m_combinedCommands = new CombinedCommands();
+
       // Register the named commands from each subsystem that may be used in PathPlanner
       NamedCommands.registerCommands(Intake.getNamedCommands());
       NamedCommands.registerCommands(Shooter.getNamedCommands());
-      NamedCommands.registerCommands(CombinedCommands.getNamedCommands(Shooter, Intake)); // Register the combined named commands that use multiple subsystems
+      NamedCommands.registerCommands(m_combinedCommands.getNamedCommands()); // Register the combined named commands that use multiple subsystems
 
       // Create driver dashboard
       configureRobotDashboard();
@@ -123,7 +126,7 @@ public class RobotContainer {
 
     // Build an auto chooser. This will use Commands.none() as the default option.
     m_autoChooser = AutoBuilder.buildAutoChooser("Park Auto");
-    d_driverTab.add(m_autoChooser).withWidget(BuiltInWidgets.kComboBoxChooser).withSize(3, 1).withPosition(1, 4);
+    d_driverTab.add(m_autoChooser).withWidget(BuiltInWidgets.kComboBoxChooser).withSize(5, 2).withPosition(1, 4);
     // var possibleAutos = AutoBuilder.getAllAutoNames();
     // for (int i = 0; i < possibleAutos.size(); i++) {
     //   var autoCommand = new PathPlannerAuto(possibleAutos.get(i));
@@ -136,7 +139,12 @@ public class RobotContainer {
       .withWidget(BuiltInWidgets.kField)
       .withPosition(8, 0)
       .withSize(5, 3);
-    d_driverTab.add("Robot Gyro", Drivetrain.m_gyro).withWidget(BuiltInWidgets.kGyro).withPosition(8, 3).withSize(2, 2);
+    d_driverTab
+      .add("Current Heading", Drivetrain.m_gyro)
+      .withWidget(BuiltInWidgets.kGyro)
+      .withPosition(8, 3)
+      .withSize(3, 3)
+      .withProperties(Map.of("Counter clockwise", true, "Major tick spacing", 45.0, "Minor tick spacing", 15.0));
   }
 
   public Command getAutonomousCommand() {
@@ -160,42 +168,42 @@ public class RobotContainer {
       )
     );
 
+    // Pose estimation from Limelight, if a target is in-view
+    m_driverController.back().onTrue(m_combinedCommands.updatePoseEstimation());
+
     // While holding b, auto-aim the robot to the apriltag target using snap-to
     m_driverController
       .leftBumper()
       .whileTrue(
-        Commands.run(
-          () -> {
-            var targetedAprilTag = Limelight.getApriltagId();
+        Commands.run(() -> {
+          var targetedAprilTag = Limelight.getApriltagId();
 
-            // If targetedAprilTag is in validTargets, snap to its offset
-            if (targetedAprilTag != -1 && Limelight.tagIdIsASpeakerTarget(targetedAprilTag)) {
-              // Calculate the target heading
-              var horizontalOffset = Limelight.getHorizontalOffsetFromTarget().getDegrees();
-              var robotHeading = Drivetrain.getHeading();
-              var targetHeading = robotHeading + horizontalOffset;
+          // If targetedAprilTag is in validTargets, snap to its offset
+          if (targetedAprilTag != -1 && Limelight.tagIdIsASpeakerTarget(targetedAprilTag)) {
+            // Calculate the target heading
+            var horizontalOffset = Limelight.getHorizontalOffsetFromTarget().getDegrees();
+            var robotHeading = Drivetrain.getHeading();
+            var targetHeading = robotHeading + horizontalOffset;
 
-              // Set the drivetrain to snap to the target heading
-              Drivetrain.setSnapToSetpoint(targetHeading);
+            // Set the drivetrain to snap to the target heading
+            Drivetrain.setSnapToSetpoint(targetHeading);
 
-              // If the target is within 5 degrees, set the LEDs to indicate shoot, otherwise quickly pulse red
-              if (Math.abs(horizontalOffset) < 5) {
-                LEDs.setStripTemporary(LEDSection.solidColor(Color.GREEN));
-              } else {
-                LEDs.setStripTemporary(LEDSection.pulseColor(Color.RED, 100));
-              }
+            // If the target is within 5 degrees, set the LEDs to indicate shoot, otherwise quickly pulse red
+            if (Math.abs(horizontalOffset) < 5) {
+              LEDs.setStripTemporary(LEDSection.solidColor(Color.GREEN));
             } else {
-              Drivetrain.setSnapToGyroEnabled(false);
-              LEDs.restoreLastStripState();
+              LEDs.setStripTemporary(LEDSection.pulseColor(Color.RED, 100));
             }
-          },
-          Drivetrain
-        )
+          } else {
+            Drivetrain.setSnapToGyroEnabled(false);
+            LEDs.restoreLastStripState();
+          }
+        })
       )
-      .onFalse(Drivetrain.disableSnapTo().andThen(Commands.runOnce(() -> LEDs.restoreLastStripState())));
+      .onFalse(Drivetrain.disableSnapToCommand().andThen(Commands.runOnce(() -> LEDs.restoreLastStripState())));
 
     // Controls for Snap-To with field-relative setpoints
-    m_driverController.x().onTrue(Drivetrain.disableSnapTo());
+    m_driverController.x().onTrue(Drivetrain.disableSnapToCommand());
     m_driverController.pov(Controls.up).onTrue(Drivetrain.setSnapToSetpointCommand(Math.toRadians(0)));
     m_driverController.pov(Controls.left).onTrue(Drivetrain.setSnapToSetpointCommand(Math.toRadians(90)));
     m_driverController.pov(Controls.down).onTrue(Drivetrain.setSnapToSetpointCommand(Math.toRadians(180)));
@@ -257,52 +265,76 @@ public class RobotContainer {
 
     m_operatorController // Run sequence to load a note into the shooter for scoring in the amp
       .y()
-      .onTrue(CombinedCommands.loadNoteForAmp(Shooter, Intake));
+      .onTrue(m_combinedCommands.loadNoteForAmp());
   }
 
   public class CombinedCommands {
 
-    public static SequentialCommandGroup scoreInSpeakerSequentialGroup(Shooter shooter, Intake intake) {
-      // return shooter
-      //   .startShootingNoteCommand() // Start the shooter
-      //   .andThen(new WaitCommand(0.75)) // Give it time to reach speed TODO: Velocity control later?
-      //   .andThen(intake.ejectNoteCommand()) // Eject from the intake into the shooter
-      //   .andThen(new WaitCommand(0.2)) // Give the note time to get into the shooter
-      //   .andThen(new WaitUntilCommand(() -> !shooter.isNoteLoaded()))
-      //   .withTimeout(0.5) // Wait until the note is shot with a max time
-      //   .andThen(new WaitCommand(0.1)) // Give the note time to get fully out of the shooter
-      //   .andThen(stopShooterAndIntakeCommand(shooter, intake)); // Stop both the shooter and intake
-      return shooter
+    /**
+     * Runs a sequence to score a note in the speaker
+     * @return
+     */
+    public SequentialCommandGroup scoreInSpeakerSequentialGroup() {
+      return Shooter
         .startShootingNoteCommand()
         .andThen(new WaitCommand(0.75))
-        .andThen(intake.ejectNoteCommand())
+        .andThen(Intake.ejectNoteCommand())
         .andThen(new WaitCommand(0.75))
-        .andThen(shooter.stopMotorsCommand())
-        .andThen(intake.stopRollersCommand());
+        .andThen(Shooter.stopMotorsCommand())
+        .andThen(Intake.stopRollersCommand());
     }
 
-    public static SequentialCommandGroup loadNoteForAmp(Shooter shooter, Intake intake) {
+    /**
+     * Runs a sequence to load a note into the shooter for scoring in the amp
+     * @return
+     */
+    public SequentialCommandGroup loadNoteForAmp() {
       return Commands
-        .runOnce(() -> intake.runIntakeRollers(-0.6)) // Eject from the intake
-        .alongWith(Commands.runOnce(() -> shooter.runShooter(0.10))) // Load into the shooter
-        .andThen(new WaitUntilCommand(shooter::isNoteLoaded))
+        .runOnce(() -> Intake.runIntakeRollers(-0.6)) // Eject from the intake
+        .alongWith(Commands.runOnce(() -> Shooter.runShooter(0.10))) // Load into the shooter
+        .andThen(new WaitUntilCommand(Shooter::isNoteLoaded))
         .withTimeout(1) // Wait until the note is loaded
         .andThen(new WaitCommand(0.075)) // Give the note time to get into the shooter
-        .andThen(stopShooterAndIntakeCommand(shooter, intake)); // Stop both the shooter and intake
+        .andThen(stopShooterAndIntakeCommand()); // Stop both the shooter and intake
     }
 
-    public static SequentialCommandGroup stopShooterAndIntakeCommand(Shooter shooter, Intake intake) {
-      return shooter.stopMotorsCommand().andThen(intake.stopRollersCommand());
+    /**
+     * Runs a sequence to stop both the shooter and intake
+     * @return
+     */
+    public SequentialCommandGroup stopShooterAndIntakeCommand() {
+      return Shooter.stopMotorsCommand().andThen(Intake.stopRollersCommand());
     }
 
-    public static Map<String, Command> getNamedCommands(Shooter shooter, Intake intake) {
+    /**
+     * Runs a sequence to update the robot's pose estimation from the Limelight
+     * @return
+     */
+    public Command updatePoseEstimation() {
+      return Commands.run(() -> {
+        if (Limelight.getApriltagId() != -1) {
+          var robotPose = Limelight.getRobotPose(Alliance.Blue);
+          var cameraLatencyMs = Limelight.getTotalLatencyMs();
+
+          Drivetrain.feedRobotPoseEstimation(robotPose.toPose2d(), cameraLatencyMs);
+        }
+      });
+    }
+
+    /**
+     * Returns a map of named commands that use multiple subsystems
+     * @return
+     */
+    public Map<String, Command> getNamedCommands() {
       return Map.of(
         "Score_In_Speaker",
-        CombinedCommands.scoreInSpeakerSequentialGroup(shooter, intake),
+        scoreInSpeakerSequentialGroup(),
         "Load_Note_For_Amp",
-        CombinedCommands.loadNoteForAmp(shooter, intake),
+        loadNoteForAmp(),
         "Stop_Shooter_And_Intake",
-        CombinedCommands.stopShooterAndIntakeCommand(shooter, intake)
+        stopShooterAndIntakeCommand(),
+        "Update_Pose_Estimation",
+        updatePoseEstimation()
       );
     }
   }
