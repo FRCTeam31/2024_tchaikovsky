@@ -117,7 +117,7 @@ public class RobotConfig {
 
     config.Climbers = new ClimbersConfig(18, 17, true, true, 0.5, -1, 2, 3, 8, 9, 10, 11);
 
-    config.LimelightPose = new Pose3d(0.251079, 0.0583184, 0.0180594, new Rotation3d(0, 65, 0)); // TODO: Find out if this x Y and Z is correct for the orientation of the robot
+    config.LimelightPose = new Pose3d(-0.2594356, 0, 0.5592318, new Rotation3d(0, 65, 180));
 
     config.LEDs = new LEDConfig(Port.kUSB, 1);
 

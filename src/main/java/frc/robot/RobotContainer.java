@@ -172,7 +172,6 @@ public class RobotContainer {
             if (targetedAprilTag != -1 && Limelight.tagIdIsASpeakerTarget(targetedAprilTag)) {
               // Calculate the target heading
               var horizontalOffset = Limelight.getHorizontalOffsetFromTarget().getDegrees();
-              horizontalOffset += -2; // Adjust for offset from camera to shooter center
               var robotHeading = Drivetrain.getHeading();
               var targetHeading = robotHeading + horizontalOffset;
 
