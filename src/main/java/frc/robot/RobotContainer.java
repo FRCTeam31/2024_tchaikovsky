@@ -9,7 +9,6 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -26,13 +25,10 @@ import frc.robot.subsystems.Climbers;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.LEDs;
-import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Shooter;
 import java.util.Map;
 import prime.control.Controls;
 import prime.control.HolonomicControlStyle;
-import prime.control.LEDs.Color;
-import prime.control.LEDs.LEDSection;
 import prime.control.PrimeXboxController;
 
 public class RobotContainer {
@@ -55,7 +51,6 @@ public class RobotContainer {
   public Shooter Shooter;
   public Intake Intake;
   public Climbers Climbers;
-  public Limelight Limelight;
   public LEDs LEDs;
   public Compressor Compressor;
 
@@ -90,17 +85,17 @@ public class RobotContainer {
 
       // Create new subsystems
       LEDs = new LEDs(m_config.LEDs);
-      Drivetrain = new Drivetrain(m_config);
+      Drivetrain = new Drivetrain(m_config, LEDs);
       Shooter = new Shooter(m_config.Shooter, LEDs);
       Intake = new Intake(m_config.Intake);
       Climbers = new Climbers(m_config.Climbers);
-      Limelight = new Limelight(m_config.LimelightPose);
       Compressor = new Compressor(m_config.PneumaticsModuleId, PneumaticsModuleType.REVPH);
       Compressor.enableDigital();
 
       m_combinedCommands = new CombinedCommands();
 
       // Register the named commands from each subsystem that may be used in PathPlanner
+      NamedCommands.registerCommands(Drivetrain.getNamedCommands());
       NamedCommands.registerCommands(Intake.getNamedCommands());
       NamedCommands.registerCommands(Shooter.getNamedCommands());
       NamedCommands.registerCommands(m_combinedCommands.getNamedCommands()); // Register the combined named commands that use multiple subsystems
@@ -169,38 +164,10 @@ public class RobotContainer {
     );
 
     // Pose estimation from Limelight, if a target is in-view
-    m_driverController.back().onTrue(m_combinedCommands.updatePoseEstimation());
+    m_driverController.back().onTrue(Drivetrain.estimatePoseCommand());
 
     // While holding b, auto-aim the robot to the apriltag target using snap-to
-    m_driverController
-      .leftBumper()
-      .whileTrue(
-        Commands.run(() -> {
-          var targetedAprilTag = Limelight.getApriltagId();
-
-          // If targetedAprilTag is in validTargets, snap to its offset
-          if (targetedAprilTag != -1 && Limelight.tagIdIsASpeakerTarget(targetedAprilTag)) {
-            // Calculate the target heading
-            var horizontalOffset = Limelight.getHorizontalOffsetFromTarget().getDegrees();
-            var robotHeading = Drivetrain.getHeading();
-            var targetHeading = robotHeading + horizontalOffset;
-
-            // Set the drivetrain to snap to the target heading
-            Drivetrain.setSnapToSetpoint(targetHeading);
-
-            // If the target is within 5 degrees, set the LEDs to indicate shoot, otherwise quickly pulse red
-            if (Math.abs(horizontalOffset) < 5) {
-              LEDs.setStripTemporary(LEDSection.solidColor(Color.GREEN));
-            } else {
-              LEDs.setStripTemporary(LEDSection.pulseColor(Color.RED, 100));
-            }
-          } else {
-            Drivetrain.setSnapToGyroEnabled(false);
-            LEDs.restoreLastStripState();
-          }
-        })
-      )
-      .onFalse(Drivetrain.disableSnapToCommand().andThen(Commands.runOnce(() -> LEDs.restoreLastStripState())));
+    m_driverController.leftBumper().onTrue(Drivetrain.enableLockOn()).onFalse(Drivetrain.disableLockOn());
 
     // Controls for Snap-To with field-relative setpoints
     m_driverController.x().onTrue(Drivetrain.disableSnapToCommand());
@@ -252,16 +219,7 @@ public class RobotContainer {
     // Combined shooter and intake commands ===========
     m_operatorController // score in speaker
       .b()
-      .onTrue(
-        Shooter
-          // .scoreInSpeakerCommand()
-          .startShootingNoteCommand()
-          .andThen(new WaitCommand(0.75))
-          .andThen(Intake.ejectNoteCommand())
-          .andThen(new WaitCommand(0.75))
-          .andThen(Shooter.stopMotorsCommand())
-          .andThen(Intake.stopRollersCommand())
-      );
+      .onTrue(m_combinedCommands.scoreInSpeakerSequentialGroup());
 
     m_operatorController // Run sequence to load a note into the shooter for scoring in the amp
       .y()
@@ -281,7 +239,8 @@ public class RobotContainer {
         .andThen(Intake.ejectNoteCommand())
         .andThen(new WaitCommand(0.75))
         .andThen(Shooter.stopMotorsCommand())
-        .andThen(Intake.stopRollersCommand());
+        .andThen(Intake.stopRollersCommand())
+        .andThen(Drivetrain.estimatePoseCommand());
     }
 
     /**
@@ -307,21 +266,6 @@ public class RobotContainer {
     }
 
     /**
-     * Runs a sequence to update the robot's pose estimation from the Limelight
-     * @return
-     */
-    public Command updatePoseEstimation() {
-      return Commands.run(() -> {
-        if (Limelight.getApriltagId() != -1) {
-          var robotPose = Limelight.getRobotPose(Alliance.Blue);
-          var cameraLatencyMs = Limelight.getTotalLatencyMs();
-
-          Drivetrain.feedRobotPoseEstimation(robotPose.toPose2d(), cameraLatencyMs);
-        }
-      });
-    }
-
-    /**
      * Returns a map of named commands that use multiple subsystems
      * @return
      */
@@ -332,9 +276,7 @@ public class RobotContainer {
         "Load_Note_For_Amp",
         loadNoteForAmp(),
         "Stop_Shooter_And_Intake",
-        stopShooterAndIntakeCommand(),
-        "Update_Pose_Estimation",
-        updatePoseEstimation()
+        stopShooterAndIntakeCommand()
       );
     }
   }

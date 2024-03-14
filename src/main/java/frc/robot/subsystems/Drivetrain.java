@@ -13,6 +13,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -25,9 +26,12 @@ import frc.robot.Robot;
 import frc.robot.config.RobotConfig;
 import java.util.Map;
 import prime.control.Controls;
+import prime.control.LEDs.Color;
+import prime.control.LEDs.LEDSection;
 import prime.control.SwerveControlSuppliers;
+import prime.movers.IPlannable;
 
-public class Drivetrain extends SubsystemBase implements AutoCloseable {
+public class Drivetrain extends SubsystemBase implements IPlannable {
 
   // Container for robot configuration
   private RobotConfig m_config;
@@ -60,20 +64,26 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
   private SwerveModule m_frontLeftModule, m_frontRightModule, m_rearLeftModule, m_rearRightModule;
 
   // Kinematics, odometry, and field widget
+  public Limelight Limelight;
   private SwerveDriveKinematics m_kinematics;
   private SwerveDrivePoseEstimator m_poseEstimator;
   public Field2d m_fieldWidget;
 
-  // Snap to Gyro Angle PID
+  // Snap to Gyro Angle PID & Lock-on
+  public boolean m_lockOnEnabled = false;
   public boolean m_snapToGyroEnabled = false;
   public PIDController m_snapToRotationController;
+
+  private LEDs m_leds;
 
   /**
    * Creates a new Drivetrain.
    */
-  public Drivetrain(RobotConfig config) {
+  public Drivetrain(RobotConfig config, LEDs leds) {
     setName("Drivetrain");
     m_config = config;
+
+    m_leds = leds;
 
     // Create gyro
     m_gyro = new Pigeon2(config.Drivetrain.PigeonId);
@@ -90,6 +100,7 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
       new SwerveModule(m_config.RearRightSwerveModule, m_config.Drivetrain.DrivePID, m_config.Drivetrain.SteeringPID);
 
     // Create kinematics and odometry
+    Limelight = new Limelight(m_config.LimelightPose);
     m_kinematics =
       new SwerveDriveKinematics(
         m_config.FrontLeftSwerveModule.getModuleLocation(),
@@ -97,7 +108,6 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
         m_config.RearLeftSwerveModule.getModuleLocation(),
         m_config.RearRightSwerveModule.getModuleLocation()
       );
-    // m_odometry = new SwerveDriveOdometry(m_kinematics, m_gyro.getRotation2d(), getModulePositions());
     m_poseEstimator =
       new SwerveDrivePoseEstimator(m_kinematics, m_gyro.getRotation2d(), getModulePositions(), new Pose2d());
 
@@ -145,8 +155,8 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
     double inputRotationRadiansPS,
     boolean fieldRelative
   ) {
+    // Build chassis speeds
     ChassisSpeeds desiredChassisSpeeds;
-
     if (fieldRelative) {
       if (Robot.onBlueAlliance()) {
         // Drive the robot with the driver-relative inputs, converting them to field-relative
@@ -171,15 +181,6 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
       desiredChassisSpeeds = new ChassisSpeeds(-inputForwardMPS, -inputStrafeMPS, inputRotationRadiansPS);
     }
 
-    // If we're using a snap-to angle, calculate and set the rotational speed to reach the desired angle
-    if (m_snapToGyroEnabled) {
-      d_snapAngle.setDouble(m_snapToRotationController.getSetpoint());
-      desiredChassisSpeeds.omegaRadiansPerSecond =
-        m_snapToRotationController.calculate(MathUtil.angleModulus(m_gyro.getRotation2d().getRadians()));
-    } else {
-      d_snapAngle.setDouble(0);
-    }
-
     drive(desiredChassisSpeeds);
   }
 
@@ -188,6 +189,42 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
    * @param desiredChassisSpeeds
    */
   public void drive(ChassisSpeeds desiredChassisSpeeds) {
+    // Process lock-on
+    if (m_lockOnEnabled) {
+      var targetedAprilTag = Limelight.getApriltagId();
+
+      // If targetedAprilTag is in validTargets, snap to its offset
+      if (targetedAprilTag != -1 && Limelight.tagIdIsASpeakerTarget(targetedAprilTag)) {
+        // Calculate the target heading
+        var horizontalOffset = Limelight.getHorizontalOffsetFromTarget().getDegrees();
+        var robotHeading = getHeading();
+        var targetHeading = robotHeading + horizontalOffset;
+
+        // Set the drivetrain to snap to the target heading
+        setSnapToSetpoint(targetHeading);
+
+        // If the target is within 5 degrees, set the LEDs to indicate shoot, otherwise
+        // quickly pulse red, indicating that the robot is not locked on yet
+        if (Math.abs(horizontalOffset) < 5) {
+          m_leds.setStripTemporary(LEDSection.solidColor(Color.GREEN));
+        } else {
+          m_leds.setStripTemporary(LEDSection.pulseColor(Color.RED, 100));
+        }
+      } else {
+        setSnapToGyroEnabled(false);
+        m_leds.restoreLastStripState();
+      }
+    }
+
+    // If we're snapping the angle, calculate and set the rotational speed to reach the setpoint
+    if (m_snapToGyroEnabled) {
+      d_snapAngle.setDouble(m_snapToRotationController.getSetpoint());
+      desiredChassisSpeeds.omegaRadiansPerSecond =
+        m_snapToRotationController.calculate(MathUtil.angleModulus(m_gyro.getRotation2d().getRadians()));
+    } else {
+      d_snapAngle.setDouble(0);
+    }
+
     // Correct drift
     desiredChassisSpeeds = ChassisSpeeds.discretize(desiredChassisSpeeds, 0.02);
 
@@ -359,6 +396,55 @@ public class Drivetrain extends SubsystemBase implements AutoCloseable {
    */
   public Command disableSnapToCommand() {
     return Commands.runOnce(() -> setSnapToGyroEnabled(false));
+  }
+
+  /**
+   * Enables lock-on control
+   * @return
+   */
+  public Command enableLockOn() {
+    return Commands.runOnce(() -> {
+      m_lockOnEnabled = true;
+      m_leds.setStripTemporary(LEDSection.pulseColor(Color.RED, 100));
+    });
+  }
+
+  /**
+   * Disables lock-on control
+   * @return
+   */
+  public Command disableLockOn() {
+    return Commands.runOnce(() -> {
+      m_lockOnEnabled = false;
+      m_snapToGyroEnabled = false;
+      m_leds.restoreLastStripState();
+    });
+  }
+
+  /**
+   * Feeds the robot's pose from the Limelight into the pose estimator, if a target is detected
+   * @return
+   */
+  public Command estimatePoseCommand() {
+    return Commands.runOnce(() -> {
+      if (Limelight.getApriltagId() != -1) {
+        var robotPose = Limelight.getRobotPose(Alliance.Blue);
+        var cameraLatencyMs = Limelight.getTotalLatencyMs();
+
+        feedRobotPoseEstimation(robotPose.toPose2d(), cameraLatencyMs);
+      }
+    });
+  }
+
+  public Map<String, Command> getNamedCommands() {
+    return Map.of(
+      "Estimate_Pose",
+      estimatePoseCommand(),
+      "Enable_Lock_On",
+      enableLockOn(),
+      "Disable_Lock_On",
+      disableLockOn()
+    );
   }
 
   //#endregion
