@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.3,
-        "y": 5.5
+        "x": 15.27,
+        "y": 5.52
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.8636772408679951,
-        "y": 6.34186637742645
+        "x": 14.852115367792907,
+        "y": 5.52
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.5385405725766406,
-        "y": 6.794856832956909
+        "x": 14.186866571931343,
+        "y": 5.52
       },
       "prevControl": {
-        "x": 1.7989643186493578,
-        "y": 6.2124405329891745
+        "x": 14.485113809784252,
+        "y": 5.52
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,7 +32,7 @@
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Intake Down",
+      "name": "Intake Out",
       "waypointRelativePos": 0,
       "command": {
         "type": "sequential",
@@ -50,7 +50,7 @@
     },
     {
       "name": "Intake Note",
-      "waypointRelativePos": 0.6,
+      "waypointRelativePos": 0.7,
       "command": {
         "type": "sequential",
         "data": {
@@ -74,13 +74,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -58.172553423326846,
-    "rotateFast": true
+    "rotation": 90.0,
+    "rotateFast": false
   },
   "reversed": false,
-  "folder": "Miscellaneous",
+  "folder": "Center Auto Paths",
   "previewStartingState": {
-    "rotation": 0.05537491902364609,
+    "rotation": 90.0,
     "velocity": 0
   },
   "useDefaultConstraints": false

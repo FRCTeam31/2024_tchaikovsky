@@ -15,18 +15,30 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public class Limelight extends SubsystemBase {
+public class Limelight extends SubsystemBase implements AutoCloseable {
 
   private NetworkTable m_limelightTable;
 
   private ShuffleboardTab d_driverTab = Shuffleboard.getTab("Driver");
   private GenericEntry d_tidEntry = d_driverTab
-    .add("Primary AprilTag #", 0)
+    .add("Targeted APTag", 0)
     .withWidget(BuiltInWidgets.kTextView)
-    .withPosition(12, 3)
-    .withSize(1, 1)
+    .withPosition(11, 3)
+    .withSize(2, 1)
     .getEntry();
+  private GenericEntry d_txEntry = d_driverTab
+    .add("Target X Offset", 0)
+    .withWidget(BuiltInWidgets.kDial)
+    .withProperties(Map.of("Min", -29.8, "Max", 29.8))
+    .withPosition(11, 4)
+    .withSize(2, 3)
+    .getEntry();
+
+  private ExecutorService m_executorService = Executors.newSingleThreadExecutor();
 
   /**
    * Creates a new Limelight subsystem and sets the camera's pose in the coordinate system of the robot.
@@ -34,7 +46,7 @@ public class Limelight extends SubsystemBase {
    */
   public Limelight(Pose3d cameraPose) {
     m_limelightTable = NetworkTableInstance.getDefault().getTable("limelight");
-    setCameraPose(cameraPose);
+    // setCameraPose(cameraPose);
   }
 
   //#region Basic Targeting Data
@@ -74,6 +86,14 @@ public class Limelight extends SubsystemBase {
     return (long) m_limelightTable.getEntry("cl").getDouble(0.0);
   }
 
+  /**
+   * The total latency of the capture and pipeline processing in milliseconds.
+   * @return
+   */
+  public long getTotalLatencyMs() {
+    return getPipelineLatencyMs() + getCapturePipelineLatencyMs();
+  }
+
   //#endregion
 
   //#region AprilTag and 3D Data
@@ -82,7 +102,7 @@ public class Limelight extends SubsystemBase {
    * ID of the primary in-view AprilTag
    */
   public int getApriltagId() {
-    return (int) m_limelightTable.getEntry("tid").getDouble(0.0);
+    return (int) m_limelightTable.getEntry("tid").getDouble(-1);
   }
 
   /**
@@ -172,6 +192,34 @@ public class Limelight extends SubsystemBase {
   }
 
   /**
+   * Forces the LED to blink a specified number of times, then returns to pipeline control.
+   */
+  public void blinkLed(int blinkCount) {
+    m_executorService.submit(() -> {
+      // Blink the LED X times with 100ms on, 200ms off for each blink
+      for (int i = 0; i < blinkCount; i++) {
+        m_limelightTable.getEntry("ledMode").setNumber(3);
+
+        try {
+          Thread.sleep(100);
+        } catch (Exception e) {
+          Thread.currentThread().interrupt();
+        }
+
+        m_limelightTable.getEntry("ledMode").setNumber(1);
+        try {
+          Thread.sleep(200);
+        } catch (Exception e) {
+          Thread.currentThread().interrupt();
+        }
+      }
+
+      // Then return to pipeline control
+      setLedMode(0);
+    });
+  }
+
+  /**
    * Sets limelight’s operation mode.
    *    0 = Vision processor.
    *    1 = Driver Camera (Increases exposure, disables vision processing).
@@ -228,6 +276,11 @@ public class Limelight extends SubsystemBase {
 
   public void periodic() {
     d_tidEntry.setDouble(getApriltagId());
+    d_txEntry.setDouble(getHorizontalOffsetFromTarget().getDegrees());
+  }
+
+  public boolean tagIdIsASpeakerTarget(int apriltagId) {
+    return apriltagId == 4 || apriltagId == 7;
   }
 
   private Pose3d toPose3d(double[] poseData) {
@@ -245,5 +298,9 @@ public class Limelight extends SubsystemBase {
         Units.degreesToRadians(poseData[5])
       )
     );
+  }
+
+  public void close() {
+    m_executorService.shutdown();
   }
 }

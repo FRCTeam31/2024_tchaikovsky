@@ -20,6 +20,7 @@ public class RobotConfig {
   public ClimbersConfig Climbers;
   public Pose3d LimelightPose;
   public LEDConfig LEDs;
+  public int PneumaticsModuleId;
 
   public RobotConfig() {
     Name = "[none]";
@@ -41,17 +42,15 @@ public class RobotConfig {
         0.67945,
         Math.PI * 0.7778174593052, // Wheelbase Circumference
         1,
-        Units.feetToMeters(17), // Max Speed MPS
-        Units.feetToMeters(10), // Max Acceleration MPS^2
-        Math.PI * 2, // Max Angular Speed in Radians
+        Units.feetToMeters(20), // Max Speed MPS
+        Units.feetToMeters(15), // Max Acceleration MPS^2
+        Math.PI * 3, // Max Angular Speed in Radians
         0.5,
-        false,
         new PrimePIDConstants(0.019, 0, 0, 0, 0.091, 0, 0.05), // Drive PID
         new PrimePIDConstants(2, 0, 0), // Steering PID
-        new PrimePIDConstants(4, 0, 0), // SnapTo PID,
+        new PrimePIDConstants(4, 0, 0), // SnapTo PID
         new PrimePIDConstants(1.75, 0, 0), // Pathing Translation PID
-        // new PrimePIDConstants(0.0425, 0, 0.004)
-        new PrimePIDConstants(0.5, 0, 0), // Pathing Rotation PID$
+        new PrimePIDConstants(0.5, 0, 0), // Pathing Rotation PID
         0.15,
         0.5
       );
@@ -62,12 +61,12 @@ public class RobotConfig {
         2,
         3,
         4,
-        0.164551,
+        0.164551 - 0.25,
         false,
         true,
         new Translation2d(-(config.Drivetrain.TrackWidthMeters / 2), config.Drivetrain.WheelBaseMeters / 2),
         6.75,
-        0.1
+        0.1016
       );
 
     config.FrontRightSwerveModule =
@@ -76,12 +75,12 @@ public class RobotConfig {
         5,
         6,
         7,
-        0.350098,
+        0.350098 - 0.25,
         true,
         true,
         new Translation2d(config.Drivetrain.TrackWidthMeters / 2, config.Drivetrain.WheelBaseMeters / 2),
         6.75,
-        0.1
+        0.1016
       );
 
     config.RearRightSwerveModule =
@@ -90,12 +89,12 @@ public class RobotConfig {
         8,
         9,
         10,
-        0.717773,
+        0.717773 - 0.25,
         true,
         true,
         new Translation2d(config.Drivetrain.TrackWidthMeters / 2, -(config.Drivetrain.WheelBaseMeters / 2)),
         6.75,
-        0.1
+        0.1016
       );
 
     config.RearLeftSwerveModule =
@@ -104,23 +103,25 @@ public class RobotConfig {
         11,
         12,
         13,
-        0.181152,
+        0.181152 - 0.25,
         false,
         true,
         new Translation2d(-(config.Drivetrain.TrackWidthMeters / 2), -(config.Drivetrain.WheelBaseMeters / 2)),
         6.75,
-        0.1
+        0.1016
       );
 
     config.Intake = new IntakeConfig(16, 15, 14, false, false, true, new PrimePIDConstants(0.05, 0, 0), 50, 4, 5);
 
-    config.Shooter = new ShooterConfig(20, 19, false, false, 21, 0, 22, 1, 7, 0, 0.85);
+    config.Shooter = new ShooterConfig(20, 19, false, false, 7, 6, 7);
 
-    config.Climbers = new ClimbersConfig(18, 17, true, true, 0.5, -1, 2, 3, 0, 1, 180, 150);
+    config.Climbers = new ClimbersConfig(18, 17, true, true, 0.5, -1, 2, 3, 8, 9, 10, 11);
 
-    config.LimelightPose = new Pose3d(0.251079, 0.0583184, 0.0180594, new Rotation3d(0, 65, 0)); // TODO: Find out if this x Y and Z is correct for the orientation of the robot
+    config.LimelightPose = new Pose3d(-0.2594356, 0, 0.5592318, new Rotation3d(0, 65, 180));
 
-    config.LEDs = new LEDConfig(Port.kUSB);
+    config.LEDs = new LEDConfig(Port.kUSB, 1);
+
+    config.PneumaticsModuleId = 30;
 
     return config;
   }

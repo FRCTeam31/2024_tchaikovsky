@@ -18,6 +18,11 @@ import prime.control.LEDs.LEDSection;
 
 public class Robot extends TimedRobot {
 
+  public enum Side {
+    kLeft,
+    kRight,
+  }
+
   private RobotContainer m_robotContainer;
   private Command m_autonomousCommand;
 
@@ -27,13 +32,13 @@ public class Robot extends TimedRobot {
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     // Set LED startup pattern
-    m_robotContainer.LEDs.setSection(0, LEDSection.pulseColor(Color.ORANGE, 100));
+    m_robotContainer.LEDs.setStripAndSave(LEDSection.pulseColor(Color.WHITE, 100));
   }
 
   @Override
   public void disabledInit() {
     // Set disabled LED pattern
-    m_robotContainer.LEDs.setSection(0, LEDSection.pulseColor(onRedAlliance() ? Color.RED : Color.BLUE, 100));
+    m_robotContainer.LEDs.setStripAndSave(LEDSection.pulseColor(onRedAlliance() ? Color.RED : Color.BLUE, 100));
   }
 
   /**
@@ -53,7 +58,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     // Set auto LED pattern
-    m_robotContainer.LEDs.setSection(0, LEDSection.blinkColor(onRedAlliance() ? Color.RED : Color.BLUE, 100));
+    m_robotContainer.LEDs.setStripAndSave(LEDSection.blinkColor(onRedAlliance() ? Color.RED : Color.BLUE, 100));
 
     var autoCommand = m_robotContainer.getAutonomousCommand();
     m_autonomousCommand = autoCommand; // Save the command for cancelling later if needed
@@ -89,7 +94,7 @@ public class Robot extends TimedRobot {
     }
 
     // Set teleop LED pattern
-    m_robotContainer.LEDs.setSection(0, LEDSection.raceColor(onRedAlliance() ? Color.RED : Color.BLUE, 25, true));
+    m_robotContainer.LEDs.setStripAndSave(LEDSection.raceColor(onRedAlliance() ? Color.RED : Color.BLUE, 100, true));
   }
 
   /**
@@ -98,8 +103,6 @@ public class Robot extends TimedRobot {
   @Override
   public void testInit() {
     CommandScheduler.getInstance().cancelAll();
-
-    m_robotContainer.configureTestControls();
 
     // Start the data logger
     DataLogManager.start();

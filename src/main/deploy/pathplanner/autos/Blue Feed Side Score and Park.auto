@@ -5,7 +5,7 @@
       "x": 0.8,
       "y": 4.6
     },
-    "rotation": -60.0
+    "rotation": -150.0
   },
   "command": {
     "type": "sequential",
@@ -20,24 +20,12 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Speaker to Feed Side Note"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Feed Side Note to Speaker"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Score_In_Speaker"
+            "pathName": "Blue Feed Side Score and Park"
           }
         }
       ]
     }
   },
-  "folder": "Feed Side Speaker Autos",
+  "folder": "Blue Feed Side Speaker Autos",
   "choreoAuto": false
 }

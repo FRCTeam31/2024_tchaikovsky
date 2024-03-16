@@ -6,6 +6,7 @@ public class LEDSection {
   public LEDPattern pattern;
   public byte speed;
   public boolean directionReversed;
+  private static final int MAX_FRAME_SPEED = 25;
 
   public LEDSection(int r, int g, int b, LEDPattern pattern, int speed, boolean reversed) {
     this.color = new Color((byte) r, (byte) g, (byte) b);
@@ -42,14 +43,23 @@ public class LEDSection {
   }
 
   public static LEDSection pulseColor(Color color, int speed) {
-    return new LEDSection(color, LEDPattern.Pulse, speed, false);
+    return new LEDSection(color, LEDPattern.Pulse, Math.max(MAX_FRAME_SPEED, speed), false);
   }
 
   public static LEDSection blinkColor(Color color, int speed) {
-    return new LEDSection(color, LEDPattern.Blink, speed, false);
+    return new LEDSection(color, LEDPattern.Blink, Math.max(MAX_FRAME_SPEED, speed), false);
   }
 
   public static LEDSection raceColor(Color color, int speed, boolean reversed) {
-    return new LEDSection(color, LEDPattern.Race, speed, reversed);
+    return new LEDSection(color, LEDPattern.Race, Math.max(MAX_FRAME_SPEED, speed), reversed);
+  }
+
+  public boolean isTheSameAs(LEDSection other) {
+    return (
+      this.color.equals(other.color) &&
+      this.pattern == other.pattern &&
+      this.speed == other.speed &&
+      this.directionReversed == other.directionReversed
+    );
   }
 }
