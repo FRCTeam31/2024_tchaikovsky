@@ -44,7 +44,7 @@ public class RobotConfig {
         1,
         Units.feetToMeters(20), // Max Speed MPS
         Units.feetToMeters(15), // Max Acceleration MPS^2
-        Math.PI * 2, // Max Angular Speed in Radians
+        Math.PI * 3, // Max Angular Speed in Radians
         0.5,
         new PrimePIDConstants(0.019, 0, 0, 0, 0.091, 0, 0.05), // Drive PID
         new PrimePIDConstants(2, 0, 0), // Steering PID
