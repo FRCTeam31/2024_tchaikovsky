@@ -4,17 +4,13 @@ import java.util.function.DoubleSupplier;
 
 public class SwerveControlSuppliers {
 
-  public DoubleSupplier Forward;
-  public DoubleSupplier Strafe;
-  public DoubleSupplier Rotation;
+  public DoubleSupplier X;
+  public DoubleSupplier Y;
+  public DoubleSupplier Z;
 
-  public SwerveControlSuppliers(
-    DoubleSupplier forwardSupplier,
-    DoubleSupplier strafeSupplier,
-    DoubleSupplier rotationSupplier
-  ) {
-    Forward = forwardSupplier;
-    Strafe = strafeSupplier;
-    Rotation = rotationSupplier;
+  public SwerveControlSuppliers(DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier zSupplier) {
+    X = xSupplier;
+    Y = ySupplier;
+    Z = zSupplier;
   }
 }

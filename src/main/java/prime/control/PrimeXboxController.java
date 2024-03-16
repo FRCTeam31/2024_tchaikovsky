@@ -15,7 +15,7 @@ public class PrimeXboxController extends CommandXboxController {
    * @param curveWeight (0-1)
    */
   public DoubleSupplier getLeftStickYSupplier(double deadband, double curveWeight) {
-    return () -> Controls.cubicScaledDeadband(getRawAxis(Controls.LEFT_STICK_Y), deadband, curveWeight);
+    return () -> -Controls.cubicScaledDeadband(getRawAxis(Controls.LEFT_STICK_Y), deadband, curveWeight);
   }
 
   /**
@@ -23,7 +23,7 @@ public class PrimeXboxController extends CommandXboxController {
    * @param deadband (0-1)
    */
   public DoubleSupplier getLeftStickYSupplier(double deadband) {
-    return () -> Controls.linearScaledDeadband(getRawAxis(Controls.LEFT_STICK_Y), deadband);
+    return () -> -Controls.linearScaledDeadband(getRawAxis(Controls.LEFT_STICK_Y), deadband);
   }
 
   /**
@@ -49,7 +49,7 @@ public class PrimeXboxController extends CommandXboxController {
    * @param curveWeight (0-1)
    */
   public DoubleSupplier getRightStickYSupplier(double deadband, double curveWeight) {
-    return () -> Controls.cubicScaledDeadband(getRawAxis(Controls.RIGHT_STICK_Y), deadband, curveWeight);
+    return () -> -Controls.cubicScaledDeadband(getRawAxis(Controls.RIGHT_STICK_Y), deadband, curveWeight);
   }
 
   /**
@@ -57,7 +57,7 @@ public class PrimeXboxController extends CommandXboxController {
    * @param deadband (0-1)
    */
   public DoubleSupplier getRightStickYSupplier(double deadband) {
-    return () -> Controls.linearScaledDeadband(getRawAxis(Controls.RIGHT_STICK_Y), deadband);
+    return () -> -Controls.linearScaledDeadband(getRawAxis(Controls.RIGHT_STICK_Y), deadband);
   }
 
   /**
@@ -102,14 +102,14 @@ public class PrimeXboxController extends CommandXboxController {
       default:
       case Standard:
         return new SwerveControlSuppliers(
-          getLeftStickYSupplier(driveDeadband, curveWeight),
           getLeftStickXSupplier(driveDeadband, curveWeight),
+          getLeftStickYSupplier(driveDeadband, curveWeight),
           getTriggerSupplier(driveDeadband, curveWeight)
         );
       case Drone:
         return new SwerveControlSuppliers(
-          getRightStickYSupplier(driveDeadband, curveWeight),
           getRightStickXSupplier(driveDeadband, curveWeight),
+          getRightStickYSupplier(driveDeadband, curveWeight),
           getLeftStickXSupplier(driveDeadband, curveWeight)
         );
     }

@@ -55,6 +55,9 @@ public class RobotConfig {
         0.5
       );
 
+    var wheelLocationAbsoluteX = config.Drivetrain.TrackWidthMeters / 2;
+    var wheelLocationAbsoluteY = config.Drivetrain.WheelBaseMeters / 2;
+
     config.FrontLeftSwerveModule =
       new SwerveModuleConfig(
         "Front-Left",
@@ -64,7 +67,7 @@ public class RobotConfig {
         0.407,
         true,
         true,
-        new Translation2d(-(config.Drivetrain.TrackWidthMeters / 2), config.Drivetrain.WheelBaseMeters / 2),
+        new Translation2d(wheelLocationAbsoluteX, wheelLocationAbsoluteY),
         6.75,
         0.1016
       );
@@ -78,7 +81,7 @@ public class RobotConfig {
         0.105,
         true,
         true,
-        new Translation2d(config.Drivetrain.TrackWidthMeters / 2, config.Drivetrain.WheelBaseMeters / 2),
+        new Translation2d(wheelLocationAbsoluteX, -wheelLocationAbsoluteY),
         6.75,
         0.1016
       );
@@ -92,7 +95,7 @@ public class RobotConfig {
         0.459,
         true,
         true,
-        new Translation2d(config.Drivetrain.TrackWidthMeters / 2, -(config.Drivetrain.WheelBaseMeters / 2)),
+        new Translation2d(-(wheelLocationAbsoluteX), -(wheelLocationAbsoluteY)),
         6.75,
         0.1016
       );
@@ -106,7 +109,7 @@ public class RobotConfig {
         0.421,
         true,
         true,
-        new Translation2d(-(config.Drivetrain.TrackWidthMeters / 2), -(config.Drivetrain.WheelBaseMeters / 2)),
+        new Translation2d(-wheelLocationAbsoluteX, wheelLocationAbsoluteY),
         6.75,
         0.1016
       );

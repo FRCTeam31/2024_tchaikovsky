@@ -161,8 +161,7 @@ public class RobotContainer {
           HolonomicControlStyle.Drone,
           m_config.Drivetrain.DriveDeadband,
           m_config.Drivetrain.DeadbandCurveWeight
-        ),
-        true
+        )
       )
     );
 

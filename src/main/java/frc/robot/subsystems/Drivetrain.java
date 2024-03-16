@@ -26,7 +26,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.config.RobotConfig;
 import java.util.Map;
-import prime.control.Controls;
 import prime.control.LEDs.Color;
 import prime.control.LEDs.LEDSection;
 import prime.control.SwerveControlSuppliers;
@@ -145,42 +144,23 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
 
   /**
    * Drives the robot using cartesian speeds, scaled to the max speed of the robot in meters per second
-   * @param inputStrafeMPS The sideways motion of the chassis in meters per second
-   * @param inputForwardMPS The forward motion of the chassis in meters per second
+   * @param inputYMPS The sideways motion of the chassis in meters per second
+   * @param inputXMPS The forward motion of the chassis in meters per second
    * @param inputRotationRadiansPS The rotational motion of the chassis in radians per second
-   * @param fieldRelative Whether or not the input is field relative or robot relative
    */
-  public void driveFromCartesianSpeeds(
-    double inputStrafeMPS,
-    double inputForwardMPS,
-    double inputRotationRadiansPS,
-    boolean fieldRelative
-  ) {
+  public void driveFieldRelative(double inputXMPS, double inputYMPS, double inputRotationRadiansPS) {
     // Build chassis speeds
     ChassisSpeeds desiredChassisSpeeds;
-    if (fieldRelative) {
-      if (Robot.onBlueAlliance()) {
-        // Drive the robot with the driver-relative inputs, converting them to field-relative
-        desiredChassisSpeeds =
-          ChassisSpeeds.fromFieldRelativeSpeeds(
-            inputStrafeMPS,
-            inputForwardMPS,
-            -inputRotationRadiansPS, // Rotation is always counter-clockwise
-            m_gyro.getRotation2d()
-          );
-      } else {
-        desiredChassisSpeeds =
-          ChassisSpeeds.fromFieldRelativeSpeeds(
-            -inputStrafeMPS,
-            -inputForwardMPS,
-            -inputRotationRadiansPS, // Rotation is always counter-clockwise
-            m_gyro.getRotation2d()
-          );
-      }
-    } else {
-      // Drive the robot directly with the driver-relative inputs converted to robot-relative speeds
-      desiredChassisSpeeds = new ChassisSpeeds(-inputForwardMPS, -inputStrafeMPS, inputRotationRadiansPS);
-    }
+    var invert = Robot.onRedAlliance() ? -1 : 1;
+
+    // Drive the robot with the driver-relative inputs, converting them to field-relative
+    desiredChassisSpeeds =
+      ChassisSpeeds.fromFieldRelativeSpeeds(
+        inputYMPS * invert, // Use Y as X for field-relative
+        inputXMPS * invert, // Use X as Y for field-relative
+        inputRotationRadiansPS,
+        m_gyro.getRotation2d()
+      );
 
     drive(desiredChassisSpeeds);
   }
@@ -195,17 +175,12 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
       desiredChassisSpeeds.omegaRadiansPerSecond =
         m_snapToRotationController.calculate(MathUtil.angleModulus(m_gyro.getRotation2d().getRadians()));
 
-      // If the target is within 5 degrees, set the LEDs to indicate shoot, otherwise
-      // quickly pulse red, indicating that the robot is not locked on yet
+      // If the robot is close to the setpoint, indicate that the robot is aligned
       if (Math.abs(desiredChassisSpeeds.omegaRadiansPerSecond) < 0.1) {
         m_leds.setStripTemporary(LEDSection.solidColor(Color.GREEN));
       } else {
-        m_leds.setStripTemporary(LEDSection.pulseColor(Color.RED, 50));
+        m_leds.setStripTemporary(LEDSection.pulseColor(Color.RED, 30));
       }
-    }
-
-    if (DriverStation.isAutonomousEnabled()) {
-      desiredChassisSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(desiredChassisSpeeds, m_gyro.getRotation2d());
     }
 
     // Correct drift
@@ -280,6 +255,10 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     m_snapToGyroEnabled = !m_snapToGyroEnabled;
   }
 
+  /**
+   * Sets the snap-to gyro setpoint, converting from degrees to radians
+   * @param angle
+   */
   public void setSnapToSetpoint(double angle) {
     var snapAngle = angle;
     if (Robot.onRedAlliance()) {
@@ -339,28 +318,23 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
   //#region Commands
 
   /**
-   * Creates a command that drives the robot using the input controls
-   * @param controlSuppliers Controller input
-   * @param fieldRelative Whether or not the input is field relative or robot relative
+   * Creates a command that drives the robot using input controls
+   * @param controlSuppliers Controller input suppliers
    */
-  public Command defaultDriveCommand(SwerveControlSuppliers controlSuppliers, boolean fieldRelative) {
+  public Command defaultDriveCommand(SwerveControlSuppliers controlSuppliers) {
     return this.run(() -> {
-        if (Math.abs(controlSuppliers.Rotation.getAsDouble()) > 0.2) {
+        // If the driver is trying to rotate the robot, disable snap-to control
+        if (Math.abs(controlSuppliers.Z.getAsDouble()) > 0.2) {
           setSnapToGyroEnabled(false);
           m_leds.restoreLastStripState();
         }
 
-        // Scale speeds cubic
-        var yInput = -Controls.cubicScaledDeadband(controlSuppliers.Forward.getAsDouble(), 0.1, 0.3); // inverted because controller input is inverted
-        var xInput = Controls.cubicScaledDeadband(controlSuppliers.Strafe.getAsDouble(), 0.1, 0.3);
-        var rotationInput = Controls.cubicScaledDeadband(controlSuppliers.Rotation.getAsDouble(), 0.1, 0.3);
+        // Convert inputs to MPS
+        var inputXMPS = controlSuppliers.X.getAsDouble() * m_config.Drivetrain.MaxSpeedMetersPerSecond;
+        var inputYMPS = controlSuppliers.Y.getAsDouble() * m_config.Drivetrain.MaxSpeedMetersPerSecond;
+        var inputRotationRadiansPS = controlSuppliers.Z.getAsDouble() * m_config.Drivetrain.MaxAngularSpeedRadians;
 
-        // Set speeds to MPS
-        xInput = controlSuppliers.Strafe.getAsDouble() * m_config.Drivetrain.MaxSpeedMetersPerSecond;
-        yInput = controlSuppliers.Forward.getAsDouble() * m_config.Drivetrain.MaxSpeedMetersPerSecond;
-        rotationInput = controlSuppliers.Rotation.getAsDouble() * m_config.Drivetrain.MaxAngularSpeedRadians;
-
-        driveFromCartesianSpeeds(xInput, yInput, rotationInput, fieldRelative);
+        driveFieldRelative(inputXMPS, inputYMPS, inputRotationRadiansPS);
       });
   }
 
