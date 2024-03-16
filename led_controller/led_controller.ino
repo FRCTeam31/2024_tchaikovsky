@@ -116,14 +116,14 @@ void setup() {
 }
 
 void loop() {
-  while (Serial.available() > 0) {
+  while (Serial.available() >= 7) {
       byte buffer[6] = {-1, -1, -1, -1, -1, -1}; // R, G, B, Pattern, Speed, Direction
       byte sectionNum = Serial.read(); // Section (1 byte)
 
       // Validate the section number
       if (sectionNum < 0 || sectionNum >= SECTION_COUNT) {
-        // Skip the rest of the packet
-        Serial.readBytes(buffer, 7);
+        // Skip the rest of this packet
+        Serial.readBytes(buffer, 6);
       }
 
       int bytesRead = Serial.readBytes(buffer, 6);
