@@ -328,15 +328,6 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
    * @param cameraLatencyMs The latency of the camera's pipeline in milliseconds
    */
   public void feedRobotPoseEstimation(Pose2d pose, long cameraLatencyMs) {
-    if (
-      getChassisSpeeds().omegaRadiansPerSecond >= 0.1 || // 0.1 rad/s is about 6 degrees/s
-      getChassisSpeeds().vxMetersPerSecond >= 0.2 ||
-      getChassisSpeeds().vyMetersPerSecond >= 0.2
-    ) {
-      DriverStation.reportWarning(">> [DRIVE] Moving too fast for pose estimation!", false);
-      return;
-    }
-
     var currentEpochSeconds = Timer.getFPGATimestamp();
     var poseTimestampSeconds = currentEpochSeconds - (cameraLatencyMs / 1000.0);
     m_poseEstimator.addVisionMeasurement(pose, poseTimestampSeconds);
@@ -438,6 +429,15 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
    */
   public Command estimatePoseCommand() {
     return Commands.runOnce(() -> {
+      if (
+        getChassisSpeeds().omegaRadiansPerSecond >= 0.1 || // 0.1 rad/s is about 6 degrees/s
+        getChassisSpeeds().vxMetersPerSecond >= 0.2 ||
+        getChassisSpeeds().vyMetersPerSecond >= 0.2
+      ) {
+        DriverStation.reportWarning(">> [DRIVE] Moving too fast for pose estimation!", false);
+        return;
+      }
+
       if (Limelight.getApriltagId() != -1) {
         var robotPose = Limelight.getRobotPose(Alliance.Blue);
         var cameraLatencyMs = Limelight.getTotalLatencyMs();
