@@ -39,13 +39,7 @@ public class RobotContainer {
 
   public ShuffleboardTab d_driverTab = Shuffleboard.getTab("Driver");
   private SendableChooser<Command> m_autoChooser;
-  public GenericEntry d_allianceEntry = d_driverTab
-    .add("Alliance", false)
-    .withSize(2, 3)
-    .withPosition(13, 0)
-    .withWidget(BuiltInWidgets.kBooleanBox)
-    .withProperties(Map.of("Color when true", "#FF0000", "Color when false", "#0000FF"))
-    .getEntry();
+  public GenericEntry d_allianceEntry;
 
   public Drivetrain Drivetrain;
   public Shooter Shooter;
@@ -118,6 +112,15 @@ public class RobotContainer {
       .withPosition(0, 0)
       .withWidget(BuiltInWidgets.kCameraStream)
       .withProperties(Map.of("Show controls", false, "Show crosshair", false));
+
+    d_allianceEntry =
+      d_driverTab
+        .add("Alliance", false)
+        .withSize(2, 3)
+        .withPosition(13, 0)
+        .withWidget(BuiltInWidgets.kBooleanBox)
+        .withProperties(Map.of("Color when true", "#FF0000", "Color when false", "#0000FF"))
+        .getEntry();
 
     // Build an auto chooser. This will use Commands.none() as the default option.
     m_autoChooser = AutoBuilder.buildAutoChooser("Park Auto");
