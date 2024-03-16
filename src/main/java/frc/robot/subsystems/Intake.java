@@ -120,7 +120,14 @@ public class Intake extends SubsystemBase implements IPlannable {
   //#endregion
 
   @Override
-  public void periodic() {}
+  public void periodic() {
+    // var currentPosition = getPositionRight();
+    // if (m_topLimitSwitch.get()) {
+    //   m_angleStartPoint = currentPosition;
+    // } else if (m_bottomLimitSwitch.get()) {
+    //   // m_angleStartPoint = currentPosition - m_config.PositionDelta;
+    // }
+  }
 
   //#region Commands
 

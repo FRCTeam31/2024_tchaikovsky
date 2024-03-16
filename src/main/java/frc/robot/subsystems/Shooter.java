@@ -88,6 +88,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
 
     m_elevationSolenoid =
       new DoubleSolenoid(
+        30,
         PneumaticsModuleType.REVPH,
         m_config.ElevationSolenoidForwardChannel,
         m_config.ElevationSolenoidReverseChannel

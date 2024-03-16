@@ -111,7 +111,7 @@ public class Limelight extends SubsystemBase implements AutoCloseable {
   public Pose3d getRobotPose() {
     var poseData = m_limelightTable.getEntry("botpose").getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
 
-    return toPose3d(poseData);
+    return toPose3d(poseData, true);
   }
 
   /**
@@ -122,11 +122,11 @@ public class Limelight extends SubsystemBase implements AutoCloseable {
     if (alliance == DriverStation.Alliance.Blue) {
       var poseData = m_limelightTable.getEntry("botpose_wpiblue").getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
 
-      return toPose3d(poseData);
+      return toPose3d(poseData, true);
     } else {
       var poseData = m_limelightTable.getEntry("botpose_wpired").getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
 
-      return toPose3d(poseData);
+      return toPose3d(poseData, true);
     }
   }
 
@@ -136,7 +136,7 @@ public class Limelight extends SubsystemBase implements AutoCloseable {
   public Pose3d getRobotPoseInTargetSpace() {
     var poseData = m_limelightTable.getEntry("botpose_targetspace").getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
 
-    return toPose3d(poseData);
+    return toPose3d(poseData, false);
   }
 
   /**
@@ -145,7 +145,7 @@ public class Limelight extends SubsystemBase implements AutoCloseable {
   public Pose3d getCameraPoseInTargetSpace() {
     var poseData = m_limelightTable.getEntry("camerapose_targetspace").getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
 
-    return toPose3d(poseData);
+    return toPose3d(poseData, false);
   }
 
   /**
@@ -154,7 +154,7 @@ public class Limelight extends SubsystemBase implements AutoCloseable {
   public Pose3d getCameraPoseInRobotSpace() {
     var poseData = m_limelightTable.getEntry("camerapose_robotspace").getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
 
-    return toPose3d(poseData);
+    return toPose3d(poseData, false);
   }
 
   /**
@@ -163,7 +163,7 @@ public class Limelight extends SubsystemBase implements AutoCloseable {
   public Pose3d getTargetPoseInCameraSpace() {
     var poseData = m_limelightTable.getEntry("targetpose_cameraspace").getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
 
-    return toPose3d(poseData);
+    return toPose3d(poseData, false);
   }
 
   /**
@@ -172,7 +172,7 @@ public class Limelight extends SubsystemBase implements AutoCloseable {
   public Pose3d getTargetPoseInRobotSpace() {
     var poseData = m_limelightTable.getEntry("targetpose_robotspace").getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
 
-    return toPose3d(poseData);
+    return toPose3d(poseData, false);
   }
 
   //#endregion
@@ -283,7 +283,7 @@ public class Limelight extends SubsystemBase implements AutoCloseable {
     return apriltagId == 4 || apriltagId == 7;
   }
 
-  private Pose3d toPose3d(double[] poseData) {
+  private Pose3d toPose3d(double[] poseData, boolean ignoreZ) {
     if (poseData.length < 6) {
       System.err.println("Bad LL 3D Pose Data!");
 
@@ -291,7 +291,7 @@ public class Limelight extends SubsystemBase implements AutoCloseable {
     }
 
     return new Pose3d(
-      new Translation3d(poseData[0], poseData[1], poseData[2]),
+      new Translation3d(poseData[0], poseData[1], ignoreZ ? 0 : poseData[2]),
       new Rotation3d(
         Units.degreesToRadians(poseData[3]),
         Units.degreesToRadians(poseData[4]),

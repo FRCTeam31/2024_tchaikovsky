@@ -124,7 +124,7 @@ public class RobotContainer {
 
     // Build an auto chooser. This will use Commands.none() as the default option.
     m_autoChooser = AutoBuilder.buildAutoChooser("Park Auto");
-    d_driverTab.add(m_autoChooser).withWidget(BuiltInWidgets.kComboBoxChooser).withSize(5, 2).withPosition(1, 4);
+    d_driverTab.add(m_autoChooser).withWidget(BuiltInWidgets.kComboBoxChooser).withSize(5, 2).withPosition(0, 4);
     // var possibleAutos = AutoBuilder.getAllAutoNames();
     // for (int i = 0; i < possibleAutos.size(); i++) {
     //   var autoCommand = new PathPlannerAuto(possibleAutos.get(i));
@@ -174,10 +174,10 @@ public class RobotContainer {
 
     // Controls for Snap-To with field-relative setpoints
     m_driverController.x().onTrue(Drivetrain.disableSnapToCommand());
-    m_driverController.pov(Controls.up).onTrue(Drivetrain.setSnapToSetpointCommand(Math.toRadians(0)));
-    m_driverController.pov(Controls.left).onTrue(Drivetrain.setSnapToSetpointCommand(Math.toRadians(90)));
-    m_driverController.pov(Controls.down).onTrue(Drivetrain.setSnapToSetpointCommand(Math.toRadians(180)));
-    m_driverController.pov(Controls.right).onTrue(Drivetrain.setSnapToSetpointCommand(Math.toRadians(270)));
+    m_driverController.pov(Controls.up).onTrue(Drivetrain.setSnapToSetpointCommand(0));
+    m_driverController.pov(Controls.left).onTrue(Drivetrain.setSnapToSetpointCommand(270));
+    m_driverController.pov(Controls.down).onTrue(Drivetrain.setSnapToSetpointCommand(180));
+    m_driverController.pov(Controls.right).onTrue(Drivetrain.setSnapToSetpointCommand(90));
 
     // Climbers
     m_driverController.y().onTrue(Climbers.toggleClimbControlsCommand());

@@ -8,6 +8,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -139,7 +140,7 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
 
   // Resets the Gyro
   public void resetGyro() {
-    m_gyro.setYaw(Robot.onRedAlliance() ? 0 : 180);
+    m_gyro.setYaw(Robot.onRedAlliance() ? 180 : 0);
   }
 
   /**
@@ -162,17 +163,17 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
         // Drive the robot with the driver-relative inputs, converting them to field-relative
         desiredChassisSpeeds =
           ChassisSpeeds.fromFieldRelativeSpeeds(
-            inputForwardMPS, // Driver is facing field-X+, so use Y component as X+ speed
-            -inputStrafeMPS, // Driver is facing field-X+, so use -X component as Y+ speed
-            inputRotationRadiansPS, // Rotation is always counter-clockwise
+            inputStrafeMPS,
+            inputForwardMPS,
+            -inputRotationRadiansPS, // Rotation is always counter-clockwise
             m_gyro.getRotation2d()
           );
       } else {
         desiredChassisSpeeds =
           ChassisSpeeds.fromFieldRelativeSpeeds(
-            -inputForwardMPS, // Driver is facing field-X-, so use -Y component as +X speed
-            inputStrafeMPS, // Driver is facing field-X-, so use X component as Y+ speed
-            inputRotationRadiansPS, // Rotation is always counter-clockwise
+            -inputStrafeMPS,
+            -inputForwardMPS,
+            -inputRotationRadiansPS, // Rotation is always counter-clockwise
             m_gyro.getRotation2d()
           );
       }
@@ -189,40 +190,22 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
    * @param desiredChassisSpeeds
    */
   public void drive(ChassisSpeeds desiredChassisSpeeds) {
-    // Process lock-on
-    if (m_lockOnEnabled) {
-      var targetedAprilTag = Limelight.getApriltagId();
+    // If we're snapping the angle, calculate and set the rotational speed to reach the setpoint
+    if (m_snapToGyroEnabled) {
+      desiredChassisSpeeds.omegaRadiansPerSecond =
+        m_snapToRotationController.calculate(MathUtil.angleModulus(m_gyro.getRotation2d().getRadians()));
 
-      // If targetedAprilTag is in validTargets, snap to its offset
-      if (targetedAprilTag != -1 && Limelight.tagIdIsASpeakerTarget(targetedAprilTag)) {
-        // Calculate the target heading
-        var horizontalOffset = Limelight.getHorizontalOffsetFromTarget().getDegrees();
-        var robotHeading = getHeading();
-        var targetHeading = robotHeading + horizontalOffset;
-
-        // Set the drivetrain to snap to the target heading
-        setSnapToSetpoint(targetHeading);
-
-        // If the target is within 5 degrees, set the LEDs to indicate shoot, otherwise
-        // quickly pulse red, indicating that the robot is not locked on yet
-        if (Math.abs(horizontalOffset) < 5) {
-          m_leds.setStripTemporary(LEDSection.solidColor(Color.GREEN));
-        } else {
-          m_leds.setStripTemporary(LEDSection.pulseColor(Color.RED, 100));
-        }
+      // If the target is within 5 degrees, set the LEDs to indicate shoot, otherwise
+      // quickly pulse red, indicating that the robot is not locked on yet
+      if (Math.abs(desiredChassisSpeeds.omegaRadiansPerSecond) < 0.1) {
+        m_leds.setStripTemporary(LEDSection.solidColor(Color.GREEN));
       } else {
-        setSnapToGyroEnabled(false);
-        m_leds.restoreLastStripState();
+        m_leds.setStripTemporary(LEDSection.pulseColor(Color.RED, 50));
       }
     }
 
-    // If we're snapping the angle, calculate and set the rotational speed to reach the setpoint
-    if (m_snapToGyroEnabled) {
-      d_snapAngle.setDouble(m_snapToRotationController.getSetpoint());
-      desiredChassisSpeeds.omegaRadiansPerSecond =
-        m_snapToRotationController.calculate(MathUtil.angleModulus(m_gyro.getRotation2d().getRadians()));
-    } else {
-      d_snapAngle.setDouble(0);
+    if (DriverStation.isAutonomousEnabled()) {
+      desiredChassisSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(desiredChassisSpeeds, m_gyro.getRotation2d());
     }
 
     // Correct drift
@@ -303,9 +286,9 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
       snapAngle = snapAngle + 180;
     }
 
-    if (angle >= 360) angle -= 360;
+    var setpoint = Rotation2d.fromDegrees(snapAngle).getRadians();
 
-    m_snapToRotationController.setSetpoint(snapAngle);
+    m_snapToRotationController.setSetpoint(MathUtil.angleModulus(setpoint));
     setSnapToGyroEnabled(true);
   }
 
@@ -345,10 +328,12 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     var gyroAngle = m_gyro.getRotation2d();
     d_currentHeading.setDouble(gyroAngle.getDegrees());
     m_poseEstimator.update(gyroAngle, getModulePositions());
+
     m_fieldWidget.setRobotPose(m_poseEstimator.getEstimatedPosition());
 
     // Update shuffleboard entries
     d_snapToEnabledEntry.setBoolean(m_snapToGyroEnabled);
+    d_snapAngle.setDouble(m_snapToRotationController.getSetpoint());
   }
 
   //#region Commands
@@ -362,19 +347,20 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     return this.run(() -> {
         if (Math.abs(controlSuppliers.Rotation.getAsDouble()) > 0.2) {
           setSnapToGyroEnabled(false);
+          m_leds.restoreLastStripState();
         }
 
         // Scale speeds cubic
-        var forwardY = Controls.cubicScaledDeadband(controlSuppliers.Forward.getAsDouble(), 0.1, 0.3);
-        var strafeX = Controls.cubicScaledDeadband(controlSuppliers.Strafe.getAsDouble(), 0.1, 0.3);
-        var rotation = Controls.cubicScaledDeadband(controlSuppliers.Rotation.getAsDouble(), 0.1, 0.3);
+        var yInput = -Controls.cubicScaledDeadband(controlSuppliers.Forward.getAsDouble(), 0.1, 0.3); // inverted because controller input is inverted
+        var xInput = Controls.cubicScaledDeadband(controlSuppliers.Strafe.getAsDouble(), 0.1, 0.3);
+        var rotationInput = Controls.cubicScaledDeadband(controlSuppliers.Rotation.getAsDouble(), 0.1, 0.3);
 
         // Set speeds to MPS
-        strafeX = -controlSuppliers.Strafe.getAsDouble() * m_config.Drivetrain.MaxSpeedMetersPerSecond;
-        forwardY = -controlSuppliers.Forward.getAsDouble() * m_config.Drivetrain.MaxSpeedMetersPerSecond;
-        rotation = -controlSuppliers.Rotation.getAsDouble() * m_config.Drivetrain.MaxAngularSpeedRadians;
+        xInput = controlSuppliers.Strafe.getAsDouble() * m_config.Drivetrain.MaxSpeedMetersPerSecond;
+        yInput = controlSuppliers.Forward.getAsDouble() * m_config.Drivetrain.MaxSpeedMetersPerSecond;
+        rotationInput = controlSuppliers.Rotation.getAsDouble() * m_config.Drivetrain.MaxAngularSpeedRadians;
 
-        driveFromCartesianSpeeds(-strafeX, forwardY, rotation, fieldRelative);
+        driveFromCartesianSpeeds(xInput, yInput, rotationInput, fieldRelative);
       });
   }
 
@@ -406,8 +392,21 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
    */
   public Command enableLockOn() {
     return Commands.runOnce(() -> {
-      m_lockOnEnabled = true;
-      m_leds.setStripTemporary(LEDSection.pulseColor(Color.RED, 100));
+      // m_lockOnEnabled = true;
+      var targetedAprilTag = Limelight.getApriltagId();
+
+      // If targetedAprilTag is in validTargets, snap to its offset
+      if (targetedAprilTag != -1 && Limelight.tagIdIsASpeakerTarget(targetedAprilTag)) {
+        // Calculate the target heading
+        var horizontalOffsetDeg = Limelight.getHorizontalOffsetFromTarget().getDegrees();
+        var robotHeadingDeg = getHeading();
+        var targetHeadingDeg = robotHeadingDeg - horizontalOffsetDeg;
+
+        // Set the drivetrain to snap to the target heading
+        setSnapToSetpoint(targetHeadingDeg);
+      } else {
+        setSnapToGyroEnabled(false);
+      }
     });
   }
 
@@ -418,8 +417,8 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
   public Command disableLockOn() {
     return Commands.runOnce(() -> {
       m_lockOnEnabled = false;
-      m_snapToGyroEnabled = false;
-      m_leds.restoreLastStripState();
+      // m_snapToGyroEnabled = false;
+      // m_leds.restoreLastStripState();
     });
   }
 

@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.VictorSPXControlMode;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import edu.wpi.first.math.MathUtil;
@@ -70,22 +71,26 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
     m_leftVictorSPX = new VictorSPX(config.VictorSPXLeftCanID);
     m_leftVictorSPX.configFactoryDefault();
     m_leftVictorSPX.setInverted(config.LeftInverted);
+    m_leftVictorSPX.setNeutralMode(NeutralMode.Brake);
 
     m_rightVictorSPX = new VictorSPX(config.VictorSPXRightCanID);
     m_rightVictorSPX.configFactoryDefault();
     m_rightVictorSPX.setInverted(config.RightInverted);
+    m_rightVictorSPX.setNeutralMode(NeutralMode.Brake);
 
     m_leftLimitSwitch = new DigitalInput(config.LeftLimitSwitchDIOChannel);
     m_rightLimitSwitch = new DigitalInput(config.RightLimitSwitchDIOChannel);
 
     m_clutchSolenoidLeft =
       new DoubleSolenoid(
+        30,
         PneumaticsModuleType.REVPH,
         m_config.LeftSolenoidForwardChannel,
         m_config.LeftSolenoidReverseChannel
       );
     m_clutchSolenoidRight =
       new DoubleSolenoid(
+        30,
         PneumaticsModuleType.REVPH,
         m_config.RightSolenoidForwardChannel,
         m_config.RightSolenoidReverseChannel
@@ -99,11 +104,11 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
    * @param side The side to raise
    */
   public void raiseArm(Robot.Side side) {
-    if (side == Robot.Side.kLeft) {
+    if (side == Robot.Side.kLeft && !m_leftLimitSwitch.get()) {
       m_leftVictorSPX.set(VictorSPXControlMode.PercentOutput, m_config.ClimberUpSpeed);
     }
 
-    if (side == Robot.Side.kRight) {
+    if (side == Robot.Side.kRight && !m_rightLimitSwitch.get()) {
       m_rightVictorSPX.set(VictorSPXControlMode.PercentOutput, m_config.ClimberUpSpeed);
     }
   }
@@ -227,14 +232,18 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
       .andThen(
         this.run(() -> {
             if (!m_leftLimitSwitch.get()) {
+              setClutch(Robot.Side.kLeft, false);
               raiseArm(Robot.Side.kLeft);
             } else {
+              setClutch(Robot.Side.kLeft, true);
               stopArm(Robot.Side.kLeft);
             }
 
             if (!m_rightLimitSwitch.get()) {
+              setClutch(Robot.Side.kRight, false);
               raiseArm(Robot.Side.kRight);
             } else {
+              setClutch(Robot.Side.kRight, true);
               stopArm(Robot.Side.kRight);
             }
           })

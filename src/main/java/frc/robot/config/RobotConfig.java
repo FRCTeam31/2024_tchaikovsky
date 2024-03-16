@@ -48,7 +48,7 @@ public class RobotConfig {
         0.5,
         new PrimePIDConstants(0.019, 0, 0, 0, 0.091, 0, 0.05), // Drive PID
         new PrimePIDConstants(2, 0, 0), // Steering PID
-        new PrimePIDConstants(4, 0, 0), // SnapTo PID
+        new PrimePIDConstants(6, 0, 0), // SnapTo PID
         new PrimePIDConstants(1.75, 0, 0), // Pathing Translation PID
         new PrimePIDConstants(0.5, 0, 0), // Pathing Rotation PID
         0.15,
@@ -61,8 +61,8 @@ public class RobotConfig {
         2,
         3,
         4,
-        0.164551 - 0.25,
-        false,
+        0.407,
+        true,
         true,
         new Translation2d(-(config.Drivetrain.TrackWidthMeters / 2), config.Drivetrain.WheelBaseMeters / 2),
         6.75,
@@ -75,7 +75,7 @@ public class RobotConfig {
         5,
         6,
         7,
-        0.350098 - 0.25,
+        0.105,
         true,
         true,
         new Translation2d(config.Drivetrain.TrackWidthMeters / 2, config.Drivetrain.WheelBaseMeters / 2),
@@ -89,7 +89,7 @@ public class RobotConfig {
         8,
         9,
         10,
-        0.717773 - 0.25,
+        0.459,
         true,
         true,
         new Translation2d(config.Drivetrain.TrackWidthMeters / 2, -(config.Drivetrain.WheelBaseMeters / 2)),
@@ -103,15 +103,15 @@ public class RobotConfig {
         11,
         12,
         13,
-        0.181152 - 0.25,
-        false,
+        0.421,
+        true,
         true,
         new Translation2d(-(config.Drivetrain.TrackWidthMeters / 2), -(config.Drivetrain.WheelBaseMeters / 2)),
         6.75,
         0.1016
       );
 
-    config.Intake = new IntakeConfig(16, 15, 14, false, false, true, new PrimePIDConstants(0.05, 0, 0), 50, 4, 5);
+    config.Intake = new IntakeConfig(16, 15, 14, false, false, true, new PrimePIDConstants(0.05, 0, 0), 47, 4, 5);
 
     config.Shooter = new ShooterConfig(20, 19, false, false, 7, 6, 7);
 

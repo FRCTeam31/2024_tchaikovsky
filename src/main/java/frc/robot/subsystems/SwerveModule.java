@@ -214,7 +214,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
 
   // Gets the heading of the encoder in rotations
   public double getEncoderHeading() {
-    return m_encoder.getAbsolutePosition().getValueAsDouble();
+    return m_encoder.getPosition().getValueAsDouble();
   }
 
   // Gets the encoder heading as a Rotation2d

@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -57,8 +56,17 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
+    if (m_autonomousCommand != null) {
+      // Cancel the auto command if it's still running
+      m_autonomousCommand.cancel();
+
+      // Stop the shooter and intake motors in case they're still running
+      m_robotContainer.Shooter.stopMotorsCommand().schedule();
+      m_robotContainer.Intake.stopRollersCommand().schedule();
+    }
+
     // Set auto LED pattern
-    m_robotContainer.LEDs.setStripAndSave(LEDSection.blinkColor(onRedAlliance() ? Color.RED : Color.BLUE, 100));
+    m_robotContainer.LEDs.setStripAndSave(LEDSection.blinkColor(onRedAlliance() ? Color.RED : Color.BLUE, 150));
 
     var autoCommand = m_robotContainer.getAutonomousCommand();
     m_autonomousCommand = autoCommand; // Save the command for cancelling later if needed
@@ -66,14 +74,9 @@ public class Robot extends TimedRobot {
     // Exit without scheduling an auto command if none is selected
     if (autoCommand == null || autoCommand == Commands.none()) {
       DriverStation.reportError("[ERROR] >> No auto command selected", false);
-      // reset the gyro to 0 or 180 depending on which alliance we're on
-      m_robotContainer.Drivetrain.m_gyro.setYaw(onRedAlliance() ? 0 : 180);
+      m_robotContainer.Drivetrain.resetGyro();
       return;
     }
-
-    // Get the auto's starting pose and reset the gyro to the initial direction the robot is facing
-    var startingPose = PathPlannerAuto.getStaringPoseFromAutoFile(autoCommand.getName());
-    m_robotContainer.Drivetrain.m_gyro.setYaw(startingPose.getRotation().getDegrees());
 
     // Schedule the auto command
     autoCommand.schedule();
@@ -94,7 +97,7 @@ public class Robot extends TimedRobot {
     }
 
     // Set teleop LED pattern
-    m_robotContainer.LEDs.setStripAndSave(LEDSection.raceColor(onRedAlliance() ? Color.RED : Color.BLUE, 100, true));
+    m_robotContainer.LEDs.setStripAndSave(LEDSection.raceColor(onRedAlliance() ? Color.RED : Color.BLUE, 40, false));
   }
 
   /**
@@ -110,10 +113,14 @@ public class Robot extends TimedRobot {
   }
 
   public static boolean onRedAlliance() {
-    return DriverStation.getAlliance().get() == Alliance.Red;
+    var alliance = DriverStation.getAlliance();
+
+    return alliance.isPresent() && alliance.get() == Alliance.Red;
   }
 
   public static boolean onBlueAlliance() {
-    return DriverStation.getAlliance().get() == Alliance.Blue;
+    var alliance = DriverStation.getAlliance();
+
+    return alliance.isPresent() && alliance.get() == Alliance.Blue;
   }
 }

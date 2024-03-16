@@ -107,10 +107,12 @@ public class LEDs extends SubsystemBase implements AutoCloseable {
    * @param state The state to set the section to
    */
   public void restoreLastStripState() {
-    if (m_lastStates != null && m_lastStates.length == m_config.SectionCount) {
-      for (int i = 0; i < m_lastStates.length; i++) {
-        restoreLastSectionState(i);
-      }
+    if (m_lastStates == null) {
+      return;
+    }
+
+    for (int i = 0; i < m_lastStates.length; i++) {
+      restoreLastSectionState(i);
     }
   }
 
