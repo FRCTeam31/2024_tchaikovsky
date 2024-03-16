@@ -39,13 +39,6 @@ class LEDSection {
       this->frame = frame;
     }
 
-    LEDSection(byte[] data) {
-      color = packColor(data[0], data[1], data[2]);
-      pattern = (LEDPattern)data[3];
-      speed = data[4];
-      direction = data[5];
-    }
-
     LEDSection() { }
 
     uint32_t color = 0;
@@ -96,18 +89,19 @@ Adafruit_NeoPixel strip(NUMPIXELS, PIN1, NEO_GRB + NEO_KHZ800);
 LEDSection sectionStateBuffer[SECTION_COUNT] = {
   // Section, R, G, B, Pattern, Speed, Direction
   LEDSection(255, 255, 0, Pulse, 100, false),
-  LEDSection(255, 255, 0, Pulse, 100, false),
-  LEDSection(255, 255, 0, Pulse, 100, false),
+  // LEDSection(255, 255, 0, Pulse, 100, false),
+  // LEDSection(255, 255, 0, Pulse, 100, false),
 };
 LEDSection sectionStates[SECTION_COUNT] = {
   // Section, R, G, B, Pattern, Speed, Direction
   LEDSection(),
-  LEDSection(),
-  LEDSection(),
+  // LEDSection(),
+  // LEDSection(),
 };
 
 void setup() {
   // Set up serial comms
+      byte buffer[7] = {-1, -1, -1, -1, -1, -1, -1}; // R, G, B, Pattern, Speed, Direction
   Serial.begin(115200);
   Serial.setTimeout(10);
 
@@ -117,24 +111,22 @@ void setup() {
 
 void loop() {
   while (Serial.available() >= 7) {
-      byte buffer[6] = {-1, -1, -1, -1, -1, -1}; // R, G, B, Pattern, Speed, Direction
-      byte sectionNum = Serial.read(); // Section (1 byte)
+      byte buffer[7] = {-1, -1, -1, -1, -1, -1, -1}; // R, G, B, Pattern, Speed, Direction
+      int bytesRead = Serial.readBytes(buffer, 7);
 
-      // Validate the section number
-      if (sectionNum < 0 || sectionNum >= SECTION_COUNT) {
-        // Skip the rest of this packet
-        Serial.readBytes(buffer, 6);
-      }
-
-      int bytesRead = Serial.readBytes(buffer, 6);
-
-      if (bytesRead != 6) {
+      if (bytesRead != 7) {
         // Incomplete packet, skip
         continue;
       }
-      
+
+      // Validate the section number
+      if (buffer[0] < 0 || buffer[0] >= SECTION_COUNT) {
+        // Skip the rest of this packet
+        continue;
+      }
+
       // Save the packet to the section buffer
-      sectionStateBuffer[sectionNum] = LEDSection(buffer);
+      sectionStateBuffer[buffer[0]] = LEDSection(buffer[1], buffer[2], buffer[3], (LEDPattern)buffer[4], (uint16_t)buffer[5], buffer[6] == 1);
     }
 
   // Update each section of the LED strip
