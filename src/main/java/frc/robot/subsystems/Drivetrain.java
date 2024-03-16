@@ -322,14 +322,25 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
   }
 
   /**
-   * Takes an input pose and latency and feeds it into the pose estimator
+   * Takes an input pose and latency and feeds it into the pose estimator, if the
+   * speed is low enough that the vision measurement is more likely to be accurate
    * @param pose The pose of the robot
    * @param cameraLatencyMs The latency of the camera's pipeline in milliseconds
    */
   public void feedRobotPoseEstimation(Pose2d pose, long cameraLatencyMs) {
+    if (
+      getChassisSpeeds().omegaRadiansPerSecond >= 0.1 || // 0.1 rad/s is about 6 degrees/s
+      getChassisSpeeds().vxMetersPerSecond >= 0.2 ||
+      getChassisSpeeds().vyMetersPerSecond >= 0.2
+    ) {
+      DriverStation.reportWarning(">> [DRIVE] Moving too fast for pose estimation!", false);
+      return;
+    }
+
     var currentEpochSeconds = Timer.getFPGATimestamp();
     var poseTimestampSeconds = currentEpochSeconds - (cameraLatencyMs / 1000.0);
     m_poseEstimator.addVisionMeasurement(pose, poseTimestampSeconds);
+    Limelight.blinkLed(2); // Blink LED to indicate that the pose was accepted
   }
 
   //#endregion
@@ -451,7 +462,7 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
 
   @Override
   public void close() throws Exception {
-    DriverStation.reportWarning(">> Drivetrain closing...", false);
+    DriverStation.reportWarning(">> [DRIVE] Closing...", false);
 
     // close all physical resources
     m_gyro.close();

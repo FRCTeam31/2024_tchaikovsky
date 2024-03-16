@@ -16,8 +16,10 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public class Limelight extends SubsystemBase {
+public class Limelight extends SubsystemBase implements AutoCloseable {
 
   private NetworkTable m_limelightTable;
 
@@ -35,6 +37,8 @@ public class Limelight extends SubsystemBase {
     .withPosition(11, 4)
     .withSize(2, 3)
     .getEntry();
+
+  private ExecutorService m_executorService = Executors.newSingleThreadExecutor();
 
   /**
    * Creates a new Limelight subsystem and sets the camera's pose in the coordinate system of the robot.
@@ -188,6 +192,34 @@ public class Limelight extends SubsystemBase {
   }
 
   /**
+   * Forces the LED to blink a specified number of times, then returns to pipeline control.
+   */
+  public void blinkLed(int blinkCount) {
+    m_executorService.submit(() -> {
+      // Blink the LED X times with 100ms on, 200ms off for each blink
+      for (int i = 0; i < blinkCount; i++) {
+        m_limelightTable.getEntry("ledMode").setNumber(3);
+
+        try {
+          Thread.sleep(100);
+        } catch (Exception e) {
+          Thread.currentThread().interrupt();
+        }
+
+        m_limelightTable.getEntry("ledMode").setNumber(1);
+        try {
+          Thread.sleep(200);
+        } catch (Exception e) {
+          Thread.currentThread().interrupt();
+        }
+      }
+
+      // Then return to pipeline control
+      setLedMode(0);
+    });
+  }
+
+  /**
    * Sets limelight’s operation mode.
    *    0 = Vision processor.
    *    1 = Driver Camera (Increases exposure, disables vision processing).
@@ -266,5 +298,9 @@ public class Limelight extends SubsystemBase {
         Units.degreesToRadians(poseData[5])
       )
     );
+  }
+
+  public void close() {
+    m_executorService.shutdown();
   }
 }
