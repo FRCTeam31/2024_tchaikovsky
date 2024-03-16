@@ -46,7 +46,7 @@ public class Limelight extends SubsystemBase implements AutoCloseable {
    */
   public Limelight(Pose3d cameraPose) {
     m_limelightTable = NetworkTableInstance.getDefault().getTable("limelight");
-    setCameraPose(cameraPose);
+    // setCameraPose(cameraPose);
   }
 
   //#region Basic Targeting Data
