@@ -4,24 +4,24 @@
     {
       "anchor": {
         "x": 2.5,
-        "y": 7.0
+        "y": 4.1
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.5493573329488999,
-        "y": 7.06295322500555
+        "x": 2.0115924916534516,
+        "y": 4.104648209296419
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 0.82,
-        "y": 6.48
+        "x": 0.8,
+        "y": 4.6
       },
       "prevControl": {
-        "x": 0.9529834075884366,
-        "y": 6.609962769475088
+        "x": 1.1953033155075317,
+        "y": 4.0454035061223275
       },
       "nextControl": null,
       "isLocked": false,
@@ -33,7 +33,7 @@
   "eventMarkers": [
     {
       "name": "Prepare to Shoot",
-      "waypointRelativePos": 0.1,
+      "waypointRelativePos": 0.15,
       "command": {
         "type": "sequential",
         "data": {
@@ -63,13 +63,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 59.91669743559589,
-    "rotateFast": false
+    "rotation": -60.0703653420918,
+    "rotateFast": true
   },
   "reversed": false,
-  "folder": "Amp Side Auto Paths",
+  "folder": "Source Side Auto Paths",
   "previewStartingState": {
-    "rotation": -0.2312113625636056,
+    "rotation": 1.0686756693789388,
     "velocity": 0
   },
   "useDefaultConstraints": false

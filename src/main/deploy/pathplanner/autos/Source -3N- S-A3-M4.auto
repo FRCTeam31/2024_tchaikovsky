@@ -20,13 +20,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Speaker to Feed Side Note"
+            "pathName": "SS-A3"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Feed Side Note to Speaker"
+            "pathName": "A3-SS"
           }
         },
         {
@@ -38,13 +38,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Speaker to Far Feed Side Note"
+            "pathName": "SS-M4"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Far Feed Side Note to Speaker"
+            "pathName": "M4-SS"
           }
         },
         {
@@ -56,6 +56,6 @@
       ]
     }
   },
-  "folder": "Blue Feed Side Speaker Autos",
+  "folder": "Source-Side",
   "choreoAuto": false
 }

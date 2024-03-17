@@ -5,7 +5,7 @@
       "x": 0.8,
       "y": 4.6
     },
-    "rotation": -150.0
+    "rotation": -60.0
   },
   "command": {
     "type": "sequential",
@@ -20,12 +20,12 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Blue Feed Side Score and Park"
+            "pathName": "SS-M5"
           }
         }
       ]
     }
   },
-  "folder": "Blue Feed Side Speaker Autos",
+  "folder": "Source-Side",
   "choreoAuto": false
 }

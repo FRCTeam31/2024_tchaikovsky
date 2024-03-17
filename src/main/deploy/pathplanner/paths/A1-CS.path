@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.85,
-        "y": 5.89
+        "x": 2.45,
+        "y": 6.76
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.76651403753258,
-        "y": 8.49700629509367
+        "x": 2.2081403448753285,
+        "y": 6.536448951159477
       },
       "isLocked": false,
       "linkedName": null
@@ -20,8 +20,8 @@
         "y": 5.5
       },
       "prevControl": {
-        "x": 3.9344907518643866,
-        "y": 5.204767887013252
+        "x": 1.9191454599125413,
+        "y": 6.323376971078266
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,7 +32,7 @@
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Bring Note In",
+      "name": "Prepare to Shoot",
       "waypointRelativePos": 0.15,
       "command": {
         "type": "sequential",
@@ -56,21 +56,21 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
-    "maxAngularVelocity": 360.0,
-    "maxAngularAcceleration": 540.0
+    "maxVelocity": 1.75,
+    "maxAcceleration": 1.75,
+    "maxAngularVelocity": 180.0,
+    "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.03466879540972598,
-    "rotateFast": false
+    "rotation": 0.10916378845756709,
+    "rotateFast": true
   },
   "reversed": false,
   "folder": "Center Auto Paths",
   "previewStartingState": {
-    "rotation": -105.0,
+    "rotation": 35.917711121441634,
     "velocity": 0
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

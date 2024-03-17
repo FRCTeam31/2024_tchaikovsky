@@ -16,11 +16,11 @@
     },
     {
       "anchor": {
-        "x": 2.5,
+        "x": 2.41,
         "y": 5.5
       },
       "prevControl": {
-        "x": 1.5,
+        "x": 1.4100000000000001,
         "y": 5.5
       },
       "nextControl": null,
@@ -30,7 +30,42 @@
   ],
   "rotationTargets": [],
   "constraintZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "Bring out intake",
+      "waypointRelativePos": 0.0,
+      "command": {
+        "type": "sequential",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Set_Intake_Out"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Intake Note",
+      "waypointRelativePos": 0.55,
+      "command": {
+        "type": "sequential",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Start_Note_Intake"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 1.75,
     "maxAcceleration": 1.75,
@@ -43,9 +78,9 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "Miscellaneous",
+  "folder": "Center Auto Paths",
   "previewStartingState": {
-    "rotation": -0.19616892235128405,
+    "rotation": -0.228526796211064,
     "velocity": 0
   },
   "useDefaultConstraints": false

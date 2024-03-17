@@ -5,7 +5,7 @@
       "x": 0.8,
       "y": 4.6
     },
-    "rotation": -150.0
+    "rotation": -60.0
   },
   "command": {
     "type": "sequential",
@@ -20,13 +20,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Speaker to Far Feed Side Note"
+            "pathName": "SS-M4"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Far Feed Side Note to Speaker"
+            "pathName": "M4-SS"
           }
         },
         {
@@ -38,6 +38,6 @@
       ]
     }
   },
-  "folder": "Blue Feed Side Speaker Autos",
+  "folder": "Source-Side",
   "choreoAuto": false
 }

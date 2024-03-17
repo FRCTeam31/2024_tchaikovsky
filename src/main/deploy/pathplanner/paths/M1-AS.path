@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.82,
-        "y": 6.480536925037814
+        "x": 7.82,
+        "y": 7.45
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.4485986605099839,
-        "y": 7.136950264295352
+        "x": 6.035772287400431,
+        "y": 7.440755296825909
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.5,
-        "y": 7.0
+        "x": 0.82,
+        "y": 6.480536925037814
       },
       "prevControl": {
-        "x": 1.9838583821311786,
-        "y": 6.998240302786913
+        "x": 1.886698428171631,
+        "y": 6.934064305606089
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,8 +32,8 @@
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Bring out Intake",
-      "waypointRelativePos": 0,
+      "name": "Prepare to Shoot",
+      "waypointRelativePos": 0.2,
       "command": {
         "type": "sequential",
         "data": {
@@ -41,24 +41,13 @@
             {
               "type": "named",
               "data": {
-                "name": "Set_Intake_Out"
+                "name": "Stop_Note_Intake"
               }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "Intake Note",
-      "waypointRelativePos": 0,
-      "command": {
-        "type": "sequential",
-        "data": {
-          "commands": [
+            },
             {
               "type": "named",
               "data": {
-                "name": "Start_Note_Intake"
+                "name": "Set_Intake_In"
               }
             }
           ]
@@ -67,21 +56,21 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 2.5,
-    "maxAcceleration": 2.5,
-    "maxAngularVelocity": 180.0,
-    "maxAngularAcceleration": 360.0
+    "maxVelocity": 4.0,
+    "maxAcceleration": 4.0,
+    "maxAngularVelocity": 360.0,
+    "maxAngularAcceleration": 540.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -0.32879961776107325,
+    "rotation": 60.67619189974157,
     "rotateFast": true
   },
   "reversed": false,
   "folder": "Amp Side Auto Paths",
   "previewStartingState": {
-    "rotation": 59.93162821859144,
+    "rotation": -1.190783827497893,
     "velocity": 0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

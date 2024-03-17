@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.8636772408679951,
-        "y": 6.34186637742645
+        "x": 2.0485713043498155,
+        "y": 4.640840993393699
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.5385405725766406,
-        "y": 6.794856832956909
+        "x": 2.46,
+        "y": 4.4
       },
       "prevControl": {
-        "x": 1.7989643186493578,
-        "y": 6.2124405329891745
+        "x": 1.9838583821311786,
+        "y": 4.761022134656883
       },
       "nextControl": null,
       "isLocked": false,
@@ -50,7 +50,7 @@
     },
     {
       "name": "Intake Note",
-      "waypointRelativePos": 0.6,
+      "waypointRelativePos": 0.65,
       "command": {
         "type": "sequential",
         "data": {
@@ -74,13 +74,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -58.172553423326846,
+    "rotation": -36.94362459900666,
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "Miscellaneous",
+  "folder": "Center Auto Paths",
   "previewStartingState": {
-    "rotation": 0.05537491902364609,
+    "rotation": 0.10916378845756709,
     "velocity": 0
   },
   "useDefaultConstraints": false

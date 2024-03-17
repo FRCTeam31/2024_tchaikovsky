@@ -2,7 +2,7 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.4,
+      "x": 1.3,
       "y": 5.5
     },
     "rotation": 0.0
@@ -20,13 +20,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Blue Speaker To Center Note"
+            "pathName": "CS-A2"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Blue Center Note To Speaker"
+            "pathName": "A2-CS"
           }
         },
         {
@@ -38,12 +38,24 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Blue Get Out of The Way"
+            "pathName": "CS-A1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "A1-CS"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Score_In_Speaker"
           }
         }
       ]
     }
   },
-  "folder": "Blue Center Speaker Autos",
+  "folder": "Center",
   "choreoAuto": false
 }

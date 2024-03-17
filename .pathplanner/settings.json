@@ -5,15 +5,14 @@
   "pathFolders": [
     "Amp Side Auto Paths",
     "Center Auto Paths",
-    "Miscellaneous",
     "Park Auto Paths",
     "Source Side Auto Paths",
     "Test Autos"
   ],
   "autoFolders": [
-    "Blue Amp Side Speaker Autos",
-    "Blue Feed Side Speaker Autos",
-    "Blue Center Speaker Autos",
+    "Amp-Side",
+    "Center",
+    "Source-Side",
     "Park Autos"
   ],
   "defaultMaxVel": 4.0,

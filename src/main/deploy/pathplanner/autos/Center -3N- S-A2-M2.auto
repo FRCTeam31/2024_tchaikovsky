@@ -20,13 +20,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Blue Speaker To Center Note"
+            "pathName": "CS-A2"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Blue Center Note To Speaker"
+            "pathName": "A2-CS"
           }
         },
         {
@@ -38,13 +38,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Blue Speaker To Far Center Note"
+            "pathName": "CS-M2"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Blue Far Center Note To Speaker"
+            "pathName": "M2-CS"
           }
         },
         {
@@ -56,12 +56,12 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Blue Get Out of The Way"
+            "pathName": "C-Park"
           }
         }
       ]
     }
   },
-  "folder": "Blue Center Speaker Autos",
+  "folder": "Center",
   "choreoAuto": false
 }

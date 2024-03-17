@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.76,
-      "y": 6.48
+      "x": 0.8,
+      "y": 4.6
     },
-    "rotation": 60.0
+    "rotation": -60.0
   },
   "command": {
     "type": "sequential",
@@ -20,13 +20,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Blue Speaker to Amp Side Note"
+            "pathName": "SS-A3"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Blue Amp Side Note to Speaker"
+            "pathName": "A3-SS"
           }
         },
         {
@@ -38,6 +38,6 @@
       ]
     }
   },
-  "folder": "Blue Amp Side Speaker Autos",
+  "folder": "Source-Side",
   "choreoAuto": false
 }

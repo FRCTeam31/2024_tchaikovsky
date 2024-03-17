@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.8,
-        "y": 4.6
+        "x": 0.82,
+        "y": 6.48
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.9537969185848283,
-        "y": 2.575410004874063
+        "x": 1.4485986605099839,
+        "y": 7.136413339257539
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.82,
-        "y": 2.55
+        "x": 2.5,
+        "y": 7.0
       },
       "prevControl": {
-        "x": 5.7584311921777,
-        "y": 0.3127818318699702
+        "x": 1.9838583821311786,
+        "y": 6.998240302786913
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,8 +32,8 @@
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Set Intake Out",
-      "waypointRelativePos": 0.6,
+      "name": "Bring out Intake",
+      "waypointRelativePos": 0,
       "command": {
         "type": "sequential",
         "data": {
@@ -49,8 +49,8 @@
       }
     },
     {
-      "name": "Start Intake Note",
-      "waypointRelativePos": 0.8,
+      "name": "Intake Note",
+      "waypointRelativePos": 0,
       "command": {
         "type": "sequential",
         "data": {
@@ -67,21 +67,21 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
-    "maxAngularVelocity": 360.0,
-    "maxAngularAcceleration": 540.0
+    "maxVelocity": 2.5,
+    "maxAcceleration": 2.5,
+    "maxAngularVelocity": 180.0,
+    "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 5.9061411137705075,
+    "rotation": -0.32879961776107325,
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "Source Side Auto Paths",
+  "folder": "Amp Side Auto Paths",
   "previewStartingState": {
-    "rotation": -59.62381673455767,
+    "rotation": 59.93162821859144,
     "velocity": 0
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.3,
-      "y": 5.5
+      "x": 0.82,
+      "y": 6.48
     },
-    "rotation": 0.0
+    "rotation": 60.0
   },
   "command": {
     "type": "sequential",
@@ -20,13 +20,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Blue Speaker To Center Note"
+            "pathName": "AS-A1"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Blue Center Note To Speaker"
+            "pathName": "A1-AS"
           }
         },
         {
@@ -38,13 +38,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Blue Middle Speaker to Amp Side Note"
+            "pathName": "AS-M1"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Blue Amp Side Note to Middle Speaker"
+            "pathName": "M1-AS"
           }
         },
         {
@@ -56,6 +56,6 @@
       ]
     }
   },
-  "folder": "Blue Center Speaker Autos",
+  "folder": "Amp-Side",
   "choreoAuto": false
 }
