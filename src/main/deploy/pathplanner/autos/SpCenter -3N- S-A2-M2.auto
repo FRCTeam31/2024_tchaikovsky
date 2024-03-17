@@ -20,13 +20,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "CS-A2"
+            "pathName": "SpCenter-A2"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "A2-CS"
+            "pathName": "A2-SpCenter"
           }
         },
         {
@@ -38,7 +38,25 @@
         {
           "type": "path",
           "data": {
-            "pathName": "C-Park"
+            "pathName": "SpCenter-M2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "M2-SpCenter"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Score_In_Speaker"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "SpCenter-ParkAtA2"
           }
         }
       ]

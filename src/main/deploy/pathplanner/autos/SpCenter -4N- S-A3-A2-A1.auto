@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.82,
-      "y": 6.48
+      "x": 1.3,
+      "y": 5.5
     },
-    "rotation": 60.0
+    "rotation": 0.0
   },
   "command": {
     "type": "sequential",
@@ -20,13 +20,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "AS-A1"
+            "pathName": "SpCenter-A3"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "A1-AS"
+            "pathName": "A3-SpCenter"
           }
         },
         {
@@ -38,13 +38,31 @@
         {
           "type": "path",
           "data": {
-            "pathName": "AS-M1"
+            "pathName": "SpCenter-A2"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "M1-AS"
+            "pathName": "A2-SpCenter"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Score_In_Speaker"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "SpCenter-A1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "A1-SpCenter"
           }
         },
         {
@@ -56,6 +74,6 @@
       ]
     }
   },
-  "folder": "Amp-Side",
+  "folder": "Center",
   "choreoAuto": false
 }

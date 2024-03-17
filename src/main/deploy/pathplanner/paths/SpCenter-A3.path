@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.41,
+        "x": 1.3,
         "y": 5.5
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.4286159882154656,
-        "y": 5.5
+        "x": 2.0485713043498155,
+        "y": 4.640840993393699
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Speaker Center"
     },
     {
       "anchor": {
-        "x": 1.3,
-        "y": 5.5
+        "x": 2.46,
+        "y": 4.4
       },
       "prevControl": {
-        "x": 1.2854677213287051,
-        "y": 5.5
+        "x": 1.9838583821311786,
+        "y": 4.761022134656883
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,8 +32,8 @@
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Bring Intake in ",
-      "waypointRelativePos": 0.3,
+      "name": "Intake Down",
+      "waypointRelativePos": 0,
       "command": {
         "type": "sequential",
         "data": {
@@ -41,13 +41,24 @@
             {
               "type": "named",
               "data": {
-                "name": "Stop_Note_Intake"
+                "name": "Set_Intake_Out"
               }
-            },
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Intake Note",
+      "waypointRelativePos": 0.65,
+      "command": {
+        "type": "sequential",
+        "data": {
+          "commands": [
             {
               "type": "named",
               "data": {
-                "name": "Set_Intake_In"
+                "name": "Start_Note_Intake"
               }
             }
           ]
@@ -63,13 +74,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0,
-    "rotateFast": false
+    "rotation": -36.94362459900666,
+    "rotateFast": true
   },
   "reversed": false,
   "folder": "Center Auto Paths",
   "previewStartingState": {
-    "rotation": -0.2314665863013414,
+    "rotation": 0.10916378845756709,
     "velocity": 0
   },
   "useDefaultConstraints": false

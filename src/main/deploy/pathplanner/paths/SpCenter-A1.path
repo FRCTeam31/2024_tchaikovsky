@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.3,
-        "y": 5.5
+        "x": 1.8636772408679951,
+        "y": 6.34186637742645
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Speaker Center"
     },
     {
       "anchor": {
-        "x": 2.41,
-        "y": 5.5
+        "x": 2.45,
+        "y": 6.76
       },
       "prevControl": {
-        "x": 1.4100000000000001,
-        "y": 5.5
+        "x": 1.7104193542207438,
+        "y": 6.177589277030413
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,8 +32,8 @@
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Bring out intake",
-      "waypointRelativePos": 0.0,
+      "name": "Intake Down",
+      "waypointRelativePos": 0,
       "command": {
         "type": "sequential",
         "data": {
@@ -50,7 +50,7 @@
     },
     {
       "name": "Intake Note",
-      "waypointRelativePos": 0.55,
+      "waypointRelativePos": 0.45,
       "command": {
         "type": "sequential",
         "data": {
@@ -74,13 +74,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0,
-    "rotateFast": false
+    "rotation": 33.79850324111527,
+    "rotateFast": true
   },
   "reversed": false,
   "folder": "Center Auto Paths",
   "previewStartingState": {
-    "rotation": -0.228526796211064,
+    "rotation": 0.05537491902364609,
     "velocity": 0
   },
   "useDefaultConstraints": false

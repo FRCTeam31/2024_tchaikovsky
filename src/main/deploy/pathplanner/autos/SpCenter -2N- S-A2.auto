@@ -20,13 +20,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "CS-A3"
+            "pathName": "SpCenter-A2"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "A3-CS"
+            "pathName": "A2-SpCenter"
           }
         },
         {
@@ -38,37 +38,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "CS-A2"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "A2-CS"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Score_In_Speaker"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "CS-A1"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "A1-CS"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Score_In_Speaker"
+            "pathName": "SpCenter-ParkAtA2"
           }
         }
       ]

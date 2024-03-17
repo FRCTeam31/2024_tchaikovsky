@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.8,
-      "y": 4.6
+      "x": 0.82,
+      "y": 6.48
     },
-    "rotation": -60.0
+    "rotation": 60.0
   },
   "command": {
     "type": "sequential",
@@ -20,13 +20,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "SS-A3"
+            "pathName": "SpAmp-A1"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "A3-SS"
+            "pathName": "A1-SpAmp"
           }
         },
         {
@@ -38,13 +38,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "SS-M4"
+            "pathName": "SpAmp-M1"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "M4-SS"
+            "pathName": "M1-SpAmp"
           }
         },
         {
@@ -56,6 +56,6 @@
       ]
     }
   },
-  "folder": "Source-Side",
+  "folder": "Amp-Side",
   "choreoAuto": false
 }

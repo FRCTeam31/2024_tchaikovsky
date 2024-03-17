@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.85,
-        "y": 5.89
+        "x": 2.4645829471839122,
+        "y": 4.400478710867333
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.76651403753258,
-        "y": 8.49700629509367
+        "x": 2.0131542515337277,
+        "y": 4.811138562997848
       },
       "isLocked": false,
       "linkedName": null
@@ -20,20 +20,20 @@
         "y": 5.5
       },
       "prevControl": {
-        "x": 3.9344907518643866,
-        "y": 5.204767887013252
+        "x": 2.196486555135272,
+        "y": 4.492925742608242
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Speaker Center"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Bring Note In",
-      "waypointRelativePos": 0.05,
+      "name": "Prepare to Shoot",
+      "waypointRelativePos": 0.1,
       "command": {
         "type": "sequential",
         "data": {
@@ -56,21 +56,21 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
-    "maxAngularVelocity": 360.0,
-    "maxAngularAcceleration": 540.0
+    "maxVelocity": 1.75,
+    "maxAcceleration": 1.75,
+    "maxAngularVelocity": 180.0,
+    "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.03466879540972598,
+    "rotation": 0.08066959478685368,
     "rotateFast": true
   },
   "reversed": false,
   "folder": "Center Auto Paths",
   "previewStartingState": {
-    "rotation": -14.210362244267992,
+    "rotation": -40.12822556926528,
     "velocity": 0
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

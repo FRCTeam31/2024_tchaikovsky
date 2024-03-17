@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.3,
-      "y": 5.5
+      "x": 0.8,
+      "y": 4.6
     },
-    "rotation": 0.0
+    "rotation": -60.0
   },
   "command": {
     "type": "sequential",
@@ -20,13 +20,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "CS-A3"
+            "pathName": "SpSource-A3"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "A3-CS"
+            "pathName": "A3-SpSource"
           }
         },
         {
@@ -38,13 +38,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "CS-A2"
+            "pathName": "SpSource-M4"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "A2-CS"
+            "pathName": "M4-SpSource"
           }
         },
         {
@@ -56,6 +56,6 @@
       ]
     }
   },
-  "folder": "Center",
+  "folder": "Source-Side",
   "choreoAuto": false
 }

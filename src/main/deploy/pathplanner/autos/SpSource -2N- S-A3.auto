@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.3,
-      "y": 5.5
+      "x": 0.8,
+      "y": 4.6
     },
-    "rotation": 0.0
+    "rotation": -60.0
   },
   "command": {
     "type": "sequential",
@@ -20,31 +20,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "CS-A2"
+            "pathName": "SpSource-A3"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "A2-CS"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Score_In_Speaker"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "CS-A1"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "A1-CS"
+            "pathName": "A3-SpSource"
           }
         },
         {
@@ -56,6 +38,6 @@
       ]
     }
   },
-  "folder": "Center",
+  "folder": "Source-Side",
   "choreoAuto": false
 }

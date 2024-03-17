@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.45,
-        "y": 6.76
+        "x": 7.82,
+        "y": 7.45
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.2081403448753285,
-        "y": 6.536448951159477
+        "x": 6.035772287400431,
+        "y": 7.440755296825909
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.3,
-        "y": 5.5
+        "x": 0.82,
+        "y": 6.48
       },
       "prevControl": {
-        "x": 1.9191454599125413,
-        "y": 6.323376971078266
+        "x": 1.886698428171631,
+        "y": 6.933527380568275
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Speaker Amp-Side"
     }
   ],
   "rotationTargets": [],
@@ -33,7 +33,7 @@
   "eventMarkers": [
     {
       "name": "Prepare to Shoot",
-      "waypointRelativePos": 0.15,
+      "waypointRelativePos": 0.2,
       "command": {
         "type": "sequential",
         "data": {
@@ -56,21 +56,21 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 1.75,
-    "maxAcceleration": 1.75,
-    "maxAngularVelocity": 180.0,
-    "maxAngularAcceleration": 360.0
+    "maxVelocity": 4.0,
+    "maxAcceleration": 4.0,
+    "maxAngularVelocity": 360.0,
+    "maxAngularAcceleration": 540.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.10916378845756709,
+    "rotation": 60.67619189974157,
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "Center Auto Paths",
+  "folder": "Amp Side Auto Paths",
   "previewStartingState": {
-    "rotation": 35.917711121441634,
+    "rotation": -1.190783827497893,
     "velocity": 0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

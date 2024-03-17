@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.4645829471839122,
-        "y": 4.400478710867333
+        "x": 2.41,
+        "y": 5.5
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.0131542515337277,
-        "y": 4.811138562997848
+        "x": 2.4286159882154656,
+        "y": 5.5
       },
       "isLocked": false,
       "linkedName": null
@@ -20,20 +20,20 @@
         "y": 5.5
       },
       "prevControl": {
-        "x": 2.196486555135272,
-        "y": 4.492925742608242
+        "x": 1.2854677213287051,
+        "y": 5.5
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Speaker Center"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "Prepare to Shoot",
-      "waypointRelativePos": 0.1,
+      "name": "Bring Intake in ",
+      "waypointRelativePos": 0.3,
       "command": {
         "type": "sequential",
         "data": {
@@ -63,13 +63,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.08066959478685368,
-    "rotateFast": true
+    "rotation": 0.0,
+    "rotateFast": false
   },
   "reversed": false,
   "folder": "Center Auto Paths",
   "previewStartingState": {
-    "rotation": -40.12822556926528,
+    "rotation": -0.2314665863013414,
     "velocity": 0
   },
   "useDefaultConstraints": false

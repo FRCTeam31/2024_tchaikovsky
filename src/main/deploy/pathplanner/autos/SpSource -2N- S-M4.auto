@@ -20,13 +20,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "SS-M4"
+            "pathName": "SpSource-M4"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "M4-SS"
+            "pathName": "M4-SpSource"
           }
         },
         {

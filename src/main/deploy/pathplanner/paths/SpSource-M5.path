@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.3,
-        "y": 5.5
+        "x": 0.8,
+        "y": 4.6
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.757269334358488,
-        "y": 5.066097339401886
+        "x": 3.4263451142661836,
+        "y": 2.9793289805913488
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Speaker Source-Side"
     },
     {
       "anchor": {
-        "x": 7.85,
-        "y": 5.89
+        "x": 7.752945611496423,
+        "y": 0.8899302932643233
       },
       "prevControl": {
-        "x": 4.156363628042571,
-        "y": 8.355519934463294
+        "x": 5.061816614510785,
+        "y": 2.1706282880953722
       },
       "nextControl": null,
       "isLocked": false,
@@ -33,7 +33,7 @@
   "eventMarkers": [
     {
       "name": "Set Intake Out",
-      "waypointRelativePos": 0.45,
+      "waypointRelativePos": 0.6,
       "command": {
         "type": "sequential",
         "data": {
@@ -49,8 +49,8 @@
       }
     },
     {
-      "name": "Intake note",
-      "waypointRelativePos": 0.9,
+      "name": "Intake Note",
+      "waypointRelativePos": 0.85,
       "command": {
         "type": "sequential",
         "data": {
@@ -74,13 +74,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -14.800086364401318,
+    "rotation": -15.018360631150598,
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "Center Auto Paths",
+  "folder": "Source Side Auto Paths",
   "previewStartingState": {
-    "rotation": -0.6458111432507809,
+    "rotation": -60.326805543460246,
     "velocity": 0
   },
   "useDefaultConstraints": true
