@@ -1,8 +1,8 @@
 package prime.control.LEDs;
 
-public enum LEDPattern {
+public enum LEDEffect {
   Solid,
   Blink,
-  Race,
+  Chase,
   Pulse,
 }

@@ -16,14 +16,16 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.ShooterConfig;
 import java.util.Map;
 import prime.control.LEDs.Color;
-import prime.control.LEDs.LEDSection;
+import prime.control.LEDs.Patterns.BlinkPattern;
+import prime.control.LEDs.Patterns.LEDPattern;
+import prime.control.LEDs.Patterns.SolidPattern;
 import prime.movers.IPlannable;
 
 public class Shooter extends SubsystemBase implements IPlannable {
 
   private ShooterConfig m_config;
 
-  private LEDs m_leds;
+  private PwmLEDs m_leds;
   private TalonFX m_talonFX;
   private VictorSPX m_victorSPX;
   private DoubleSolenoid m_elevationSolenoid;
@@ -72,7 +74,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * Creates a new Shooter with a given configuration
    * @param config
    */
-  public Shooter(ShooterConfig config, LEDs leds) {
+  public Shooter(ShooterConfig config, PwmLEDs leds) {
     m_config = config;
     m_leds = leds;
     setName("Shooter");
@@ -118,7 +120,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
   public void stopMotors() {
     m_talonFX.stopMotor();
     m_victorSPX.set(VictorSPXControlMode.PercentOutput, 0);
-    m_leds.restoreLastStripState();
+    m_leds.restorePersistentStripState();
   }
 
   /**
@@ -135,12 +137,12 @@ public class Shooter extends SubsystemBase implements IPlannable {
 
   public void setElevatorUp() {
     setElevator(Value.kForward);
-    m_leds.setStripTemporary(LEDSection.solidColor(Color.WHITE));
+    m_leds.setStripTemporaryPattern(new SolidPattern(Color.WHITE));
   }
 
   public void setElevatorDown() {
     setElevator(Value.kReverse);
-    m_leds.restoreLastStripState();
+    m_leds.restorePersistentStripState();
   }
 
   //#endregion
@@ -155,9 +157,9 @@ public class Shooter extends SubsystemBase implements IPlannable {
       m_lastNoteDetectedValue = newNoteDetectedValue;
 
       if (newNoteDetectedValue) {
-        m_leds.setStripTemporary(LEDSection.blinkColor(prime.control.LEDs.Color.ORANGE, 500));
+        m_leds.setStripTemporaryPattern(new BlinkPattern(prime.control.LEDs.Color.ORANGE, 0.5));
       } else {
-        m_leds.restoreLastStripState();
+        m_leds.restorePersistentStripState();
       }
     }
   }
@@ -187,7 +189,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
   public Command startShootingNoteCommand() {
     return Commands.runOnce(() -> {
       runShooter(1);
-      m_leds.setStripTemporary(LEDSection.raceColor(Color.GREEN, 25, isNoteLoaded()));
+      m_leds.setStripTemporaryPattern(LEDPattern.race(Color.GREEN, 25, isNoteLoaded()));
     });
   }
 

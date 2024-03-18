@@ -1,14 +1,14 @@
 package frc.robot.config;
 
-import edu.wpi.first.wpilibj.SerialPort.Port;
-
 public class LEDConfig {
 
-  public Port Port;
+  public int PwmPort;
   public int SectionCount;
+  public int PixelsPerSection;
 
-  public LEDConfig(Port port, int sectionCount) {
-    Port = port;
+  public LEDConfig(int pwmPort, int sectionCount, int pixelsPerSection) {
+    PwmPort = pwmPort;
     SectionCount = sectionCount;
+    PixelsPerSection = pixelsPerSection;
   }
 }

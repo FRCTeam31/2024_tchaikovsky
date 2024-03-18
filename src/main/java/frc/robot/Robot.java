@@ -13,7 +13,9 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.config.RobotConfig;
 import prime.control.LEDs.Color;
-import prime.control.LEDs.LEDSection;
+import prime.control.LEDs.Patterns.BlinkPattern;
+import prime.control.LEDs.Patterns.LEDPattern;
+import prime.control.LEDs.Patterns.PulsePattern;
 
 public class Robot extends TimedRobot {
 
@@ -28,16 +30,12 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     m_robotContainer = new RobotContainer(RobotConfig.getDefault());
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-
-    // Set LED startup pattern
-    m_robotContainer.LEDs.setStripAndSave(LEDSection.pulseColor(Color.WHITE, 100));
   }
 
   @Override
   public void disabledInit() {
     // Set disabled LED pattern
-    m_robotContainer.LEDs.setStripAndSave(LEDSection.pulseColor(onRedAlliance() ? Color.RED : Color.BLUE, 100));
+    m_robotContainer.LEDs.setStripPersistentPattern(new PulsePattern(onRedAlliance() ? Color.RED : Color.BLUE, 2));
   }
 
   /**
@@ -66,7 +64,7 @@ public class Robot extends TimedRobot {
     }
 
     // Set auto LED pattern
-    m_robotContainer.LEDs.setStripAndSave(LEDSection.blinkColor(onRedAlliance() ? Color.RED : Color.BLUE, 150));
+    m_robotContainer.LEDs.setStripPersistentPattern(new BlinkPattern(onRedAlliance() ? Color.RED : Color.BLUE, 0.15));
 
     var autoCommand = m_robotContainer.getAutonomousCommand();
     m_autonomousCommand = autoCommand; // Save the command for cancelling later if needed
@@ -97,7 +95,9 @@ public class Robot extends TimedRobot {
     }
 
     // Set teleop LED pattern
-    m_robotContainer.LEDs.setStripAndSave(LEDSection.raceColor(onRedAlliance() ? Color.RED : Color.BLUE, 40, false));
+    m_robotContainer.LEDs.setStripPersistentPattern(
+      LEDPattern.race(onRedAlliance() ? Color.RED : Color.BLUE, 40, false)
+    );
   }
 
   /**

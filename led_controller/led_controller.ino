@@ -86,13 +86,13 @@ class LEDSection {
 #define LEDS_PER_SECTION 78
 
 Adafruit_NeoPixel strip(NUMPIXELS, PIN1, NEO_GRB + NEO_KHZ800);
-LEDSection sectionStateBuffer[SECTION_COUNT] = {
+LEDSection pendingStateBuffer[SECTION_COUNT] = {
   // Section, R, G, B, Pattern, Speed, Direction
   LEDSection(255, 255, 0, Pulse, 100, false),
   // LEDSection(255, 255, 0, Pulse, 100, false),
   // LEDSection(255, 255, 0, Pulse, 100, false),
 };
-LEDSection sectionStates[SECTION_COUNT] = {
+LEDSection displayedStates[SECTION_COUNT] = {
   // Section, R, G, B, Pattern, Speed, Direction
   LEDSection(),
   // LEDSection(),
@@ -101,7 +101,6 @@ LEDSection sectionStates[SECTION_COUNT] = {
 
 void setup() {
   // Set up serial comms
-      byte buffer[7] = {-1, -1, -1, -1, -1, -1, -1}; // R, G, B, Pattern, Speed, Direction
   Serial.begin(115200);
   Serial.setTimeout(10);
 
@@ -126,7 +125,7 @@ void loop() {
       }
 
       // Save the packet to the section buffer
-      sectionStateBuffer[buffer[0]] = LEDSection(buffer[1], buffer[2], buffer[3], (LEDPattern)buffer[4], (uint16_t)buffer[5], buffer[6] == 1);
+      pendingStateBuffer[buffer[0]] = LEDSection(buffer[1], buffer[2], buffer[3], (LEDPattern)buffer[4], (uint16_t)buffer[5], buffer[6] == 1);
     }
 
   // Update each section of the LED strip
@@ -138,31 +137,31 @@ void loop() {
 
 void updateSection(int section) {
   // If the buffer data is different from the section state, set the new section pattern
-  if (sectionStateBuffer[section] != sectionStates[section]) {
-    if (sectionStateBuffer[section].pattern == Solid) {
-        setSolid(section, sectionStateBuffer[section].color);
+  if (pendingStateBuffer[section] != displayedStates[section]) {
+    if (pendingStateBuffer[section].pattern == Solid) {
+        setSolid(section, pendingStateBuffer[section].color);
         return;
     }
 
     // Move the buffer to the current state
-    sectionStates[section] = sectionStateBuffer[section];
+    displayedStates[section] = pendingStateBuffer[section];
 
     // Set section to frame 0: LEDs off
     // Save the timestamp
     setSolid(section, 0);
-    sectionStates[section].frame = 0;
-    sectionStates[section].lastFrameTimestamp = millis();
+    displayedStates[section].frame = 0;
+    displayedStates[section].lastFrameTimestamp = millis();
   } else {
     // No change, update the section's pattern
-    switch (sectionStates[section].pattern) {
+    switch (displayedStates[section].pattern) {
       case Blink:
-        updateBlink(section, sectionStateBuffer[section]);
+        updateBlink(section, pendingStateBuffer[section]);
         break;
       case Race:
-        updateRace(section, sectionStateBuffer[section]);
+        updateRace(section, pendingStateBuffer[section]);
         break;
       case Pulse:
-        updatePulse(section, sectionStateBuffer[section]);
+        updatePulse(section, pendingStateBuffer[section]);
         break;
     }
   }

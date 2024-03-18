@@ -4,7 +4,6 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.SerialPort.Port;
 import prime.control.PrimePIDConstants;
 
 public class RobotConfig {
@@ -122,7 +121,7 @@ public class RobotConfig {
 
     config.LimelightPose = new Pose3d(-0.2594356, 0, 0.5592318, new Rotation3d(0, 65, 180));
 
-    config.LEDs = new LEDConfig(Port.kUSB, 1);
+    config.LEDs = new LEDConfig(5, 3, 26);
 
     config.PneumaticsModuleId = 30;
 

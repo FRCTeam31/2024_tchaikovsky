@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -24,7 +23,7 @@ import frc.robot.config.RobotConfig;
 import frc.robot.subsystems.Climbers;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Intake;
-import frc.robot.subsystems.LEDs;
+import frc.robot.subsystems.PwmLEDs;
 import frc.robot.subsystems.Shooter;
 import java.util.Map;
 import prime.control.Controls;
@@ -45,40 +44,23 @@ public class RobotContainer {
   public Shooter Shooter;
   public Intake Intake;
   public Climbers Climbers;
-  public LEDs LEDs;
+  // public ArduinoLEDs LEDs;
+  public PwmLEDs LEDs;
   public Compressor Compressor;
 
   private CombinedCommands m_combinedCommands;
 
   public RobotContainer(RobotConfig config) {
-    m_driverController = new PrimeXboxController(Controls.DRIVER_PORT);
-    m_operatorController = new PrimeXboxController(Controls.OPERATOR_PORT);
+    // Save new config
+    m_config = config;
 
-    reconfigure(config);
-  }
-
-  /**
-   * Stops all commands and reconfigures the robot with a new config instance
-   * @param config
-   */
-  public void reconfigure(RobotConfig config) {
     try {
-      // Stop all commands
-      CommandScheduler.getInstance().cancelAll();
-
-      // Save new config
-      m_config = config;
-
-      // Close subsystems before reconfiguring
-      if (Drivetrain != null) Drivetrain.close();
-      if (Shooter != null) Shooter.close();
-      if (Intake != null) Intake.close();
-      if (Climbers != null) Climbers.close();
-      if (LEDs != null) LEDs.close();
-      if (Compressor != null) Compressor.close();
+      m_driverController = new PrimeXboxController(Controls.DRIVER_PORT);
+      m_operatorController = new PrimeXboxController(Controls.OPERATOR_PORT);
 
       // Create new subsystems
-      LEDs = new LEDs(m_config.LEDs);
+      // LEDs = new ArduinoLEDs(m_config.LEDs);
+      LEDs = new PwmLEDs(m_config.LEDs);
       Drivetrain = new Drivetrain(m_config, LEDs);
       Shooter = new Shooter(m_config.Shooter, LEDs);
       Intake = new Intake(m_config.Intake);
@@ -131,7 +113,6 @@ public class RobotContainer {
     //   d_autoTab.add(possibleAutos.get(i), autoCommand).withWidget(BuiltInWidgets.kCommand).withSize(2, 1);
     // }
 
-    // TODO: Add more important items from subsystems here
     d_driverTab
       .add("Field", Drivetrain.m_fieldWidget)
       .withWidget(BuiltInWidgets.kField)

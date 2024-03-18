@@ -27,7 +27,8 @@ import frc.robot.Robot;
 import frc.robot.config.RobotConfig;
 import java.util.Map;
 import prime.control.LEDs.Color;
-import prime.control.LEDs.LEDSection;
+import prime.control.LEDs.Patterns.PulsePattern;
+import prime.control.LEDs.Patterns.SolidPattern;
 import prime.control.SwerveControlSuppliers;
 import prime.movers.IPlannable;
 
@@ -74,12 +75,12 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
   public boolean m_snapToGyroEnabled = false;
   public PIDController m_snapToRotationController;
 
-  private LEDs m_leds;
+  private PwmLEDs m_leds;
 
   /**
    * Creates a new Drivetrain.
    */
-  public Drivetrain(RobotConfig config, LEDs leds) {
+  public Drivetrain(RobotConfig config, PwmLEDs leds) {
     setName("Drivetrain");
     m_config = config;
 
@@ -177,9 +178,9 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
 
       // If the robot is close to the setpoint, indicate that the robot is aligned
       if (Math.abs(desiredChassisSpeeds.omegaRadiansPerSecond) < 0.1) {
-        m_leds.setStripTemporary(LEDSection.solidColor(Color.GREEN));
+        m_leds.setStripTemporaryPattern(new SolidPattern(Color.GREEN));
       } else {
-        m_leds.setStripTemporary(LEDSection.pulseColor(Color.RED, 30));
+        m_leds.setStripTemporaryPattern(new PulsePattern(Color.RED, 5));
       }
     }
 
@@ -326,7 +327,7 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
         // If the driver is trying to rotate the robot, disable snap-to control
         if (Math.abs(controlSuppliers.Z.getAsDouble()) > 0.2) {
           setSnapToGyroEnabled(false);
-          m_leds.restoreLastStripState();
+          m_leds.restorePersistentStripState();
         }
 
         // Convert inputs to MPS
