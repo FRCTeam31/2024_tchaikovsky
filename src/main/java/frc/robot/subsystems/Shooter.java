@@ -17,7 +17,7 @@ import frc.robot.config.ShooterConfig;
 import java.util.Map;
 import prime.control.LEDs.Color;
 import prime.control.LEDs.Patterns.BlinkPattern;
-import prime.control.LEDs.Patterns.LEDPattern;
+import prime.control.LEDs.Patterns.ChasePattern;
 import prime.control.LEDs.Patterns.SolidPattern;
 import prime.movers.IPlannable;
 
@@ -189,7 +189,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
   public Command startShootingNoteCommand() {
     return Commands.runOnce(() -> {
       runShooter(1);
-      m_leds.setStripTemporaryPattern(LEDPattern.race(Color.GREEN, 25, isNoteLoaded()));
+      m_leds.setStripTemporaryPattern(new ChasePattern(Color.GREEN, 0.25, isNoteLoaded()));
     });
   }
 

@@ -14,8 +14,8 @@ public class ChasePattern extends LEDPattern {
    * @param color The color of the pattern
    * @param speed The speed of the pattern in seconds per iteration
    */
-  public ChasePattern(prime.control.LEDs.Color color, double speed) {
-    super(color, LEDEffect.Chase, speed, false);
+  public ChasePattern(prime.control.LEDs.Color color, double speed, boolean reversed) {
+    super(color, LEDEffect.Chase, speed, reversed);
   }
 
   /**

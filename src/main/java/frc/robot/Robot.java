@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.config.RobotConfig;
 import prime.control.LEDs.Color;
 import prime.control.LEDs.Patterns.BlinkPattern;
-import prime.control.LEDs.Patterns.LEDPattern;
+import prime.control.LEDs.Patterns.ChasePattern;
 import prime.control.LEDs.Patterns.PulsePattern;
 
 public class Robot extends TimedRobot {
@@ -96,7 +96,7 @@ public class Robot extends TimedRobot {
 
     // Set teleop LED pattern
     m_robotContainer.LEDs.setStripPersistentPattern(
-      LEDPattern.race(onRedAlliance() ? Color.RED : Color.BLUE, 40, false)
+      new ChasePattern(onRedAlliance() ? Color.RED : Color.BLUE, 0.75, false)
     );
   }
 
