@@ -37,7 +37,65 @@ public class ChasePattern extends LEDPattern {
     var currentTime = System.currentTimeMillis();
 
     if (currentTime - LastFrameTime >= (frameSpeedS * 1000)) {
-      // TODO: Implement ChasePattern
+      if (!Reversed) {
+        // Set the chase group
+        var chaseGroupFirst = startingIndex + Frame;
+        var chaseGroupLast = chaseGroupFirst - CHASE_LENGTH;
+        for (long i = chaseGroupLast; i <= chaseGroupFirst; i++) {
+          if (i >= startingIndex && i < startingIndex + length) {
+            buffer.setRGB((int) i, Color.r, Color.g, Color.b);
+          }
+        }
+
+        // Set the fading trail
+        var fadeTrailFirst = chaseGroupLast - 1;
+        var fadeTrailLast = fadeTrailFirst - FADE_LENGTH;
+        for (long i = fadeTrailLast; i <= fadeTrailFirst; i++) {
+          if (i >= startingIndex && i < startingIndex + length) {
+            var brightnessScalar = (float) i / FADE_LENGTH;
+            buffer.setRGB(
+              (int) i,
+              (byte) (Color.r * brightnessScalar),
+              (byte) (Color.g * brightnessScalar),
+              (byte) (Color.b * brightnessScalar)
+            );
+          }
+        }
+
+        Frame = Frame + 1;
+        if (Frame >= totalFrameCount) {
+          Frame = 0;
+        }
+      } else {
+        // Set the chase group
+        var chaseGroupFirst = startingIndex + length - Frame;
+        var chaseGroupLast = chaseGroupFirst + CHASE_LENGTH;
+        for (long i = chaseGroupLast; i >= chaseGroupFirst; i--) {
+          if (i >= startingIndex && i < startingIndex + length) {
+            buffer.setRGB((int) i, Color.r, Color.g, Color.b);
+          }
+        }
+
+        // Set the fading trail
+        var fadeTrailFirst = chaseGroupLast + 1;
+        var fadeTrailLast = fadeTrailFirst + FADE_LENGTH;
+        for (long i = fadeTrailLast; i >= fadeTrailFirst; i--) {
+          if (i >= startingIndex && i < startingIndex + length) {
+            var brightnessScalar = (float) (length - i) / FADE_LENGTH;
+            buffer.setRGB(
+              (int) i,
+              (byte) (Color.r * brightnessScalar),
+              (byte) (Color.g * brightnessScalar),
+              (byte) (Color.b * brightnessScalar)
+            );
+          }
+        }
+
+        Frame = Frame - 1;
+        if (Frame <= 0) {
+          Frame = totalFrameCount;
+        }
+      }
 
       LastFrameTime = System.currentTimeMillis();
     }
