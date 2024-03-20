@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.drive;
 
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
@@ -26,6 +26,10 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.config.RobotConfig;
+import frc.robot.subsystems.Limelight;
+import frc.robot.subsystems.PwmLEDs;
+import frc.robot.subsystems.SwerveModule;
+
 import java.util.Map;
 import prime.control.LEDs.Color;
 import prime.control.LEDs.Patterns.PulsePattern;
@@ -308,6 +312,11 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     );
   }
 
+  public boolean isTrustedEstimation(LimelightPose llPose) {
+    return llPose.AvgTagDistanceMeters < 4; 
+      // && llPose.AvgTagArea < 0.50;
+  }
+
   //#endregion
 
   /**
@@ -324,13 +333,15 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     if (withinTrustedVelocity() && Limelight.isValidApriltag(primaryTarget)) {
       var llPose = Limelight.getRobotPose(Alliance.Blue);
 
-      m_poseEstimator.addVisionMeasurement(llPose.Pose.toPose2d(), llPose.Timestamp, llPose.StdDeviations);
-      // Logger.recordOutput("Limelight Pose2d", llPose.Pose.getPose2d());
-      // var std = new double[3];
-      // for (int i = 0; i < 3; i++) {
-      //   std[i] = llPose.StdDeviations.get(i, 0);
-      // }
-      // Logger.recordOutput("Limelight Standard Deviations", std);
+      if (isTrustedEstimation(llPose)) {
+        m_poseEstimator.addVisionMeasurement(llPose.Pose.toPose2d(), llPose.Timestamp, llPose.StdDeviations);
+        // Logger.recordOutput("Limelight Pose2d", llPose.Pose.getPose2d());
+        // var std = new double[3];
+        // for (int i = 0; i < 3; i++) {
+        //   std[i] = llPose.StdDeviations.get(i, 0);
+        // }
+        // Logger.recordOutput("Limelight Standard Deviations", std);
+      }
     }
     m_poseEstimator.update(gyroAngle, getModulePositions());
 
@@ -396,7 +407,7 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
       var targetedAprilTag = Limelight.getApriltagId();
 
       // If targetedAprilTag is in validTargets, snap to its offset
-      if (targetedAprilTag != -1 && Limelight.isSpeakerCenterTarget(targetedAprilTag)) {
+      if (Limelight.isSpeakerCenterTarget(targetedAprilTag)) {
         // Calculate the target heading
         var horizontalOffsetDeg = Limelight.getHorizontalOffsetFromTarget().getDegrees();
         var robotHeadingDeg = getHeading();

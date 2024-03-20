@@ -15,7 +15,7 @@ public class LimelightPose {
   public double Timestamp;
   public double TagCount;
   public double TagSpan;
-  public double AvgTagDistance;
+  public double AvgTagDistanceMeters;
   public double AvgTagArea;
   public Matrix<N3, N1> StdDeviations;
 
@@ -39,7 +39,7 @@ public class LimelightPose {
     Timestamp = Timer.getFPGATimestamp() - (latencyMs / 1000.0);
     TagCount = data[7];
     TagSpan = data[8];
-    AvgTagDistance = data[9];
+    AvgTagDistanceMeters = data[9];
     AvgTagArea = data[10];
     StdDeviations = stdDeviations;
   }
