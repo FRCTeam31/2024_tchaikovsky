@@ -5,6 +5,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -53,6 +54,8 @@ public class Intake extends SubsystemBase implements IPlannable {
     m_angleRight.setInverted(m_config.NeoRightInverted);
 
     m_angleStartPoint = getPositionRight();
+    SmartDashboard.putNumber("Intake/AngleStartPoint", m_angleStartPoint);
+
     m_anglePid = m_config.IntakeAnglePid.getPIDController(0.02);
     m_anglePid.setSetpoint(m_angleStartPoint);
     m_angleToggledIn = true;
@@ -103,7 +106,10 @@ public class Intake extends SubsystemBase implements IPlannable {
   public void setIntakeRotation() {
     var currentPosition = getPositionRight();
     var setpoint = m_angleToggledIn ? m_angleStartPoint : (m_angleStartPoint - m_config.PositionDelta);
+    SmartDashboard.putNumber("Intake/AngleSetpoint", setpoint);
+
     var pidOutput = m_anglePid.calculate(currentPosition, setpoint);
+    SmartDashboard.putNumber("Intake/AnglePIDOutput", pidOutput);
 
     // artificial limits
     if (currentPosition < m_angleStartPoint && pidOutput > 0 && !m_topLimitSwitch.get()) {
@@ -121,12 +127,16 @@ public class Intake extends SubsystemBase implements IPlannable {
 
   @Override
   public void periodic() {
-    // var currentPosition = getPositionRight();
-    // if (m_topLimitSwitch.get()) {
-    //   m_angleStartPoint = currentPosition;
-    // } else if (m_bottomLimitSwitch.get()) {
-    //   // m_angleStartPoint = currentPosition - m_config.PositionDelta;
-    // }
+    // Level2 Logging
+    SmartDashboard.putBoolean("Intake/ToggledIn", m_angleToggledIn);
+
+    SmartDashboard.putNumber("Intake/ArmPositionRight", getPositionRight());
+    SmartDashboard.putNumber("Intake/ArmPositionLeft", getPositionLeft());
+
+    SmartDashboard.putNumber("Intake/RightMotorOutput", m_angleRight.get());
+    SmartDashboard.putNumber("Intake/LeftMotorOutput", m_angleLeft.get());
+
+    SmartDashboard.putNumber("Intake/RollersOutput", m_rollers.get());
   }
 
   //#region Commands

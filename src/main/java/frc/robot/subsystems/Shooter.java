@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -153,15 +154,22 @@ public class Shooter extends SubsystemBase implements IPlannable {
   public void periodic() {
     var newNoteDetectedValue = isNoteLoaded();
     if (newNoteDetectedValue != m_lastNoteDetectedValue) {
-      // Save the new value
-      m_lastNoteDetectedValue = newNoteDetectedValue;
-
-      if (newNoteDetectedValue) {
-        m_leds.setStripTemporaryPattern(new BlinkPattern(prime.control.LEDs.Color.ORANGE, 0.5));
+      if (newNoteDetectedValue && !m_lastNoteDetectedValue) {
+        m_leds.setStripTemporaryPattern(new BlinkPattern(prime.control.LEDs.Color.ORANGE, 0.2));
       } else {
         m_leds.restorePersistentStripState();
       }
+
+      // Save the new value
+      m_lastNoteDetectedValue = newNoteDetectedValue;
     }
+
+    // Level2 Logging
+    SmartDashboard.putString("Shooter/ElevationSolenoid", m_elevationSolenoid.get().name());
+    SmartDashboard.putNumber("Shooter/LaunchMotorOutput", m_talonFX.get());
+    SmartDashboard.putNumber("Shooter/LaunchMotorVelocity", m_talonFX.getVelocity().getValueAsDouble());
+    SmartDashboard.putNumber("Shooter/GuideMotorOutput", m_victorSPX.getMotorOutputPercent());
+    SmartDashboard.putBoolean("Shooter/NoteDetected", newNoteDetectedValue);
   }
 
   //#region Shooter Commands

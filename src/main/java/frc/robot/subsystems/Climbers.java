@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -162,6 +163,18 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
     // d_leftLimitEntry.setBoolean(m_leftLimitSwitch.get());
     // d_rightLimitEntry.setBoolean(m_rightLimitSwitch.get());
     d_climbControlsActiveEntry.setBoolean(m_climbControlsEnabled);
+
+    // Level2 Logging
+    SmartDashboard.putBoolean("Climbers/ControlsEnabled", m_climbControlsEnabled);
+
+    SmartDashboard.putNumber("Climbers/LeftMotorOutput", m_leftVictorSPX.getMotorOutputPercent());
+    SmartDashboard.putNumber("Climbers/RightMotorOutput", m_rightVictorSPX.getMotorOutputPercent());
+
+    SmartDashboard.putBoolean("Climbers/LeftLimitSwitch", m_leftLimitSwitch.get());
+    SmartDashboard.putBoolean("Climbers/RightLimitSwitch", m_rightLimitSwitch.get());
+
+    SmartDashboard.putString("Climbers/LeftClutchSolenoid", m_clutchSolenoidLeft.get().name());
+    SmartDashboard.putString("Climbers/RightClutchSolenoid", m_clutchSolenoidRight.get().name());
   }
 
   //#endregion

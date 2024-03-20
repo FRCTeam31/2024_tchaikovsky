@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -298,6 +299,10 @@ public class Limelight extends SubsystemBase implements AutoCloseable {
   public void periodic() {
     d_tidEntry.setDouble(getApriltagId());
     d_txEntry.setDouble(getHorizontalOffsetFromTarget().getDegrees());
+
+    // Level2 logging
+    SmartDashboard.putNumber("Limelight/PrimaryTargetID", getApriltagId());
+    SmartDashboard.putNumber("Limelight/HorizontalOffset", getHorizontalOffsetFromTarget().getDegrees());
   }
 
   public boolean isSpeakerCenterTarget(int apriltagId) {

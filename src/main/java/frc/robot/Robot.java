@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -29,6 +30,10 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
+    // Start L2 logging
+    DataLogManager.start();
+    DriverStation.startDataLog(DataLogManager.getLog());
+
     m_robotContainer = new RobotContainer(RobotConfig.getDefault());
   }
 
@@ -79,6 +84,7 @@ public class Robot extends TimedRobot {
     // Schedule the auto command
     if (onRedAlliance()) m_robotContainer.Drivetrain.resetGyro();
 
+    SmartDashboard.putString("Robot/Auto/CommandName", autoCommand.getName());
     autoCommand.schedule();
   }
 

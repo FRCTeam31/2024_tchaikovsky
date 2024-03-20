@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -323,12 +324,23 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
    */
   @Override
   public void periodic() {
-    // Update odometry
     var gyroAngle = m_gyro.getRotation2d();
-    d_currentHeading.setDouble(gyroAngle.getDegrees());
 
+    // Level2 Logging
+    var chassisSpeed = getChassisSpeeds();
+    SmartDashboard.putNumber("Drive/Speed/Omega (rad/s)", chassisSpeed.omegaRadiansPerSecond);
+    SmartDashboard.putNumber("Drive/Gyro (deg)", gyroAngle.getDegrees());
+
+    var estimatedPose = m_poseEstimator.getEstimatedPosition();
+    SmartDashboard.putNumber("Drive/Estimated X (m)", estimatedPose.getX());
+    SmartDashboard.putNumber("Drive/Estimator Y (m)", estimatedPose.getY());
+    SmartDashboard.putNumber("Drive/Estimator Rotation (deg)", estimatedPose.getRotation().getDegrees());
+
+    /// Pose estimation
     // If we have a valid target and we're moving in a trusted velocity range, update the pose estimator
     var primaryTarget = Limelight.getApriltagId();
+    SmartDashboard.putBoolean("Drive/Limelight/IsValidApriltag", Limelight.isValidApriltag(primaryTarget));
+    SmartDashboard.putBoolean("Drive/WithinTrustedVelocity", withinTrustedVelocity());
     if (withinTrustedVelocity() && Limelight.isValidApriltag(primaryTarget)) {
       var llPose = Limelight.getRobotPose(Alliance.Blue);
 
@@ -343,11 +355,13 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
         // Logger.recordOutput("Limelight Standard Deviations", std);
       }
     }
-    m_poseEstimator.update(gyroAngle, getModulePositions());
 
+    // Update odometry
+    m_poseEstimator.update(gyroAngle, getModulePositions());
     m_fieldWidget.setRobotPose(m_poseEstimator.getEstimatedPosition());
 
     // Update shuffleboard entries
+    d_currentHeading.setDouble(gyroAngle.getDegrees());
     d_snapToEnabledEntry.setBoolean(m_snapToGyroEnabled);
     d_snapAngle.setDouble(m_snapToRotationController.getSetpoint());
   }
