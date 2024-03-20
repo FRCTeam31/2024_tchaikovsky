@@ -1,7 +1,5 @@
 package frc.robot.config;
 
-import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
-import com.pathplanner.lib.util.ReplanningConfig;
 import prime.control.PrimePIDConstants;
 
 public class DrivetrainConfig {
@@ -64,15 +62,5 @@ public class DrivetrainConfig {
     SnapToPID = snapToPID;
     PathingTranslationPid = pathingTranslationPid;
     PathingRotationPid = pathingRotationPid;
-  }
-
-  public HolonomicPathFollowerConfig getHolonomicPathFollowerConfig(boolean onBlueSide) {
-    return new HolonomicPathFollowerConfig(
-      PathingTranslationPid.toPIDConstants(),
-      PathingRotationPid.toPIDConstants(),
-      MaxSpeedMetersPerSecond,
-      MaxAccelerationMetersPerSecondSquared,
-      new ReplanningConfig(onBlueSide, onBlueSide)
-    );
   }
 }

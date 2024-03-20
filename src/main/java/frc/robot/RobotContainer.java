@@ -146,9 +146,6 @@ public class RobotContainer {
       )
     );
 
-    // Pose estimation from Limelight, if a target is in-view
-    m_driverController.back().onTrue(Drivetrain.estimatePoseCommand());
-
     // While holding b, auto-aim the robot to the apriltag target using snap-to
     m_driverController.leftBumper().whileTrue(Drivetrain.enableLockOn()).onFalse(Drivetrain.disableLockOn());
 
@@ -222,8 +219,7 @@ public class RobotContainer {
         .andThen(Intake.ejectNoteCommand())
         .andThen(new WaitCommand(0.75))
         .andThen(Shooter.stopMotorsCommand())
-        .andThen(Intake.stopRollersCommand())
-        .andThen(Drivetrain.estimatePoseCommand());
+        .andThen(Intake.stopRollersCommand());
     }
 
     /**

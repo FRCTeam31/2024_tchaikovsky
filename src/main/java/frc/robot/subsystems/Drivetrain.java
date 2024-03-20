@@ -3,7 +3,9 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PathPlannerLogging;
+import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -15,7 +17,6 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -31,6 +32,7 @@ import prime.control.LEDs.Patterns.PulsePattern;
 import prime.control.LEDs.Patterns.SolidPattern;
 import prime.control.SwerveControlSuppliers;
 import prime.movers.IPlannable;
+import prime.physics.LimelightPose;
 
 public class Drivetrain extends SubsystemBase implements IPlannable {
 
@@ -130,7 +132,13 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
       this::setOdometryPose, // Method to reset odometry (will be called if your auto has a starting pose)
       this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
       this::drive, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
-      m_config.Drivetrain.getHolonomicPathFollowerConfig(Robot.onBlueAlliance()),
+      new HolonomicPathFollowerConfig(
+        m_config.Drivetrain.PathingTranslationPid.toPIDConstants(),
+        m_config.Drivetrain.PathingRotationPid.toPIDConstants(),
+        m_config.Drivetrain.MaxSpeedMetersPerSecond,
+        m_config.Drivetrain.MaxAccelerationMetersPerSecondSquared,
+        new ReplanningConfig(true, true)
+      ),
       Robot::onRedAlliance, // BooleanSupplier to tell PathPlanner whether or not to flip the path over the Y midline of the field
       this // Reference to this subsystem to set requirements
     );
@@ -290,11 +298,14 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
    * @param pose The pose of the robot
    * @param cameraLatencyMs The latency of the camera's pipeline in milliseconds
    */
-  public void feedRobotPoseEstimation(Pose2d pose, long cameraLatencyMs) {
-    var currentEpochSeconds = Timer.getFPGATimestamp();
-    var poseTimestampSeconds = currentEpochSeconds - (cameraLatencyMs / 1000.0);
-    m_poseEstimator.addVisionMeasurement(pose, poseTimestampSeconds);
-    Limelight.blinkLed(2); // Blink LED to indicate that the pose was accepted
+  public void feedRobotPoseEstimation(LimelightPose llPose) {}
+
+  public boolean withinTrustedVelocity() {
+    return (
+      getChassisSpeeds().omegaRadiansPerSecond < 0.1 || // 0.1 rad/s is about 6 degrees/s
+      getChassisSpeeds().vxMetersPerSecond < 0.2 ||
+      getChassisSpeeds().vyMetersPerSecond < 0.2
+    );
   }
 
   //#endregion
@@ -307,6 +318,20 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     // Update odometry
     var gyroAngle = m_gyro.getRotation2d();
     d_currentHeading.setDouble(gyroAngle.getDegrees());
+
+    // If we have a valid target and we're moving in a trusted velocity range, update the pose estimator
+    var primaryTarget = Limelight.getApriltagId();
+    if (withinTrustedVelocity() && Limelight.isValidApriltag(primaryTarget)) {
+      var llPose = Limelight.getRobotPose(Alliance.Blue);
+
+      m_poseEstimator.addVisionMeasurement(llPose.Pose.toPose2d(), llPose.Timestamp, llPose.StdDeviations);
+      // Logger.recordOutput("Limelight Pose2d", llPose.Pose.getPose2d());
+      // var std = new double[3];
+      // for (int i = 0; i < 3; i++) {
+      //   std[i] = llPose.StdDeviations.get(i, 0);
+      // }
+      // Logger.recordOutput("Limelight Standard Deviations", std);
+    }
     m_poseEstimator.update(gyroAngle, getModulePositions());
 
     m_fieldWidget.setRobotPose(m_poseEstimator.getEstimatedPosition());
@@ -371,7 +396,7 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
       var targetedAprilTag = Limelight.getApriltagId();
 
       // If targetedAprilTag is in validTargets, snap to its offset
-      if (targetedAprilTag != -1 && Limelight.tagIdIsASpeakerTarget(targetedAprilTag)) {
+      if (targetedAprilTag != -1 && Limelight.isSpeakerCenterTarget(targetedAprilTag)) {
         // Calculate the target heading
         var horizontalOffsetDeg = Limelight.getHorizontalOffsetFromTarget().getDegrees();
         var robotHeadingDeg = getHeading();
@@ -397,39 +422,8 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     });
   }
 
-  /**
-   * Feeds the robot's pose from the Limelight into the pose estimator, if a target is detected
-   * @return
-   */
-  public Command estimatePoseCommand() {
-    return Commands.runOnce(() -> {
-      if (
-        getChassisSpeeds().omegaRadiansPerSecond >= 0.1 || // 0.1 rad/s is about 6 degrees/s
-        getChassisSpeeds().vxMetersPerSecond >= 0.2 ||
-        getChassisSpeeds().vyMetersPerSecond >= 0.2
-      ) {
-        DriverStation.reportWarning(">> [DRIVE] Moving too fast for pose estimation!", false);
-        return;
-      }
-
-      if (Limelight.getApriltagId() != -1) {
-        var robotPose = Limelight.getRobotPose(Alliance.Blue);
-        var cameraLatencyMs = Limelight.getTotalLatencyMs();
-
-        feedRobotPoseEstimation(robotPose.toPose2d(), cameraLatencyMs);
-      }
-    });
-  }
-
   public Map<String, Command> getNamedCommands() {
-    return Map.of(
-      "Estimate_Pose",
-      estimatePoseCommand(),
-      "Enable_Lock_On",
-      enableLockOn(),
-      "Disable_Lock_On",
-      disableLockOn()
-    );
+    return Map.of("Enable_Lock_On", enableLockOn(), "Disable_Lock_On", disableLockOn());
   }
 
   //#endregion
