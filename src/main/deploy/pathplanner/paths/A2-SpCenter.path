@@ -64,12 +64,12 @@
   "goalEndState": {
     "velocity": 0,
     "rotation": 0.0,
-    "rotateFast": false
+    "rotateFast": true
   },
   "reversed": false,
   "folder": "Center Auto Paths",
   "previewStartingState": {
-    "rotation": -0.2314665863013414,
+    "rotation": 6.7,
     "velocity": 0
   },
   "useDefaultConstraints": false

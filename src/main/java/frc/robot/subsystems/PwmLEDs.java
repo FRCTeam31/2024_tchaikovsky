@@ -21,15 +21,17 @@ public class PwmLEDs extends SubsystemBase {
   private LEDPattern m_persistentPatterns[];
   private LEDPattern m_temporaryPatterns[];
 
-  public PwmLEDs(LEDConfig m_config) {
+  public PwmLEDs(LEDConfig config) {
+    m_config = config;
     m_led = new AddressableLED(5);
     m_ledBuffer = new AddressableLEDBuffer(78);
 
     // Set the LEDs to a default state
-    setStripPersistentPattern(new PulsePattern(Color.WHITE, 4));
     m_temporaryPatterns = new LEDPattern[m_config.SectionCount];
+    m_persistentPatterns = new LEDPattern[m_config.SectionCount];
     m_led.start();
     updateLoopExecutor.scheduleAtFixedRate(this::ledUpdateLoop, 0, 2, java.util.concurrent.TimeUnit.MILLISECONDS);
+    setStripPersistentPattern(new PulsePattern(Color.WHITE, 4));
   }
 
   /**

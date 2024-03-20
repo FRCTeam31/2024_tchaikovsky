@@ -66,7 +66,7 @@ public class RobotContainer {
       Intake = new Intake(m_config.Intake);
       Climbers = new Climbers(m_config.Climbers);
       Compressor = new Compressor(m_config.PneumaticsModuleId, PneumaticsModuleType.REVPH);
-      Compressor.enableDigital();
+      // Compressor.enableDigital();
 
       m_combinedCommands = new CombinedCommands();
 
@@ -150,7 +150,7 @@ public class RobotContainer {
     m_driverController.back().onTrue(Drivetrain.estimatePoseCommand());
 
     // While holding b, auto-aim the robot to the apriltag target using snap-to
-    m_driverController.leftBumper().onTrue(Drivetrain.enableLockOn()).onFalse(Drivetrain.disableLockOn());
+    m_driverController.leftBumper().whileTrue(Drivetrain.enableLockOn()).onFalse(Drivetrain.disableLockOn());
 
     // Controls for Snap-To with field-relative setpoints
     m_driverController.x().onTrue(Drivetrain.disableSnapToCommand());

@@ -130,7 +130,7 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
       this::setOdometryPose, // Method to reset odometry (will be called if your auto has a starting pose)
       this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
       this::drive, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
-      m_config.Drivetrain.getHolonomicPathFollowerConfig(),
+      m_config.Drivetrain.getHolonomicPathFollowerConfig(Robot.onBlueAlliance()),
       Robot::onRedAlliance, // BooleanSupplier to tell PathPlanner whether or not to flip the path over the Y midline of the field
       this // Reference to this subsystem to set requirements
     );
@@ -335,7 +335,7 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
         var inputYMPS = controlSuppliers.Y.getAsDouble() * m_config.Drivetrain.MaxSpeedMetersPerSecond;
         var inputRotationRadiansPS = controlSuppliers.Z.getAsDouble() * m_config.Drivetrain.MaxAngularSpeedRadians;
 
-        driveFieldRelative(inputXMPS, inputYMPS, inputRotationRadiansPS);
+        driveFieldRelative(-inputXMPS, inputYMPS, -inputRotationRadiansPS);
       });
   }
 
@@ -366,7 +366,7 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
    * @return
    */
   public Command enableLockOn() {
-    return Commands.runOnce(() -> {
+    return Commands.run(() -> {
       // m_lockOnEnabled = true;
       var targetedAprilTag = Limelight.getApriltagId();
 

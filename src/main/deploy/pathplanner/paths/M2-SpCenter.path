@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.85,
-        "y": 5.89
+        "x": 7.9,
+        "y": 5.86
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.76651403753258,
-        "y": 8.49700629509367
+        "x": 4.81651403753258,
+        "y": 8.46700629509367
       },
       "isLocked": false,
       "linkedName": null
@@ -29,7 +29,19 @@
     }
   ],
   "rotationTargets": [],
-  "constraintZones": [],
+  "constraintZones": [
+    {
+      "name": "New Constraints Zone",
+      "minWaypointRelativePos": 0.7,
+      "maxWaypointRelativePos": 1.0,
+      "constraints": {
+        "maxVelocity": 5.0,
+        "maxAcceleration": 2.25,
+        "maxAngularVelocity": 360.0,
+        "maxAngularAcceleration": 540.0
+      }
+    }
+  ],
   "eventMarkers": [
     {
       "name": "Bring Note In",
@@ -56,7 +68,7 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 4.0,
+    "maxVelocity": 5.0,
     "maxAcceleration": 4.0,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 540.0

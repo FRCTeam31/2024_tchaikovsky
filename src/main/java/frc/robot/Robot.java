@@ -77,6 +77,8 @@ public class Robot extends TimedRobot {
     }
 
     // Schedule the auto command
+    if (onRedAlliance()) m_robotContainer.Drivetrain.resetGyro();
+
     autoCommand.schedule();
   }
 

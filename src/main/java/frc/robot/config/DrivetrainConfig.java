@@ -66,13 +66,13 @@ public class DrivetrainConfig {
     PathingRotationPid = pathingRotationPid;
   }
 
-  public HolonomicPathFollowerConfig getHolonomicPathFollowerConfig() {
+  public HolonomicPathFollowerConfig getHolonomicPathFollowerConfig(boolean onBlueSide) {
     return new HolonomicPathFollowerConfig(
       PathingTranslationPid.toPIDConstants(),
       PathingRotationPid.toPIDConstants(),
       MaxSpeedMetersPerSecond,
       MaxAccelerationMetersPerSecondSquared,
-      new ReplanningConfig(true, true)
+      new ReplanningConfig(onBlueSide, onBlueSide)
     );
   }
 }

@@ -45,11 +45,11 @@ public class RobotConfig {
         Units.feetToMeters(15), // Max Acceleration MPS^2
         Math.PI * 3, // Max Angular Speed in Radians
         0.5,
-        new PrimePIDConstants(0.019, 0, 0, 0, 0.091, 0, 0.05), // Drive PID
+        new PrimePIDConstants(0.019, 0, 0, 0, 0.1, 0, 0.05), // Drive PID
         new PrimePIDConstants(2, 0, 0), // Steering PID
         new PrimePIDConstants(6, 0, 0), // SnapTo PID
-        new PrimePIDConstants(1.75, 0, 0), // Pathing Translation PID
-        new PrimePIDConstants(0.5, 0, 0), // Pathing Rotation PID
+        new PrimePIDConstants(2, 0, 0), // Pathing Translation PID
+        new PrimePIDConstants(2, 0, 0), // Pathing Rotation PID
         0.15,
         0.5
       );
@@ -63,7 +63,7 @@ public class RobotConfig {
         2,
         3,
         4,
-        0.407,
+        0.407 + 0.25,
         true,
         true,
         new Translation2d(wheelLocationAbsoluteX, wheelLocationAbsoluteY),
@@ -77,7 +77,7 @@ public class RobotConfig {
         5,
         6,
         7,
-        0.105,
+        0.105 + 0.25,
         true,
         true,
         new Translation2d(wheelLocationAbsoluteX, -wheelLocationAbsoluteY),
@@ -91,7 +91,7 @@ public class RobotConfig {
         8,
         9,
         10,
-        0.459,
+        0.459 + 0.25,
         true,
         true,
         new Translation2d(-(wheelLocationAbsoluteX), -(wheelLocationAbsoluteY)),
@@ -105,7 +105,7 @@ public class RobotConfig {
         11,
         12,
         13,
-        0.421,
+        0.421 + 0.25,
         true,
         true,
         new Translation2d(-wheelLocationAbsoluteX, wheelLocationAbsoluteY),
