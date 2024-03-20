@@ -29,7 +29,6 @@ import frc.robot.config.RobotConfig;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.PwmLEDs;
 import frc.robot.subsystems.SwerveModule;
-
 import java.util.Map;
 import prime.control.LEDs.Color;
 import prime.control.LEDs.Patterns.PulsePattern;
@@ -313,8 +312,8 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
   }
 
   public boolean isTrustedEstimation(LimelightPose llPose) {
-    return llPose.AvgTagDistanceMeters < 4; 
-      // && llPose.AvgTagArea < 0.50;
+    return llPose.AvgTagDistanceMeters < 4;
+    // && llPose.AvgTagArea < 0.50;
   }
 
   //#endregion
@@ -333,6 +332,7 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     if (withinTrustedVelocity() && Limelight.isValidApriltag(primaryTarget)) {
       var llPose = Limelight.getRobotPose(Alliance.Blue);
 
+      // Check that the estimation target is not too far away or too large
       if (isTrustedEstimation(llPose)) {
         m_poseEstimator.addVisionMeasurement(llPose.Pose.toPose2d(), llPose.Timestamp, llPose.StdDeviations);
         // Logger.recordOutput("Limelight Pose2d", llPose.Pose.getPose2d());
