@@ -19,11 +19,15 @@ public class LimelightPose {
   public double AvgTagArea;
   public Matrix<N3, N1> StdDeviations;
 
+  private double[] inputData;
+
   public LimelightPose(double[] data, Matrix<N3, N1> stdDeviations) {
     if (data.length < 6) {
       System.err.println("Bad LL 3D Pose Data!");
       return;
     }
+
+    inputData = data;
 
     Pose =
       new Pose3d(
@@ -42,5 +46,9 @@ public class LimelightPose {
     AvgTagDistanceMeters = data[9];
     AvgTagArea = data[10];
     StdDeviations = stdDeviations;
+  }
+
+  public double[] getData() {
+    return inputData;
   }
 }

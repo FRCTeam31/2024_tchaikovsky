@@ -1,7 +1,5 @@
 package frc.robot.subsystems.drive;
 
-import com.ctre.phoenix6.configs.Pigeon2Configuration;
-import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PathPlannerLogging;
@@ -15,8 +13,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -27,10 +23,15 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.config.RobotConfig;
-import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.PwmLEDs;
-import frc.robot.subsystems.SwerveModule;
+import frc.robot.subsystems.drive.gyroIO.GyroInputsAutoLogged;
+import frc.robot.subsystems.drive.gyroIO.IGyro;
+import frc.robot.subsystems.drive.limelightIO.ILimelight;
+import frc.robot.subsystems.drive.limelightIO.LimelightInputsAutoLogged;
+import frc.robot.subsystems.drive.swerveIO.ISwerveController;
+import frc.robot.subsystems.drive.swerveIO.SwerveControllerInputsAutoLogged;
 import java.util.Map;
+import org.littletonrobotics.junction.Logger;
 import prime.control.LEDs.Color;
 import prime.control.LEDs.Patterns.PulsePattern;
 import prime.control.LEDs.Patterns.SolidPattern;
@@ -66,12 +67,15 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     .withProperties(Map.of("Counter clockwise", true, "Major tick spacing", 45.0, "Minor tick spacing", 15.0))
     .getEntry();
 
-  // Gyro and swerve modules in CCW order from FL to FR
-  public Pigeon2 m_gyro;
-  private SwerveModule m_frontLeftModule, m_frontRightModule, m_rearLeftModule, m_rearRightModule;
+  // Abstractions for L3 logging
+  private IGyro m_gyro;
+  public GyroInputsAutoLogged m_gyroInputs = new GyroInputsAutoLogged();
+  private ILimelight m_limelight;
+  private LimelightInputsAutoLogged m_limelightInputs = new LimelightInputsAutoLogged();
+  private ISwerveController m_swerveController;
+  private SwerveControllerInputsAutoLogged m_swerveControllerInputs = new SwerveControllerInputsAutoLogged();
 
   // Kinematics, odometry, and field widget
-  public Limelight Limelight;
   private SwerveDriveKinematics m_kinematics;
   private SwerveDrivePoseEstimator m_poseEstimator;
   public Field2d m_fieldWidget;
@@ -86,28 +90,25 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
   /**
    * Creates a new Drivetrain.
    */
-  public Drivetrain(RobotConfig config, PwmLEDs leds) {
+  public Drivetrain(
+    RobotConfig config,
+    PwmLEDs leds,
+    IGyro gyro,
+    ILimelight limelight,
+    ISwerveController swerveController
+  ) {
     setName("Drivetrain");
     m_config = config;
-
     m_leds = leds;
 
-    // Create gyro
-    m_gyro = new Pigeon2(config.Drivetrain.PigeonId);
-    m_gyro.getConfigurator().apply(new Pigeon2Configuration());
-
-    // Create swerve modules in CCW order from FL to FR
-    m_frontLeftModule =
-      new SwerveModule(m_config.FrontLeftSwerveModule, m_config.Drivetrain.DrivePID, m_config.Drivetrain.SteeringPID);
-    m_frontRightModule =
-      new SwerveModule(m_config.FrontRightSwerveModule, m_config.Drivetrain.DrivePID, m_config.Drivetrain.SteeringPID);
-    m_rearLeftModule =
-      new SwerveModule(m_config.RearLeftSwerveModule, m_config.Drivetrain.DrivePID, m_config.Drivetrain.SteeringPID);
-    m_rearRightModule =
-      new SwerveModule(m_config.RearRightSwerveModule, m_config.Drivetrain.DrivePID, m_config.Drivetrain.SteeringPID);
+    m_gyro = gyro;
+    m_gyro.updateInputs(m_gyroInputs, 0);
+    m_limelight = limelight;
+    m_limelight.updateInputs(m_limelightInputs);
+    m_swerveController = swerveController;
+    m_swerveController.updateInputs(m_swerveControllerInputs);
 
     // Create kinematics and odometry
-    Limelight = new Limelight(m_config.LimelightPose);
     m_kinematics =
       new SwerveDriveKinematics(
         m_config.FrontLeftSwerveModule.getModuleLocation(),
@@ -116,7 +117,7 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
         m_config.RearRightSwerveModule.getModuleLocation()
       );
     m_poseEstimator =
-      new SwerveDrivePoseEstimator(m_kinematics, m_gyro.getRotation2d(), getModulePositions(), new Pose2d());
+      new SwerveDrivePoseEstimator(m_kinematics, m_gyroInputs.Rotation2dCCW, getModulePositions(), new Pose2d());
 
     // Configure field widget and feed it PathPlanner's current path poses
     m_fieldWidget = new Field2d();
@@ -172,7 +173,7 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
         inputYMPS * invert, // Use Y as X for field-relative
         inputXMPS * invert, // Use X as Y for field-relative
         inputRotationRadiansPS,
-        m_gyro.getRotation2d()
+        m_gyroInputs.Rotation2dCCW
       );
 
     drive(desiredChassisSpeeds);
@@ -186,7 +187,7 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     // If we're snapping the angle, calculate and set the rotational speed to reach the setpoint
     if (m_snapToGyroEnabled) {
       desiredChassisSpeeds.omegaRadiansPerSecond =
-        m_snapToRotationController.calculate(MathUtil.angleModulus(m_gyro.getRotation2d().getRadians()));
+        m_snapToRotationController.calculate(MathUtil.angleModulus(m_gyroInputs.Rotation2dCCW.getRadians()));
 
       // If the robot is close to the setpoint, indicate that the robot is aligned
       if (Math.abs(desiredChassisSpeeds.omegaRadiansPerSecond) < 0.1) {
@@ -202,10 +203,7 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     var swerveModuleStates = m_kinematics.toSwerveModuleStates(desiredChassisSpeeds);
     SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, m_config.Drivetrain.MaxSpeedMetersPerSecond);
 
-    m_frontLeftModule.setDesiredState(swerveModuleStates[0]);
-    m_frontRightModule.setDesiredState(swerveModuleStates[1]);
-    m_rearLeftModule.setDesiredState(swerveModuleStates[2]);
-    m_rearRightModule.setDesiredState(swerveModuleStates[3]);
+    m_swerveController.setDesiredStates(swerveModuleStates);
   }
 
   /**
@@ -220,7 +218,7 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
    * @param pose
    */
   public void setOdometryPose(Pose2d pose) {
-    m_poseEstimator.resetPosition(m_gyro.getRotation2d(), getModulePositions(), pose);
+    m_poseEstimator.resetPosition(m_gyroInputs.Rotation2dCCW, getModulePositions(), pose);
   }
 
   /**
@@ -228,17 +226,14 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
    * @return
    */
   public double getHeading() {
-    return m_gyro.getRotation2d().getDegrees();
+    return m_gyroInputs.Rotation2dCCW.getDegrees();
   }
 
   /**
    * Stops all drivetrain motors
    */
   public void stopMotors() {
-    m_frontLeftModule.stopMotors();
-    m_frontRightModule.stopMotors();
-    m_rearLeftModule.stopMotors();
-    m_rearRightModule.stopMotors();
+    m_swerveController.stopMotors();
   }
 
   /**
@@ -246,12 +241,7 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
    * @return
    */
   public SwerveModulePosition[] getModulePositions() {
-    return new SwerveModulePosition[] {
-      m_frontLeftModule.getPosition(),
-      m_frontRightModule.getPosition(),
-      m_rearLeftModule.getPosition(),
-      m_rearRightModule.getPosition(),
-    };
+    return m_swerveController.getModulePositions();
   }
 
   /**
@@ -288,12 +278,7 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
    * Gets the current chassis speeds of the robot
    */
   public ChassisSpeeds getChassisSpeeds() {
-    return m_kinematics.toChassisSpeeds(
-      m_frontLeftModule.getModuleState(),
-      m_frontRightModule.getModuleState(),
-      m_rearLeftModule.getModuleState(),
-      m_rearRightModule.getModuleState()
-    );
+    return m_kinematics.toChassisSpeeds(m_swerveController.getModuleStates());
   }
 
   /**
@@ -324,7 +309,16 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
    */
   @Override
   public void periodic() {
-    var gyroAngle = m_gyro.getRotation2d();
+    m_gyro.updateInputs(m_gyroInputs, getChassisSpeeds().omegaRadiansPerSecond);
+    Logger.processInputs("Drive/Gyro", m_gyroInputs);
+
+    m_limelight.updateInputs(m_limelightInputs);
+    Logger.processInputs("Drive/Limelight", m_gyroInputs);
+
+    m_swerveController.updateInputs(m_swerveControllerInputs);
+    Logger.processInputs("Drive/SwerveController", m_swerveControllerInputs);
+
+    var gyroAngle = m_gyroInputs.Rotation2dCCW;
 
     // Level2 Logging
     var chassisSpeed = getChassisSpeeds();
@@ -338,21 +332,24 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
 
     /// Pose estimation
     // If we have a valid target and we're moving in a trusted velocity range, update the pose estimator
-    var primaryTarget = Limelight.getApriltagId();
-    SmartDashboard.putBoolean("Drive/Limelight/IsValidApriltag", Limelight.isValidApriltag(primaryTarget));
+    var primaryTarget = m_limelightInputs.AprilTagId;
+    SmartDashboard.putBoolean("Drive/Limelight/IsValidApriltag", ILimelight.isValidApriltag(primaryTarget));
     SmartDashboard.putBoolean("Drive/WithinTrustedVelocity", withinTrustedVelocity());
-    if (withinTrustedVelocity() && Limelight.isValidApriltag(primaryTarget)) {
-      var llPose = Limelight.getRobotPose(Alliance.Blue);
+    if (withinTrustedVelocity() && ILimelight.isValidApriltag(primaryTarget)) {
+      var llPose = new LimelightPose(
+        m_limelightInputs.BotPoseBlue,
+        ILimelight.calculateTrust(m_limelightInputs.BotPoseBlue[7])
+      );
 
       // Check that the estimation target is not too far away or too large
       if (isTrustedEstimation(llPose)) {
         m_poseEstimator.addVisionMeasurement(llPose.Pose.toPose2d(), llPose.Timestamp, llPose.StdDeviations);
-        // Logger.recordOutput("Limelight Pose2d", llPose.Pose.getPose2d());
-        // var std = new double[3];
-        // for (int i = 0; i < 3; i++) {
-        //   std[i] = llPose.StdDeviations.get(i, 0);
-        // }
-        // Logger.recordOutput("Limelight Standard Deviations", std);
+        Logger.recordOutput("Limelight Pose2d", llPose.Pose.toPose2d());
+        var std = new double[3];
+        for (int i = 0; i < 3; i++) {
+          std[i] = llPose.StdDeviations.get(i, 0);
+        }
+        Logger.recordOutput("Limelight Standard Deviations", std);
       }
     }
 
@@ -418,12 +415,12 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
   public Command enableLockOn() {
     return Commands.run(() -> {
       // m_lockOnEnabled = true;
-      var targetedAprilTag = Limelight.getApriltagId();
+      var targetedAprilTag = m_limelightInputs.AprilTagId;
 
       // If targetedAprilTag is in validTargets, snap to its offset
-      if (Limelight.isSpeakerCenterTarget(targetedAprilTag)) {
+      if (ILimelight.isSpeakerCenterTarget(targetedAprilTag)) {
         // Calculate the target heading
-        var horizontalOffsetDeg = Limelight.getHorizontalOffsetFromTarget().getDegrees();
+        var horizontalOffsetDeg = m_limelightInputs.TargetHorizontalOffset.getDegrees();
         var robotHeadingDeg = getHeading();
         var targetHeadingDeg = robotHeadingDeg - horizontalOffsetDeg;
 
@@ -450,24 +447,5 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
   public Map<String, Command> getNamedCommands() {
     return Map.of("Enable_Lock_On", enableLockOn(), "Disable_Lock_On", disableLockOn());
   }
-
   //#endregion
-
-  @Override
-  public void close() throws Exception {
-    DriverStation.reportWarning(">> [DRIVE] Closing...", false);
-
-    // close all physical resources
-    m_gyro.close();
-    m_frontLeftModule.close();
-    m_frontRightModule.close();
-    m_rearLeftModule.close();
-    m_rearRightModule.close();
-    m_snapToRotationController.close();
-
-    // release memory resources
-    m_kinematics = null;
-    m_poseEstimator = null;
-    m_fieldWidget = null;
-  }
 }

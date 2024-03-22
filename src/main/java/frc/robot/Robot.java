@@ -7,18 +7,23 @@ package frc.robot;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.config.RobotConfig;
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGReader;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 import prime.control.LEDs.Color;
 import prime.control.LEDs.Patterns.BlinkPattern;
 import prime.control.LEDs.Patterns.ChasePattern;
 import prime.control.LEDs.Patterns.PulsePattern;
+import prime.utilities.PrimeLogFileUtil;
 
-public class Robot extends TimedRobot {
+public class Robot extends LoggedRobot {
 
   public enum Side {
     kLeft,
@@ -30,11 +35,33 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
-    // Start L2 logging
-    DataLogManager.start();
-    DriverStation.startDataLog(DataLogManager.getLog());
+    // Configure L3 logging
+    Logger.recordMetadata("ProjectName", "31 Tchaikovsky"); // Set a metadata value
+    if (isReal()) {
+      Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
+      Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
+    } else {
+      String logPath = "";
 
-    m_robotContainer = new RobotContainer(RobotConfig.getDefault());
+      try {
+        logPath = PrimeLogFileUtil.findReplayLog(); // Pull the replay log from AdvantageScope (or prompt the user)
+      } catch (Exception e) {}
+
+      if (logPath.isEmpty() || logPath.contains(".AdvantageScope")) {
+        // No path file, so just run simulator
+        Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
+        Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
+      } else {
+        // Replay using path file
+        setUseTiming(false); // Run as fast as possible
+        Logger.setReplaySource(new WPILOGReader(logPath)); // Read replay log
+        Logger.addDataReceiver(new WPILOGWriter(PrimeLogFileUtil.addPathSuffix(logPath, "_sim"), 0.0000001)); // Save outputs to a new log
+      }
+    }
+    Logger.start();
+
+    var config = RobotConfig.getDefault();
+    m_robotContainer = new RobotContainer(config, Robot::isReal);
   }
 
   @Override

@@ -25,8 +25,10 @@ import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.PwmLEDs;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.drive.Drivetrain;
-
+import frc.robot.subsystems.drive.DrivetrainFactory;
 import java.util.Map;
+import java.util.function.BooleanSupplier;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import prime.control.Controls;
 import prime.control.HolonomicControlStyle;
 import prime.control.PrimeXboxController;
@@ -34,11 +36,11 @@ import prime.control.PrimeXboxController;
 public class RobotContainer {
 
   private RobotConfig m_config;
-  private PrimeXboxController m_driverController;
-  private PrimeXboxController m_operatorController;
+  private PrimeXboxController m_driverController = new PrimeXboxController(Controls.DRIVER_PORT);
+  private PrimeXboxController m_operatorController = new PrimeXboxController(Controls.OPERATOR_PORT);
 
   public ShuffleboardTab d_driverTab = Shuffleboard.getTab("Driver");
-  private SendableChooser<Command> m_autoChooser;
+  private LoggedDashboardChooser<Command> m_autoChooser;
   public GenericEntry d_allianceEntry;
 
   public Drivetrain Drivetrain;
@@ -51,18 +53,15 @@ public class RobotContainer {
 
   private CombinedCommands m_combinedCommands;
 
-  public RobotContainer(RobotConfig config) {
+  public RobotContainer(RobotConfig config, BooleanSupplier isRealGetter) {
     // Save new config
     m_config = config;
 
     try {
-      m_driverController = new PrimeXboxController(Controls.DRIVER_PORT);
-      m_operatorController = new PrimeXboxController(Controls.OPERATOR_PORT);
-
       // Create new subsystems
       // LEDs = new ArduinoLEDs(m_config.LEDs);
       LEDs = new PwmLEDs(m_config.LEDs);
-      Drivetrain = new Drivetrain(m_config, LEDs);
+      Drivetrain = DrivetrainFactory.build(m_config, LEDs, isRealGetter.getAsBoolean());
       Shooter = new Shooter(m_config.Shooter, LEDs);
       Intake = new Intake(m_config.Intake);
       Climbers = new Climbers(m_config.Climbers);
@@ -106,8 +105,9 @@ public class RobotContainer {
         .getEntry();
 
     // Build an auto chooser. This will use Commands.none() as the default option.
-    m_autoChooser = AutoBuilder.buildAutoChooser("Park Auto");
-    d_driverTab.add(m_autoChooser).withWidget(BuiltInWidgets.kComboBoxChooser).withSize(5, 2).withPosition(0, 4);
+    var autoBuilderChooser = AutoBuilder.buildAutoChooser("Park Auto");
+    d_driverTab.add(autoBuilderChooser).withWidget(BuiltInWidgets.kComboBoxChooser).withSize(5, 2).withPosition(0, 4);
+    m_autoChooser = new LoggedDashboardChooser<Command>("AutoChooser", autoBuilderChooser);
     // var possibleAutos = AutoBuilder.getAllAutoNames();
     // for (int i = 0; i < possibleAutos.size(); i++) {
     //   var autoCommand = new PathPlannerAuto(possibleAutos.get(i));
@@ -120,7 +120,7 @@ public class RobotContainer {
       .withPosition(8, 0)
       .withSize(5, 3);
     d_driverTab
-      .add("Current Heading", Drivetrain.m_gyro)
+      .add("Current Heading", Drivetrain.m_gyroInputs.Rotation2dCCW.getDegrees())
       .withWidget(BuiltInWidgets.kGyro)
       .withPosition(8, 3)
       .withSize(3, 3)
@@ -128,7 +128,7 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return m_autoChooser.getSelected();
+    return m_autoChooser.get();
   }
 
   /**

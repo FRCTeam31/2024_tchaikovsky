@@ -1,6 +1,8 @@
-// wip
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.subsystems;
+package frc.robot.subsystems.drive.limelightIO;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -9,49 +11,31 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import prime.physics.LimelightPose;
 
-@Deprecated(since = "Use LimelightIOReal instead")
-public class Limelight extends SubsystemBase implements AutoCloseable {
+public class LimelightReal implements ILimelight, AutoCloseable {
 
   private NetworkTable m_limelightTable;
-
-  private ShuffleboardTab d_driverTab = Shuffleboard.getTab("Driver");
-  private GenericEntry d_tidEntry = d_driverTab
-    .add("Targeted APTag", 0)
-    .withWidget(BuiltInWidgets.kTextView)
-    .withPosition(11, 3)
-    .withSize(2, 1)
-    .getEntry();
-  private GenericEntry d_txEntry = d_driverTab
-    .add("Target X Offset", 0)
-    .withWidget(BuiltInWidgets.kDial)
-    .withProperties(Map.of("Min", -29.8, "Max", 29.8))
-    .withPosition(11, 4)
-    .withSize(2, 3)
-    .getEntry();
-
   private ExecutorService m_executorService = Executors.newSingleThreadExecutor();
 
   /**
-   * Creates a new Limelight subsystem and sets the camera's pose in the coordinate system of the robot.
-   * @param cameraPose
+   * Creates a real Limelight object
    */
-  public Limelight() {
+  public LimelightReal() {
     m_limelightTable = NetworkTableInstance.getDefault().getTable("limelight");
+  }
+
+  @Override
+  public void updateInputs(LimelightInputs inputs) {
+    inputs.AprilTagId = getApriltagId();
+    inputs.BotPoseBlue = getRobotPose(DriverStation.Alliance.Blue).getData();
+    inputs.TargetHorizontalOffset = getHorizontalOffsetFromTarget();
   }
 
   //#region Basic Targeting Data
@@ -295,23 +279,6 @@ public class Limelight extends SubsystemBase implements AutoCloseable {
   }
 
   //#endregion
-
-  public void periodic() {
-    d_tidEntry.setDouble(getApriltagId());
-    d_txEntry.setDouble(getHorizontalOffsetFromTarget().getDegrees());
-
-    // Level2 logging
-    SmartDashboard.putNumber("Limelight/PrimaryTargetID", getApriltagId());
-    SmartDashboard.putNumber("Limelight/HorizontalOffset", getHorizontalOffsetFromTarget().getDegrees());
-  }
-
-  public boolean isSpeakerCenterTarget(int apriltagId) {
-    return apriltagId == 4 || apriltagId == 7;
-  }
-
-  public boolean isValidApriltag(int apriltagId) {
-    return apriltagId >= 1 && apriltagId <= 16;
-  }
 
   public void close() {
     m_executorService.shutdown();

@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.drive.swerveIO;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.MagnetSensorConfigs;
@@ -23,16 +23,9 @@ import prime.control.PrimePIDConstants;
 import prime.movers.LazyCANSparkMax;
 import prime.utilities.CTREConverter;
 
-public class SwerveModule extends SubsystemBase implements AutoCloseable {
+public class SwerveModuleReal extends SubsystemBase implements ISwerveModule, AutoCloseable {
 
   private SwerveModuleConfig m_config;
-
-  // Shuffleboard configuration
-  // private ShuffleboardTab d_moduleTab;
-  // private GenericEntry d_driveVelocityEntry;
-  // private GenericEntry d_driveVoltageEntry;
-  // private GenericEntry d_moduleHeadingEntry;
-  // private GenericEntry d_desiredVelocityEntry;
 
   // Devices
   private LazyCANSparkMax m_SteeringMotor;
@@ -43,7 +36,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
   // Start at velocity 0, no feed forward, use slot 0
   private final VelocityVoltage m_voltageVelocity = new VelocityVoltage(0, 0, false, 0, 0, false, false, false);
 
-  public SwerveModule(SwerveModuleConfig moduleConfig, PrimePIDConstants drivePID, PrimePIDConstants steeringPID) {
+  public SwerveModuleReal(SwerveModuleConfig moduleConfig, PrimePIDConstants drivePID, PrimePIDConstants steeringPID) {
     m_config = moduleConfig;
     setName(m_config.ModuleName);
 
@@ -77,7 +70,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
   }
 
   // Sets up the drive motors
-  public void setupDriveMotor(PrimePIDConstants pid) {
+  private void setupDriveMotor(PrimePIDConstants pid) {
     m_driveMotor = new TalonFX(m_config.DriveMotorCanId);
     m_driveMotor.clearStickyFaults();
     m_driveMotor.getConfigurator().apply(new TalonFXConfiguration()); // Reset to factory default
@@ -105,7 +98,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
   }
 
   // Sets up the CANCoder
-  public void setupCanCoder() {
+  private void setupCanCoder() {
     m_encoder = new CANcoder(m_config.CANCoderCanId);
     m_encoder.clearStickyFaults();
     m_encoder.getConfigurator().apply(new CANcoderConfiguration());
@@ -183,7 +176,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
   /**
    * Gets the cumulative SwerveModulePosition of the module
    */
-  public SwerveModulePosition getPosition() {
+  public SwerveModulePosition getModulePosition() {
     return new SwerveModulePosition(
       CTREConverter.rotationsToMeters(
         m_driveMotor.getPosition().getValueAsDouble(),
