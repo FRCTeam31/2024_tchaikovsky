@@ -12,10 +12,9 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.IntakeConfig;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
-import prime.movers.IPlannable;
 import prime.movers.LazyCANSparkMax;
 
-public class Intake extends SubsystemBase implements IPlannable {
+public class Intake extends SubsystemBase {
 
   private IntakeConfig m_config;
 
@@ -225,16 +224,5 @@ public class Intake extends SubsystemBase implements IPlannable {
       stopRollersCommand()
     );
   }
-
   //#endregion
-
-  /**
-   * Closes the Intake
-   */
-  public void close() {
-    m_angleLeft.close();
-    m_angleRight.close();
-    m_rollers.close();
-    m_anglePid.close();
-  }
 }

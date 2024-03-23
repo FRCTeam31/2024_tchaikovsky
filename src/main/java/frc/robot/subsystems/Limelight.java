@@ -9,17 +9,12 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import prime.physics.LimelightPose;
@@ -27,31 +22,14 @@ import prime.physics.LimelightPose;
 public class Limelight extends SubsystemBase implements AutoCloseable {
 
   private NetworkTable m_limelightTable;
-
-  private ShuffleboardTab d_driverTab = Shuffleboard.getTab("Driver");
-  private GenericEntry d_tidEntry = d_driverTab
-    .add("Targeted APTag", 0)
-    .withWidget(BuiltInWidgets.kTextView)
-    .withPosition(11, 3)
-    .withSize(2, 1)
-    .getEntry();
-  private GenericEntry d_txEntry = d_driverTab
-    .add("Target X Offset", 0)
-    .withWidget(BuiltInWidgets.kDial)
-    .withProperties(Map.of("Min", -29.8, "Max", 29.8))
-    .withPosition(11, 4)
-    .withSize(2, 3)
-    .getEntry();
-
   private ExecutorService m_executorService = Executors.newSingleThreadExecutor();
 
   /**
    * Creates a new Limelight subsystem and sets the camera's pose in the coordinate system of the robot.
    * @param cameraPose
    */
-  public Limelight(Pose3d cameraPose) {
+  public Limelight() {
     m_limelightTable = NetworkTableInstance.getDefault().getTable("limelight");
-    // setCameraPose(cameraPose);
   }
 
   //#region Basic Targeting Data
@@ -297,9 +275,6 @@ public class Limelight extends SubsystemBase implements AutoCloseable {
   //#endregion
 
   public void periodic() {
-    d_tidEntry.setDouble(getApriltagId());
-    d_txEntry.setDouble(getHorizontalOffsetFromTarget().getDegrees());
-
     // Level2 logging
     SmartDashboard.putNumber("Limelight/PrimaryTargetID", getApriltagId());
     SmartDashboard.putNumber("Limelight/HorizontalOffset", getHorizontalOffsetFromTarget().getDegrees());

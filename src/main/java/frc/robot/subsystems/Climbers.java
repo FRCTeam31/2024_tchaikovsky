@@ -10,37 +10,23 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
+import frc.robot.RobotContainer;
 import frc.robot.config.ClimbersConfig;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
-public class Climbers extends SubsystemBase implements AutoCloseable {
+public class Climbers extends SubsystemBase {
 
   // Configuration
   private ClimbersConfig m_config;
 
-  private ShuffleboardTab d_tab = Shuffleboard.getTab("Driver");
-  // private GenericEntry d_leftLimitEntry = d_tab
-  //   .add("Left Climber Limit Switch", false)
-  //   .withWidget(BuiltInWidgets.kBooleanBox)
-  //   .withPosition(1, 1)
-  //   .withSize(2, 1)
-  //   .getEntry();
-  // private GenericEntry d_rightLimitEntry = d_tab
-  //   .add("Right Climber Limit Switch", false)
-  //   .withWidget(BuiltInWidgets.kBooleanBox)
-  //   .withPosition(1, 2)
-  //   .withSize(2, 1)
-  //   .getEntry();
-  public GenericEntry d_climbControlsActiveEntry = d_tab
+  public GenericEntry d_climbControlsActiveEntry = RobotContainer.DriverTab
     .add("Climbers Enabled", false)
     .withWidget(BuiltInWidgets.kBooleanBox)
     .withPosition(5, 4)
@@ -267,14 +253,5 @@ public class Climbers extends SubsystemBase implements AutoCloseable {
           })
       );
   }
-
   //#endregion
-
-  @Override
-  public void close() {
-    m_leftVictorSPX.DestroyObject();
-    m_rightVictorSPX.DestroyObject();
-    m_leftLimitSwitch.close();
-    m_rightLimitSwitch.close();
-  }
 }

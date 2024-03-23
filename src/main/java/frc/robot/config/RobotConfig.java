@@ -1,7 +1,5 @@
 package frc.robot.config;
 
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import prime.control.PrimePIDConstants;
@@ -17,7 +15,6 @@ public class RobotConfig {
   public IntakeConfig Intake;
   public ShooterConfig Shooter;
   public ClimbersConfig Climbers;
-  public Pose3d LimelightPose;
   public LEDConfig LEDs;
   public int PneumaticsModuleId;
 
@@ -118,8 +115,6 @@ public class RobotConfig {
     config.Shooter = new ShooterConfig(20, 19, false, false, 7, 6, 7);
 
     config.Climbers = new ClimbersConfig(18, 17, true, true, 0.5, -1, 2, 3, 8, 9, 10, 11);
-
-    config.LimelightPose = new Pose3d(-0.2594356, 0, 0.5592318, new Rotation3d(0, 65, 180));
 
     config.LEDs = new LEDConfig(5, 3, 26);
 

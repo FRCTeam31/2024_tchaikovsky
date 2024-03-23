@@ -6,7 +6,9 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import edu.wpi.first.networktables.GenericEntry;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
@@ -21,11 +23,10 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.config.RobotConfig;
 import frc.robot.subsystems.Climbers;
+import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.PwmLEDs;
 import frc.robot.subsystems.Shooter;
-import frc.robot.subsystems.drive.Drivetrain;
-
 import java.util.Map;
 import prime.control.Controls;
 import prime.control.HolonomicControlStyle;
@@ -37,17 +38,17 @@ public class RobotContainer {
   private PrimeXboxController m_driverController;
   private PrimeXboxController m_operatorController;
 
-  public ShuffleboardTab d_driverTab = Shuffleboard.getTab("Driver");
+  public static final ShuffleboardTab DriverTab = Shuffleboard.getTab("Driver");
+  public static final ShuffleboardTab AutoTab = Shuffleboard.getTab("Auto Commands");
   private SendableChooser<Command> m_autoChooser;
-  public GenericEntry d_allianceEntry;
 
   public Drivetrain Drivetrain;
   public Shooter Shooter;
   public Intake Intake;
   public Climbers Climbers;
-  // public ArduinoLEDs LEDs;
   public PwmLEDs LEDs;
   public Compressor Compressor;
+  public UsbCamera FrontCamera;
 
   private CombinedCommands m_combinedCommands;
 
@@ -69,6 +70,15 @@ public class RobotContainer {
       Compressor = new Compressor(m_config.PneumaticsModuleId, PneumaticsModuleType.REVPH);
       // Compressor.enableDigital();
 
+      // Uncomment this if we use the USB camera
+      FrontCamera = CameraServer.startAutomaticCapture();
+      DriverTab
+        .add("Intake Camera", FrontCamera)
+        .withSize(4, 4)
+        .withPosition(5, 0)
+        .withWidget(BuiltInWidgets.kCameraStream)
+        .withProperties(Map.of("Show controls", false, "Show crosshair", false));
+
       m_combinedCommands = new CombinedCommands();
 
       // Register the named commands from each subsystem that may be used in PathPlanner
@@ -77,8 +87,8 @@ public class RobotContainer {
       NamedCommands.registerCommands(Shooter.getNamedCommands());
       NamedCommands.registerCommands(m_combinedCommands.getNamedCommands()); // Register the combined named commands that use multiple subsystems
 
-      // Create driver dashboard
-      configureRobotDashboard();
+      // Create Auto chooser and Auto tab in Shuffleboard
+      configAutonomousDashboardItems();
 
       // Reconfigure bindings
       configureDriverControls();
@@ -88,43 +98,15 @@ public class RobotContainer {
     }
   }
 
-  public void configureRobotDashboard() {
-    d_driverTab
-      .addCamera("Limelight Stream", "LL2", "http://limelight.local:5800/stream.mjpg")
-      .withSize(8, 4)
-      .withPosition(0, 0)
-      .withWidget(BuiltInWidgets.kCameraStream)
-      .withProperties(Map.of("Show controls", false, "Show crosshair", false));
-
-    d_allianceEntry =
-      d_driverTab
-        .add("Alliance", false)
-        .withSize(2, 3)
-        .withPosition(13, 0)
-        .withWidget(BuiltInWidgets.kBooleanBox)
-        .withProperties(Map.of("Color when true", "#FF0000", "Color when false", "#0000FF"))
-        .getEntry();
-
+  public void configAutonomousDashboardItems() {
     // Build an auto chooser. This will use Commands.none() as the default option.
     m_autoChooser = AutoBuilder.buildAutoChooser("Park Auto");
-    d_driverTab.add(m_autoChooser).withWidget(BuiltInWidgets.kComboBoxChooser).withSize(5, 2).withPosition(0, 4);
-    // var possibleAutos = AutoBuilder.getAllAutoNames();
-    // for (int i = 0; i < possibleAutos.size(); i++) {
-    //   var autoCommand = new PathPlannerAuto(possibleAutos.get(i));
-    //   d_autoTab.add(possibleAutos.get(i), autoCommand).withWidget(BuiltInWidgets.kCommand).withSize(2, 1);
-    // }
-
-    d_driverTab
-      .add("Field", Drivetrain.m_fieldWidget)
-      .withWidget(BuiltInWidgets.kField)
-      .withPosition(8, 0)
-      .withSize(5, 3);
-    d_driverTab
-      .add("Current Heading", Drivetrain.m_gyro)
-      .withWidget(BuiltInWidgets.kGyro)
-      .withPosition(8, 3)
-      .withSize(3, 3)
-      .withProperties(Map.of("Counter clockwise", true, "Major tick spacing", 45.0, "Minor tick spacing", 15.0));
+    DriverTab.add(m_autoChooser).withWidget(BuiltInWidgets.kComboBoxChooser).withSize(5, 2).withPosition(0, 4);
+    var possibleAutos = AutoBuilder.getAllAutoNames();
+    for (int i = 0; i < possibleAutos.size(); i++) {
+      var autoCommand = new PathPlannerAuto(possibleAutos.get(i));
+      AutoTab.add(possibleAutos.get(i), autoCommand).withWidget(BuiltInWidgets.kCommand).withSize(2, 1);
+    }
   }
 
   public Command getAutonomousCommand() {
@@ -148,7 +130,7 @@ public class RobotContainer {
     );
 
     // While holding b, auto-aim the robot to the apriltag target using snap-to
-    m_driverController.leftBumper().whileTrue(Drivetrain.enableLockOn()).onFalse(Drivetrain.disableLockOn());
+    m_driverController.leftBumper().whileTrue(Drivetrain.enableLockOn()).onFalse(Drivetrain.disableSnapToCommand());
 
     // Controls for Snap-To with field-relative setpoints
     m_driverController.x().onTrue(Drivetrain.disableSnapToCommand());

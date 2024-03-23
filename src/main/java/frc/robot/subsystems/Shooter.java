@@ -20,9 +20,8 @@ import prime.control.LEDs.Color;
 import prime.control.LEDs.Patterns.BlinkPattern;
 import prime.control.LEDs.Patterns.ChasePattern;
 import prime.control.LEDs.Patterns.SolidPattern;
-import prime.movers.IPlannable;
 
-public class Shooter extends SubsystemBase implements IPlannable {
+public class Shooter extends SubsystemBase {
 
   private ShooterConfig m_config;
 
@@ -31,43 +30,6 @@ public class Shooter extends SubsystemBase implements IPlannable {
   private VictorSPX m_victorSPX;
   private DoubleSolenoid m_elevationSolenoid;
   private DigitalInput m_noteDetector;
-
-  // #region Shuffleboard
-  // Shuffleboard configuration
-  // private ShuffleboardTab d_shooterTab = Shuffleboard.getTab("Shooter");
-  // private GenericEntry d_talonFXSpeed = d_shooterTab
-  //   .add("TalonFX Speed", 0)
-  //   .withWidget(BuiltInWidgets.kDial)
-  //   .withProperties(Map.of("Min", -1, "Max", 1))
-  //   .getEntry();
-  // private GenericEntry d_victorSPXSpeed = d_shooterTab
-  //   .add("VictorSPX Speed", 0)
-  //   .withWidget(BuiltInWidgets.kDial)
-  //   .withProperties(Map.of("Min", -1, "Max", 1))
-  //   .getEntry();
-  // private GenericEntry d_leftLinearActuator = d_shooterTab
-  //   .add("Left Actuator Position", 0)
-  //   .withWidget(BuiltInWidgets.kNumberBar)
-  //   .withProperties(Map.of("Min", 0, "Max", 1))
-  //   .getEntry();
-  // private GenericEntry d_rightLinearActuator = d_shooterTab
-  //   .add("Right Actuator Position", 0)
-  //   .withWidget(BuiltInWidgets.kNumberBar)
-  //   .withProperties(Map.of("Min", 0, "Max", 1))
-  //   .getEntry();
-  // private GenericEntry d_noteDetector = d_shooterTab
-  //   .add("Note Detected", false)
-  //   .withWidget(BuiltInWidgets.kBooleanBox)
-  //   .getEntry();
-  // private GenericEntry d_shooterIsUp = d_shooterTab
-  //   .add("Shooter is up", false)
-  //   .withWidget(BuiltInWidgets.kBooleanBox)
-  //   .getEntry();
-  // private GenericEntry d_pidOutputEntry = d_shooterTab
-  //   .add("PID output", 0)
-  //   .withWidget(BuiltInWidgets.kNumberBar)
-  //   .withProperties(Map.of("Max", 2, "Min", -2))
-  //   .getEntry();
 
   // #endregion
 
@@ -230,14 +192,5 @@ public class Shooter extends SubsystemBase implements IPlannable {
   public Map<String, Command> getNamedCommands() {
     return Map.of("Set_Elevation_Up", setElevationUpCommand(), "Set_Elevation_Down", setElevationDownCommand());
   }
-
   //#endregion
-
-  /**
-   * Closes the Shooter
-   */
-  public void close() {
-    m_talonFX.close();
-    m_victorSPX.DestroyObject();
-  }
 }

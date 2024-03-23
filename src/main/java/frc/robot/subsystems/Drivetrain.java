@@ -1,4 +1,4 @@
-package frc.robot.subsystems.drive;
+package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
@@ -15,7 +15,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -26,39 +25,37 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
+import frc.robot.RobotContainer;
 import frc.robot.config.RobotConfig;
-import frc.robot.subsystems.Limelight;
-import frc.robot.subsystems.PwmLEDs;
-import frc.robot.subsystems.SwerveModule;
 import java.util.Map;
 import prime.control.LEDs.Color;
 import prime.control.LEDs.Patterns.PulsePattern;
 import prime.control.LEDs.Patterns.SolidPattern;
 import prime.control.SwerveControlSuppliers;
-import prime.movers.IPlannable;
 import prime.physics.LimelightPose;
 
-public class Drivetrain extends SubsystemBase implements IPlannable {
+public class Drivetrain extends SubsystemBase {
 
   // Container for robot configuration
   private RobotConfig m_config;
 
   // Shuffleboard configuration
-  private ShuffleboardTab d_driveTab = Shuffleboard.getTab("Drivetrain");
-  public GenericEntry d_snapToEnabledEntry = d_driveTab
+  private ShuffleboardTab d_drivetrainTab = Shuffleboard.getTab("Drivetrain");
+  public Field2d m_fieldWidget;
+  public GenericEntry d_snapToEnabledEntry = d_drivetrainTab
     .add("SnapTo Enabled", false)
     .withWidget(BuiltInWidgets.kBooleanBox)
     .withPosition(0, 0)
     .withSize(2, 2)
     .getEntry();
-  private GenericEntry d_currentHeading = d_driveTab
+  private GenericEntry d_currentHeading = d_drivetrainTab
     .add("Current Heading", 0)
     .withWidget(BuiltInWidgets.kGyro)
     .withPosition(14, 0)
     .withSize(4, 5)
     .withProperties(Map.of("Counter clockwise", true, "Major tick spacing", 45.0, "Minor tick spacing", 15.0))
     .getEntry();
-  private GenericEntry d_snapAngle = d_driveTab
+  private GenericEntry d_snapAngle = d_drivetrainTab
     .add("SnapTo Angle", 0)
     .withWidget(BuiltInWidgets.kGyro)
     .withPosition(2, 0)
@@ -66,15 +63,29 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     .withProperties(Map.of("Counter clockwise", true, "Major tick spacing", 45.0, "Minor tick spacing", 15.0))
     .getEntry();
 
+  // Driver Tab widgets
+  private GenericEntry d_tidEntry = RobotContainer.DriverTab
+    .add("Targeted APTag", 0)
+    .withWidget(BuiltInWidgets.kTextView)
+    .withPosition(11, 3)
+    .withSize(2, 1)
+    .getEntry();
+  private GenericEntry d_txEntry = RobotContainer.DriverTab
+    .add("Target X Offset", 0)
+    .withWidget(BuiltInWidgets.kDial)
+    .withProperties(Map.of("Min", -29.8, "Max", 29.8))
+    .withPosition(11, 4)
+    .withSize(2, 3)
+    .getEntry();
+
   // Gyro and swerve modules in CCW order from FL to FR
   public Pigeon2 m_gyro;
-  private SwerveModule m_frontLeftModule, m_frontRightModule, m_rearLeftModule, m_rearRightModule;
+  private SwerveController m_swerveController;
 
   // Kinematics, odometry, and field widget
   public Limelight Limelight;
   private SwerveDriveKinematics m_kinematics;
   private SwerveDrivePoseEstimator m_poseEstimator;
-  public Field2d m_fieldWidget;
 
   // Snap to Gyro Angle PID & Lock-on
   public boolean m_lockOnEnabled = false;
@@ -95,19 +106,24 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     // Create gyro
     m_gyro = new Pigeon2(config.Drivetrain.PigeonId);
     m_gyro.getConfigurator().apply(new Pigeon2Configuration());
+    RobotContainer.DriverTab
+      .add("Current Heading", m_gyro)
+      .withWidget(BuiltInWidgets.kGyro)
+      .withPosition(8, 3)
+      .withSize(3, 3)
+      .withProperties(Map.of("Counter clockwise", true, "Major tick spacing", 45.0, "Minor tick spacing", 15.0));
 
     // Create swerve modules in CCW order from FL to FR
-    m_frontLeftModule =
-      new SwerveModule(m_config.FrontLeftSwerveModule, m_config.Drivetrain.DrivePID, m_config.Drivetrain.SteeringPID);
-    m_frontRightModule =
-      new SwerveModule(m_config.FrontRightSwerveModule, m_config.Drivetrain.DrivePID, m_config.Drivetrain.SteeringPID);
-    m_rearLeftModule =
-      new SwerveModule(m_config.RearLeftSwerveModule, m_config.Drivetrain.DrivePID, m_config.Drivetrain.SteeringPID);
-    m_rearRightModule =
-      new SwerveModule(m_config.RearRightSwerveModule, m_config.Drivetrain.DrivePID, m_config.Drivetrain.SteeringPID);
+    m_swerveController = new SwerveController(config, config.Drivetrain.DrivePID, config.Drivetrain.SteeringPID);
 
-    // Create kinematics and odometry
-    Limelight = new Limelight(m_config.LimelightPose);
+    // Create kinematics and odometry tooling
+    Limelight = new Limelight();
+    RobotContainer.DriverTab
+      .addCamera("Limelight Stream", "LL2", "http://limelight.local:5800/stream.mjpg")
+      .withSize(8, 4)
+      .withPosition(0, 0)
+      .withWidget(BuiltInWidgets.kCameraStream)
+      .withProperties(Map.of("Show controls", false, "Show crosshair", false));
     m_kinematics =
       new SwerveDriveKinematics(
         m_config.FrontLeftSwerveModule.getModuleLocation(),
@@ -118,23 +134,28 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     m_poseEstimator =
       new SwerveDrivePoseEstimator(m_kinematics, m_gyro.getRotation2d(), getModulePositions(), new Pose2d());
 
-    // Configure field widget and feed it PathPlanner's current path poses
+    // Create field widget, add it to the dashboard tabs, and feed it PathPlanner's current path poses
     m_fieldWidget = new Field2d();
-    d_driveTab.add("Field", m_fieldWidget).withWidget(BuiltInWidgets.kField).withPosition(6, 0).withSize(8, 5);
+    d_drivetrainTab.add("Field", m_fieldWidget).withWidget(BuiltInWidgets.kField).withPosition(6, 0).withSize(8, 5);
+    RobotContainer.DriverTab
+      .add("Field", m_fieldWidget)
+      .withWidget(BuiltInWidgets.kField)
+      .withPosition(8, 0)
+      .withSize(5, 3);
     PathPlannerLogging.setLogActivePathCallback(poses -> m_fieldWidget.getObject("path").setPoses(poses));
 
     // Configure snap-to PID
     m_snapToRotationController = m_config.Drivetrain.SnapToPID.getPIDController(0.02);
     m_snapToRotationController.enableContinuousInput(-Math.PI, Math.PI);
-    d_driveTab
+    d_drivetrainTab
       .add("SnapTo PID", m_snapToRotationController)
       .withWidget(BuiltInWidgets.kPIDController)
       .withPosition(0, 2);
 
     AutoBuilder.configureHolonomic(
       this::getPose, // Robot pose supplier
-      this::setOdometryPose, // Method to reset odometry (will be called if your auto has a starting pose)
-      this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+      this::setEstimatorPose, // Method to reset odometry (will be called if your auto has a starting pose)
+      this::getRobotRelativeChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
       this::drive, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
       new HolonomicPathFollowerConfig(
         m_config.Drivetrain.PathingTranslationPid.toPIDConstants(),
@@ -180,32 +201,31 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
 
   /**
    * Drives using a ChassisSpeeds
-   * @param desiredChassisSpeeds
+   * @param desiredChassisSpeeds The desired speeds of the robot
    */
   public void drive(ChassisSpeeds desiredChassisSpeeds) {
-    // If we're snapping the angle, calculate and set the rotational speed to reach the setpoint
+    // If snap-to is enabled, calculate and set the rotational speed to reach the setpoint
     if (m_snapToGyroEnabled) {
-      desiredChassisSpeeds.omegaRadiansPerSecond =
-        m_snapToRotationController.calculate(MathUtil.angleModulus(m_gyro.getRotation2d().getRadians()));
+      var currentRotationRadians = MathUtil.angleModulus(m_gyro.getRotation2d().getRadians());
+      desiredChassisSpeeds.omegaRadiansPerSecond = m_snapToRotationController.calculate(currentRotationRadians);
 
-      // If the robot is close to the setpoint, indicate that the robot is aligned
+      // Use the LEDs to indicate how close the robot is to being aligned
       if (Math.abs(desiredChassisSpeeds.omegaRadiansPerSecond) < 0.1) {
         m_leds.setStripTemporaryPattern(new SolidPattern(Color.GREEN));
       } else {
-        m_leds.setStripTemporaryPattern(new PulsePattern(Color.RED, 5));
+        m_leds.setStripTemporaryPattern(new PulsePattern(Color.RED, 0.5));
       }
     }
 
-    // Correct drift
+    // Correct drift by taking the input speeds and converting them to a desired per-period speed. This is known as "discretizing"
     desiredChassisSpeeds = ChassisSpeeds.discretize(desiredChassisSpeeds, 0.02);
 
+    // Calculate the module states from the chassis speeds
     var swerveModuleStates = m_kinematics.toSwerveModuleStates(desiredChassisSpeeds);
     SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, m_config.Drivetrain.MaxSpeedMetersPerSecond);
 
-    m_frontLeftModule.setDesiredState(swerveModuleStates[0]);
-    m_frontRightModule.setDesiredState(swerveModuleStates[1]);
-    m_rearLeftModule.setDesiredState(swerveModuleStates[2]);
-    m_rearRightModule.setDesiredState(swerveModuleStates[3]);
+    // Set the desired states for each module
+    m_swerveController.setDesiredStates(swerveModuleStates);
   }
 
   /**
@@ -217,15 +237,14 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
 
   /**
    * Resets the position of odometry to the input pose
-   * @param pose
+   * @param pose The pose to reset the estimator to
    */
-  public void setOdometryPose(Pose2d pose) {
+  public void setEstimatorPose(Pose2d pose) {
     m_poseEstimator.resetPosition(m_gyro.getRotation2d(), getModulePositions(), pose);
   }
 
   /**
    * Gets the direction the robot is facing in degrees, CCW+
-   * @return
    */
   public double getHeading() {
     return m_gyro.getRotation2d().getDegrees();
@@ -235,83 +254,67 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
    * Stops all drivetrain motors
    */
   public void stopMotors() {
-    m_frontLeftModule.stopMotors();
-    m_frontRightModule.stopMotors();
-    m_rearLeftModule.stopMotors();
-    m_rearRightModule.stopMotors();
+    m_swerveController.stopAllMotors();
   }
 
   /**
-   * Gets the module positions as an array in CCW order from FL to FR
-   * @return
+   * Gets the module positions as an array in order FL, FR, RL, RR
    */
   public SwerveModulePosition[] getModulePositions() {
-    return new SwerveModulePosition[] {
-      m_frontLeftModule.getPosition(),
-      m_frontRightModule.getPosition(),
-      m_rearLeftModule.getPosition(),
-      m_rearRightModule.getPosition(),
-    };
+    return m_swerveController.getPositions();
   }
 
   /**
-   * Enabled/disables snap-to gyro control
+   * Enabled/disables snap-to control
    */
   public void setSnapToGyroEnabled(boolean enabled) {
     m_snapToGyroEnabled = enabled;
+    if (!enabled) m_leds.restorePersistentStripState();
   }
 
   /**
-   * Toggles snap-to gyro control
+   * Toggles snap-to control on/off
    */
   public void toggleSnapToGyroEnabled() {
     m_snapToGyroEnabled = !m_snapToGyroEnabled;
+    if (!m_snapToGyroEnabled) m_leds.restorePersistentStripState();
   }
 
   /**
    * Sets the snap-to gyro setpoint, converting from degrees to radians
-   * @param angle
+   * @param angle The angle to snap to in degrees
    */
   public void setSnapToSetpoint(double angle) {
-    var snapAngle = angle;
-    if (Robot.onRedAlliance()) {
-      snapAngle = snapAngle + 180;
-    }
+    var setpoint = MathUtil.angleModulus(Rotation2d.fromDegrees(angle).getRadians());
 
-    var setpoint = Rotation2d.fromDegrees(snapAngle).getRadians();
-
-    m_snapToRotationController.setSetpoint(MathUtil.angleModulus(setpoint));
+    m_snapToRotationController.setSetpoint(setpoint);
     setSnapToGyroEnabled(true);
   }
 
   /**
    * Gets the current chassis speeds of the robot
    */
-  public ChassisSpeeds getChassisSpeeds() {
-    return m_kinematics.toChassisSpeeds(
-      m_frontLeftModule.getModuleState(),
-      m_frontRightModule.getModuleState(),
-      m_rearLeftModule.getModuleState(),
-      m_rearRightModule.getModuleState()
+  public ChassisSpeeds getRobotRelativeChassisSpeeds() {
+    return m_kinematics.toChassisSpeeds(m_swerveController.getModuleStates());
+  }
+
+  /**
+   * Checks if the robot is moving at a velocity slow enough to trust the vision measurements
+   */
+  public boolean withinTrustedVelocity() {
+    var speeds = getRobotRelativeChassisSpeeds();
+
+    return (
+      speeds.omegaRadiansPerSecond < 0.1 || // 0.1 rad/s is about 6 degrees/s
+      speeds.vxMetersPerSecond < 0.2 ||
+      speeds.vyMetersPerSecond < 0.2
     );
   }
 
   /**
-   * Takes an input pose and latency and feeds it into the pose estimator, if the
-   * speed is low enough that the vision measurement is more likely to be accurate
-   * @param pose The pose of the robot
-   * @param cameraLatencyMs The latency of the camera's pipeline in milliseconds
+   * Checks if the vision estimation is trustworthy using the disance and area of the target
+   * @param llPose The pose from the limelight
    */
-  public void feedRobotPoseEstimation(LimelightPose llPose) {}
-
-  public boolean withinTrustedVelocity() {
-    return (
-      getChassisSpeeds().omegaRadiansPerSecond < 0.1 || // 0.1 rad/s is about 6 degrees/s
-      getChassisSpeeds().vxMetersPerSecond < 0.2 ||
-      getChassisSpeeds().vyMetersPerSecond < 0.2
-    );
-  }
-
   public boolean isTrustedEstimation(LimelightPose llPose) {
     return llPose.AvgTagDistanceMeters < 4;
     // && llPose.AvgTagArea < 0.50;
@@ -325,11 +328,14 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
   @Override
   public void periodic() {
     var gyroAngle = m_gyro.getRotation2d();
+    d_currentHeading.setDouble(gyroAngle.getDegrees());
+    SmartDashboard.putNumber("Drive/Gyro (deg)", gyroAngle.getDegrees());
 
     // Level2 Logging
-    var chassisSpeed = getChassisSpeeds();
-    SmartDashboard.putNumber("Drive/Speed/Omega (rad/s)", chassisSpeed.omegaRadiansPerSecond);
-    SmartDashboard.putNumber("Drive/Gyro (deg)", gyroAngle.getDegrees());
+    var chassisSpeed = getRobotRelativeChassisSpeeds();
+    SmartDashboard.putNumber("Drive/Measured/Robot-X (m/s)", chassisSpeed.vxMetersPerSecond);
+    SmartDashboard.putNumber("Drive/Measured/Robot-Y (m/s)", chassisSpeed.vyMetersPerSecond);
+    SmartDashboard.putNumber("Drive/Measured/Robot-Z (rad/s)", chassisSpeed.omegaRadiansPerSecond);
 
     var estimatedPose = m_poseEstimator.getEstimatedPosition();
     SmartDashboard.putNumber("Drive/Estimated X (m)", estimatedPose.getX());
@@ -339,20 +345,20 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     /// Pose estimation
     // If we have a valid target and we're moving in a trusted velocity range, update the pose estimator
     var primaryTarget = Limelight.getApriltagId();
-    SmartDashboard.putBoolean("Drive/Limelight/IsValidApriltag", Limelight.isValidApriltag(primaryTarget));
-    SmartDashboard.putBoolean("Drive/WithinTrustedVelocity", withinTrustedVelocity());
-    if (withinTrustedVelocity() && Limelight.isValidApriltag(primaryTarget)) {
+    var isValidTarget = Limelight.isValidApriltag(primaryTarget);
+    var withinTrustedVelocity = withinTrustedVelocity();
+    d_tidEntry.setDouble(primaryTarget);
+    d_txEntry.setDouble(Limelight.getHorizontalOffsetFromTarget().getDegrees());
+    SmartDashboard.putBoolean("Drive/PoseEstimation/IsValidTarget", isValidTarget);
+    SmartDashboard.putBoolean("Drive/PoseEstimation/WithinTrustedVelocity", withinTrustedVelocity);
+    if (isValidTarget && withinTrustedVelocity) {
       var llPose = Limelight.getRobotPose(Alliance.Blue);
 
       // Check that the estimation target is not too far away or too large
-      if (isTrustedEstimation(llPose)) {
+      var isTrustedEstimation = isTrustedEstimation(llPose);
+      SmartDashboard.putBoolean("Drive/PoseEstimation/IsTrustedEstimation", isTrustedEstimation);
+      if (isTrustedEstimation) {
         m_poseEstimator.addVisionMeasurement(llPose.Pose.toPose2d(), llPose.Timestamp, llPose.StdDeviations);
-        // Logger.recordOutput("Limelight Pose2d", llPose.Pose.getPose2d());
-        // var std = new double[3];
-        // for (int i = 0; i < 3; i++) {
-        //   std[i] = llPose.StdDeviations.get(i, 0);
-        // }
-        // Logger.recordOutput("Limelight Standard Deviations", std);
       }
     }
 
@@ -361,7 +367,6 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     m_fieldWidget.setRobotPose(m_poseEstimator.getEstimatedPosition());
 
     // Update shuffleboard entries
-    d_currentHeading.setDouble(gyroAngle.getDegrees());
     d_snapToEnabledEntry.setBoolean(m_snapToGyroEnabled);
     d_snapAngle.setDouble(m_snapToRotationController.getSetpoint());
   }
@@ -417,7 +422,6 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
    */
   public Command enableLockOn() {
     return Commands.run(() -> {
-      // m_lockOnEnabled = true;
       var targetedAprilTag = Limelight.getApriltagId();
 
       // If targetedAprilTag is in validTargets, snap to its offset
@@ -435,39 +439,8 @@ public class Drivetrain extends SubsystemBase implements IPlannable {
     });
   }
 
-  /**
-   * Disables lock-on control
-   * @return
-   */
-  public Command disableLockOn() {
-    return Commands.runOnce(() -> {
-      m_lockOnEnabled = false;
-      // m_snapToGyroEnabled = false;
-      // m_leds.restoreLastStripState();
-    });
-  }
-
   public Map<String, Command> getNamedCommands() {
-    return Map.of("Enable_Lock_On", enableLockOn(), "Disable_Lock_On", disableLockOn());
+    return Map.of("Enable_Lock_On", enableLockOn(), "Disable_Snap_To", disableSnapToCommand());
   }
-
   //#endregion
-
-  @Override
-  public void close() throws Exception {
-    DriverStation.reportWarning(">> [DRIVE] Closing...", false);
-
-    // close all physical resources
-    m_gyro.close();
-    m_frontLeftModule.close();
-    m_frontRightModule.close();
-    m_rearLeftModule.close();
-    m_rearRightModule.close();
-    m_snapToRotationController.close();
-
-    // release memory resources
-    m_kinematics = null;
-    m_poseEstimator = null;
-    m_fieldWidget = null;
-  }
 }
