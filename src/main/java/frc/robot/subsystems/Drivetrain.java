@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
@@ -28,6 +29,7 @@ import frc.robot.Robot;
 import frc.robot.RobotContainer;
 import frc.robot.config.RobotConfig;
 import java.util.Map;
+import java.util.Optional;
 import prime.control.LEDs.Color;
 import prime.control.LEDs.Patterns.PulsePattern;
 import prime.control.LEDs.Patterns.SolidPattern;
@@ -88,7 +90,6 @@ public class Drivetrain extends SubsystemBase {
   private SwerveDrivePoseEstimator m_poseEstimator;
 
   // Snap to Gyro Angle PID & Lock-on
-  public boolean m_lockOnEnabled = false;
   public boolean m_snapToGyroEnabled = false;
   public PIDController m_snapToRotationController;
 
@@ -100,7 +101,6 @@ public class Drivetrain extends SubsystemBase {
   public Drivetrain(RobotConfig config, PwmLEDs leds) {
     setName("Drivetrain");
     m_config = config;
-
     m_leds = leds;
 
     // Create gyro
@@ -113,7 +113,7 @@ public class Drivetrain extends SubsystemBase {
       .withSize(3, 3)
       .withProperties(Map.of("Counter clockwise", true, "Major tick spacing", 45.0, "Minor tick spacing", 15.0));
 
-    // Create swerve modules in CCW order from FL to FR
+    // Create swerve modules
     m_swerveController = new SwerveController(config, config.Drivetrain.DrivePID, config.Drivetrain.SteeringPID);
 
     // Create kinematics and odometry tooling
@@ -124,6 +124,8 @@ public class Drivetrain extends SubsystemBase {
       .withPosition(0, 0)
       .withWidget(BuiltInWidgets.kCameraStream)
       .withProperties(Map.of("Show controls", false, "Show crosshair", false));
+
+    // Create kinematics in order FL, FR, RL, RR
     m_kinematics =
       new SwerveDriveKinematics(
         m_config.FrontLeftSwerveModule.getModuleLocation(),
@@ -147,11 +149,8 @@ public class Drivetrain extends SubsystemBase {
     // Configure snap-to PID
     m_snapToRotationController = m_config.Drivetrain.SnapToPID.getPIDController(0.02);
     m_snapToRotationController.enableContinuousInput(-Math.PI, Math.PI);
-    d_drivetrainTab
-      .add("SnapTo PID", m_snapToRotationController)
-      .withWidget(BuiltInWidgets.kPIDController)
-      .withPosition(0, 2);
 
+    // Configure PathPlanner holonomic control
     AutoBuilder.configureHolonomic(
       this::getPose, // Robot pose supplier
       this::setEstimatorPose, // Method to reset odometry (will be called if your auto has a starting pose)
@@ -167,6 +166,9 @@ public class Drivetrain extends SubsystemBase {
       Robot::onRedAlliance, // BooleanSupplier to tell PathPlanner whether or not to flip the path over the Y midline of the field
       this // Reference to this subsystem to set requirements
     );
+
+    // Allows path planner to override the path rotation target with the snap-to setpoint, if enabled
+    PPHolonomicDriveController.setRotationTargetOverride(this::getRotationTargetOverride);
   }
 
   //#region Control methods
@@ -182,7 +184,7 @@ public class Drivetrain extends SubsystemBase {
    * @param inputXMPS The forward motion of the chassis in meters per second
    * @param inputRotationRadiansPS The rotational motion of the chassis in radians per second
    */
-  public void driveFieldRelative(double inputXMPS, double inputYMPS, double inputRotationRadiansPS) {
+  private void driveFieldRelative(double inputXMPS, double inputYMPS, double inputRotationRadiansPS) {
     // Build chassis speeds
     ChassisSpeeds desiredChassisSpeeds;
     var invert = Robot.onRedAlliance() ? -1 : 1;
@@ -203,7 +205,7 @@ public class Drivetrain extends SubsystemBase {
    * Drives using a ChassisSpeeds
    * @param desiredChassisSpeeds The desired speeds of the robot
    */
-  public void drive(ChassisSpeeds desiredChassisSpeeds) {
+  private void drive(ChassisSpeeds desiredChassisSpeeds) {
     // If snap-to is enabled, calculate and set the rotational speed to reach the setpoint
     if (m_snapToGyroEnabled) {
       var currentRotationRadians = MathUtil.angleModulus(m_gyro.getRotation2d().getRadians());
@@ -229,9 +231,19 @@ public class Drivetrain extends SubsystemBase {
   }
 
   /**
+   * Gets the snap-to gyro setpoint if snap-to is enabled, otherwise returns an empty optional
+   * @return
+   */
+  private Optional<Rotation2d> getRotationTargetOverride() {
+    return m_snapToGyroEnabled
+      ? Optional.of(Rotation2d.fromRadians(m_snapToRotationController.getSetpoint()))
+      : Optional.empty();
+  }
+
+  /**
    * Gets the current pose of the drivetrain from odometry
    */
-  public Pose2d getPose() {
+  private Pose2d getPose() {
     return m_poseEstimator.getEstimatedPosition();
   }
 
@@ -239,69 +251,54 @@ public class Drivetrain extends SubsystemBase {
    * Resets the position of odometry to the input pose
    * @param pose The pose to reset the estimator to
    */
-  public void setEstimatorPose(Pose2d pose) {
+  private void setEstimatorPose(Pose2d pose) {
     m_poseEstimator.resetPosition(m_gyro.getRotation2d(), getModulePositions(), pose);
   }
 
   /**
    * Gets the direction the robot is facing in degrees, CCW+
    */
-  public double getHeading() {
+  private double getHeading() {
     return m_gyro.getRotation2d().getDegrees();
-  }
-
-  /**
-   * Stops all drivetrain motors
-   */
-  public void stopMotors() {
-    m_swerveController.stopAllMotors();
   }
 
   /**
    * Gets the module positions as an array in order FL, FR, RL, RR
    */
-  public SwerveModulePosition[] getModulePositions() {
+  private SwerveModulePosition[] getModulePositions() {
     return m_swerveController.getPositions();
   }
 
   /**
    * Enabled/disables snap-to control
    */
-  public void setSnapToGyroEnabled(boolean enabled) {
+  private void setSnapToEnabled(boolean enabled) {
     m_snapToGyroEnabled = enabled;
     if (!enabled) m_leds.restorePersistentStripState();
-  }
-
-  /**
-   * Toggles snap-to control on/off
-   */
-  public void toggleSnapToGyroEnabled() {
-    m_snapToGyroEnabled = !m_snapToGyroEnabled;
-    if (!m_snapToGyroEnabled) m_leds.restorePersistentStripState();
   }
 
   /**
    * Sets the snap-to gyro setpoint, converting from degrees to radians
    * @param angle The angle to snap to in degrees
    */
-  public void setSnapToSetpoint(double angle) {
+  private void setSnapToSetpoint(double angle) {
     var setpoint = MathUtil.angleModulus(Rotation2d.fromDegrees(angle).getRadians());
 
     m_snapToRotationController.setSetpoint(setpoint);
-    setSnapToGyroEnabled(true);
+    setSnapToEnabled(true);
   }
 
   /**
    * Gets the current chassis speeds of the robot
    */
-  public ChassisSpeeds getRobotRelativeChassisSpeeds() {
+  private ChassisSpeeds getRobotRelativeChassisSpeeds() {
     return m_kinematics.toChassisSpeeds(m_swerveController.getModuleStates());
   }
 
   /**
    * Checks if the robot is moving at a velocity slow enough to trust the vision measurements
    */
-  public boolean withinTrustedVelocity() {
+  private boolean withinTrustedVelocity() {
     var speeds = getRobotRelativeChassisSpeeds();
 
     return (
@@ -315,7 +312,7 @@ public class Drivetrain extends SubsystemBase {
    * Checks if the vision estimation is trustworthy using the disance and area of the target
    * @param llPose The pose from the limelight
    */
-  public boolean isTrustedEstimation(LimelightPose llPose) {
+  private boolean isTrustedEstimation(LimelightPose llPose) {
     return llPose.AvgTagDistanceMeters < 4;
     // && llPose.AvgTagArea < 0.50;
   }
@@ -381,7 +378,7 @@ public class Drivetrain extends SubsystemBase {
     return this.run(() -> {
         // If the driver is trying to rotate the robot, disable snap-to control
         if (Math.abs(controlSuppliers.Z.getAsDouble()) > 0.2) {
-          setSnapToGyroEnabled(false);
+          setSnapToEnabled(false);
           m_leds.restorePersistentStripState();
         }
 
@@ -413,7 +410,7 @@ public class Drivetrain extends SubsystemBase {
    * Disables snap-to control
    */
   public Command disableSnapToCommand() {
-    return Commands.runOnce(() -> setSnapToGyroEnabled(false));
+    return Commands.runOnce(() -> setSnapToEnabled(false));
   }
 
   /**
@@ -434,7 +431,7 @@ public class Drivetrain extends SubsystemBase {
         // Set the drivetrain to snap to the target heading
         setSnapToSetpoint(targetHeadingDeg);
       } else {
-        setSnapToGyroEnabled(false);
+        setSnapToEnabled(false);
       }
     });
   }
