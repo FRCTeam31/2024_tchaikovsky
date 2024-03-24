@@ -95,6 +95,7 @@ public class Drivetrain extends SubsystemBase {
   public Limelight LimelightFront;
   private SwerveDriveKinematics m_kinematics;
   private SwerveDrivePoseEstimator m_poseEstimator;
+  public boolean EnableContinuousPoseEstimation = true;
 
   // Snap to Gyro Angle PID & Lock-on
   public boolean m_snapToGyroEnabled = false;
@@ -127,9 +128,23 @@ public class Drivetrain extends SubsystemBase {
     LimelightRear = new Limelight(m_config.Drivetrain.LimelightRearName);
     LimelightFront = new Limelight(m_config.Drivetrain.LimelightFrontName);
     RobotContainer.DriverTab
-      .addCamera("Limelight Stream", "LL2", "http://limelight.local:5800/stream.mjpg")
-      .withSize(8, 4)
+      .addCamera(
+        "Rear Stream",
+        m_config.Drivetrain.LimelightRearName,
+        "http://" + m_config.Drivetrain.LimelightRearName + ".local:5800/stream.mjpg"
+      )
+      .withSize(4, 4)
       .withPosition(0, 0)
+      .withWidget(BuiltInWidgets.kCameraStream)
+      .withProperties(Map.of("Show controls", false, "Show crosshair", false));
+    RobotContainer.DriverTab
+      .addCamera(
+        "Front Stream",
+        m_config.Drivetrain.LimelightFrontName,
+        "http://" + m_config.Drivetrain.LimelightFrontName + ".local:5800/stream.mjpg"
+      )
+      .withSize(4, 4)
+      .withPosition(5, 0)
       .withWidget(BuiltInWidgets.kCameraStream)
       .withProperties(Map.of("Show controls", false, "Show crosshair", false));
 
@@ -143,6 +158,7 @@ public class Drivetrain extends SubsystemBase {
       );
     m_poseEstimator =
       new SwerveDrivePoseEstimator(m_kinematics, m_gyro.getRotation2d(), getModulePositions(), new Pose2d());
+    EnableContinuousPoseEstimation = true;
 
     // Create field widget, add it to the dashboard tabs, and feed it PathPlanner's current path poses
     m_fieldWidget = new Field2d();
@@ -348,41 +364,43 @@ public class Drivetrain extends SubsystemBase {
     SmartDashboard.putNumber("Drive/Estimator Rotation (deg)", estimatedPose.getRotation().getDegrees());
 
     /// Pose estimation
-    var withinTrustedVelocity = withinTrustedVelocity();
-    SmartDashboard.putBoolean("Drive/PoseEstimation/WithinTrustedVelocity", withinTrustedVelocity);
+    if (EnableContinuousPoseEstimation) {
+      var withinTrustedVelocity = withinTrustedVelocity();
+      SmartDashboard.putBoolean("Drive/PoseEstimation/WithinTrustedVelocity", withinTrustedVelocity);
 
-    // Rear Limelight
-    // If we have a valid target and we're moving in a trusted velocity range, update the pose estimator
-    var primaryTarget = LimelightRear.getApriltagId();
-    var isValidTarget = LimelightRear.isValidApriltag(primaryTarget);
-    d_rearTidEntry.setDouble(primaryTarget);
-    d_rearTxEntry.setDouble(LimelightRear.getHorizontalOffsetFromTarget().getDegrees());
-    SmartDashboard.putBoolean("Drive/PoseEstimation/Rear/IsValidTarget", isValidTarget);
-    if (isValidTarget && withinTrustedVelocity) {
-      var llPose = LimelightRear.getRobotPose(Alliance.Blue);
+      // Rear Limelight
+      // If we have a valid target and we're moving in a trusted velocity range, update the pose estimator
+      var primaryTarget = LimelightRear.getApriltagId();
+      var isValidTarget = LimelightRear.isValidApriltag(primaryTarget);
+      d_rearTidEntry.setDouble(primaryTarget);
+      d_rearTxEntry.setDouble(LimelightRear.getHorizontalOffsetFromTarget().getDegrees());
+      SmartDashboard.putBoolean("Drive/PoseEstimation/Rear/IsValidTarget", isValidTarget);
+      if (isValidTarget && withinTrustedVelocity) {
+        var llPose = LimelightRear.getRobotPose(Alliance.Blue);
 
-      // Check that the estimation target is not too far away or too large
-      var isTrustedEstimation = isTrustedEstimation(llPose);
-      SmartDashboard.putBoolean("Drive/PoseEstimation/Rear/IsTrustedEstimation", isTrustedEstimation);
-      if (isTrustedEstimation) {
-        m_poseEstimator.addVisionMeasurement(llPose.Pose.toPose2d(), llPose.Timestamp, llPose.StdDeviations);
+        // Check that the estimation target is not too far away or too large
+        var isTrustedEstimation = isTrustedEstimation(llPose);
+        SmartDashboard.putBoolean("Drive/PoseEstimation/Rear/IsTrustedEstimation", isTrustedEstimation);
+        if (isTrustedEstimation) {
+          m_poseEstimator.addVisionMeasurement(llPose.Pose.toPose2d(), llPose.Timestamp, llPose.StdDeviations);
+        }
       }
-    }
 
-    // Front Limelight
-    // If we have a valid target and we're moving in a trusted velocity range, update the pose estimator
-    var frontPrimaryTarget = LimelightFront.getApriltagId();
-    var frontIsValidTarget = LimelightFront.isValidApriltag(frontPrimaryTarget);
-    d_frontTidEntry.setDouble(frontPrimaryTarget);
-    SmartDashboard.putBoolean("Drive/PoseEstimation/Front/IsValidTarget", frontIsValidTarget);
-    if (frontIsValidTarget && withinTrustedVelocity) {
-      var llPose = LimelightFront.getRobotPose(Alliance.Blue);
+      // Front Limelight
+      // If we have a valid target and we're moving in a trusted velocity range, update the pose estimator
+      var frontPrimaryTarget = LimelightFront.getApriltagId();
+      var frontIsValidTarget = LimelightFront.isValidApriltag(frontPrimaryTarget);
+      d_frontTidEntry.setDouble(frontPrimaryTarget);
+      SmartDashboard.putBoolean("Drive/PoseEstimation/Front/IsValidTarget", frontIsValidTarget);
+      if (frontIsValidTarget && withinTrustedVelocity) {
+        var llPose = LimelightFront.getRobotPose(Alliance.Blue);
 
-      // Check that the estimation target is not too far away or too large
-      var isTrustedEstimation = isTrustedEstimation(llPose);
-      SmartDashboard.putBoolean("Drive/PoseEstimation/Front/IsTrustedEstimation", isTrustedEstimation);
-      if (isTrustedEstimation) {
-        m_poseEstimator.addVisionMeasurement(llPose.Pose.toPose2d(), llPose.Timestamp, llPose.StdDeviations);
+        // Check that the estimation target is not too far away or too large
+        var isTrustedEstimation = isTrustedEstimation(llPose);
+        SmartDashboard.putBoolean("Drive/PoseEstimation/Front/IsTrustedEstimation", isTrustedEstimation);
+        if (isTrustedEstimation) {
+          m_poseEstimator.addVisionMeasurement(llPose.Pose.toPose2d(), llPose.Timestamp, llPose.StdDeviations);
+        }
       }
     }
 
