@@ -48,7 +48,9 @@ public class RobotConfig {
         new PrimePIDConstants(2, 0, 0), // Pathing Translation PID
         new PrimePIDConstants(2, 0, 0), // Pathing Rotation PID
         0.15,
-        0.5
+        0.5,
+        "limelight-rear",
+        "limelight-front"
       );
 
     var wheelLocationAbsoluteX = config.Drivetrain.TrackWidthMeters / 2;

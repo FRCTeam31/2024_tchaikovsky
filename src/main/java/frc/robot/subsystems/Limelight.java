@@ -28,8 +28,8 @@ public class Limelight extends SubsystemBase implements AutoCloseable {
    * Creates a new Limelight subsystem and sets the camera's pose in the coordinate system of the robot.
    * @param cameraPose
    */
-  public Limelight() {
-    m_limelightTable = NetworkTableInstance.getDefault().getTable("limelight");
+  public Limelight(String tableName) {
+    m_limelightTable = NetworkTableInstance.getDefault().getTable(tableName);
   }
 
   //#region Basic Targeting Data
@@ -105,7 +105,7 @@ public class Limelight extends SubsystemBase implements AutoCloseable {
   public LimelightPose getRobotPose() {
     var poseData = m_limelightTable.getEntry("botpose").getDoubleArray(new double[11]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
 
-    return new LimelightPose(poseData, calculateTrust());
+    return new LimelightPose(poseData, calculateTrust(poseData[7]));
   }
 
   /**
@@ -113,12 +113,11 @@ public class Limelight extends SubsystemBase implements AutoCloseable {
    * @param alliance
    */
   public LimelightPose getRobotPose(DriverStation.Alliance alliance) {
-    return new LimelightPose(
-      alliance == Alliance.Blue
-        ? m_limelightTable.getEntry("botpose_wpiblue").getDoubleArray(new double[11])
-        : m_limelightTable.getEntry("botpose_wpired").getDoubleArray(new double[11]),
-      calculateTrust()
-    );
+    var poseData = alliance == Alliance.Blue
+      ? m_limelightTable.getEntry("botpose_wpiblue").getDoubleArray(new double[11])
+      : m_limelightTable.getEntry("botpose_wpired").getDoubleArray(new double[11]);
+
+    return new LimelightPose(poseData, calculateTrust(poseData[7]));
   }
 
   /**
@@ -127,7 +126,7 @@ public class Limelight extends SubsystemBase implements AutoCloseable {
   public LimelightPose getRobotPoseInTargetSpace() {
     var poseData = m_limelightTable.getEntry("botpose_targetspace").getDoubleArray(new double[11]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
 
-    return new LimelightPose(poseData, calculateTrust());
+    return new LimelightPose(poseData, calculateTrust(poseData[7]));
   }
 
   /**
@@ -136,7 +135,7 @@ public class Limelight extends SubsystemBase implements AutoCloseable {
   public LimelightPose getCameraPoseInTargetSpace() {
     var poseData = m_limelightTable.getEntry("camerapose_targetspace").getDoubleArray(new double[11]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
 
-    return new LimelightPose(poseData, calculateTrust());
+    return new LimelightPose(poseData, calculateTrust(poseData[7]));
   }
 
   /**
@@ -145,7 +144,7 @@ public class Limelight extends SubsystemBase implements AutoCloseable {
   public LimelightPose getCameraPoseInRobotSpace() {
     var poseData = m_limelightTable.getEntry("camerapose_robotspace").getDoubleArray(new double[11]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
 
-    return new LimelightPose(poseData, calculateTrust());
+    return new LimelightPose(poseData, calculateTrust(poseData[7]));
   }
 
   /**
@@ -154,7 +153,7 @@ public class Limelight extends SubsystemBase implements AutoCloseable {
   public LimelightPose getTargetPoseInCameraSpace() {
     var poseData = m_limelightTable.getEntry("targetpose_cameraspace").getDoubleArray(new double[11]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
 
-    return new LimelightPose(poseData, calculateTrust());
+    return new LimelightPose(poseData, calculateTrust(poseData[7]));
   }
 
   /**
@@ -163,16 +162,21 @@ public class Limelight extends SubsystemBase implements AutoCloseable {
   public LimelightPose getTargetPoseInRobotSpace() {
     var poseData = m_limelightTable.getEntry("targetpose_robotspace").getDoubleArray(new double[11]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
 
-    return new LimelightPose(poseData, calculateTrust());
+    return new LimelightPose(poseData, calculateTrust(poseData[7]));
   }
 
   /**
    * Calculates a trust value based on the number of tags in view.
    * @return
    */
-  public Matrix<N3, N1> calculateTrust() {
-    var tagcount = getTagCount();
-    return VecBuilder.fill(tagcount >= 2.0 ? 0.5 : 10, tagcount >= 2.0 ? 0.5 : 10, 999999);
+  public Matrix<N3, N1> calculateTrust(double tagCount) {
+    // Trust level is a function of the number of tags in view
+    var trustLevel = 0.490956d + Math.pow(9998.51d, -(6.95795d * tagCount));
+
+    // trustLevel = tagCount >= 2.0 ? 0.5 : 10
+
+    // X Y Z trust levels (never trust Z)
+    return VecBuilder.fill(trustLevel, trustLevel, 999999);
   }
 
   //#endregion

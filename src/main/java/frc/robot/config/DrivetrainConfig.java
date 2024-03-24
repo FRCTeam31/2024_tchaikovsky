@@ -27,6 +27,10 @@ public class DrivetrainConfig {
   public PrimePIDConstants PathingTranslationPid;
   public PrimePIDConstants PathingRotationPid;
 
+  // Limelight configs
+  public String LimelightRearName;
+  public String LimelightFrontName;
+
   public DrivetrainConfig(
     double trackWidthMeters,
     double wheelBaseMeters,
@@ -42,7 +46,9 @@ public class DrivetrainConfig {
     PrimePIDConstants pathingTranslationPid,
     PrimePIDConstants pathingRotationPid,
     double driveDeadband,
-    double deadbandCurveWeight
+    double deadbandCurveWeight,
+    String limelightRearName,
+    String limelightFrontName
   ) {
     TrackWidthMeters = trackWidthMeters;
     WheelBaseMeters = wheelBaseMeters;
@@ -62,5 +68,8 @@ public class DrivetrainConfig {
     SnapToPID = snapToPID;
     PathingTranslationPid = pathingTranslationPid;
     PathingRotationPid = pathingRotationPid;
+
+    LimelightRearName = limelightRearName;
+    LimelightFrontName = limelightFrontName;
   }
 }

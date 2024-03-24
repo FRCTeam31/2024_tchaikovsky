@@ -66,18 +66,24 @@ public class Drivetrain extends SubsystemBase {
     .getEntry();
 
   // Driver Tab widgets
-  private GenericEntry d_tidEntry = RobotContainer.DriverTab
-    .add("Targeted APTag", 0)
+  private GenericEntry d_rearTidEntry = RobotContainer.DriverTab
+    .add("Rear APTag", 0)
     .withWidget(BuiltInWidgets.kTextView)
     .withPosition(11, 3)
     .withSize(2, 1)
     .getEntry();
-  private GenericEntry d_txEntry = RobotContainer.DriverTab
-    .add("Target X Offset", 0)
+  private GenericEntry d_rearTxEntry = RobotContainer.DriverTab
+    .add("Rear APTag X Offset", 0)
     .withWidget(BuiltInWidgets.kDial)
     .withProperties(Map.of("Min", -29.8, "Max", 29.8))
     .withPosition(11, 4)
     .withSize(2, 3)
+    .getEntry();
+  private GenericEntry d_frontTidEntry = RobotContainer.DriverTab
+    .add("Front APTag", 0)
+    .withWidget(BuiltInWidgets.kTextView)
+    .withPosition(12, 3)
+    .withSize(2, 1)
     .getEntry();
 
   // Gyro and swerve modules in CCW order from FL to FR
@@ -85,7 +91,8 @@ public class Drivetrain extends SubsystemBase {
   private SwerveController m_swerveController;
 
   // Kinematics, odometry, and field widget
-  public Limelight Limelight;
+  public Limelight LimelightRear;
+  public Limelight LimelightFront;
   private SwerveDriveKinematics m_kinematics;
   private SwerveDrivePoseEstimator m_poseEstimator;
 
@@ -117,7 +124,8 @@ public class Drivetrain extends SubsystemBase {
     m_swerveController = new SwerveController(config, config.Drivetrain.DrivePID, config.Drivetrain.SteeringPID);
 
     // Create kinematics and odometry tooling
-    Limelight = new Limelight();
+    LimelightRear = new Limelight(m_config.Drivetrain.LimelightRearName);
+    LimelightFront = new Limelight(m_config.Drivetrain.LimelightFrontName);
     RobotContainer.DriverTab
       .addCamera("Limelight Stream", "LL2", "http://limelight.local:5800/stream.mjpg")
       .withSize(8, 4)
@@ -340,20 +348,39 @@ public class Drivetrain extends SubsystemBase {
     SmartDashboard.putNumber("Drive/Estimator Rotation (deg)", estimatedPose.getRotation().getDegrees());
 
     /// Pose estimation
-    // If we have a valid target and we're moving in a trusted velocity range, update the pose estimator
-    var primaryTarget = Limelight.getApriltagId();
-    var isValidTarget = Limelight.isValidApriltag(primaryTarget);
     var withinTrustedVelocity = withinTrustedVelocity();
-    d_tidEntry.setDouble(primaryTarget);
-    d_txEntry.setDouble(Limelight.getHorizontalOffsetFromTarget().getDegrees());
-    SmartDashboard.putBoolean("Drive/PoseEstimation/IsValidTarget", isValidTarget);
     SmartDashboard.putBoolean("Drive/PoseEstimation/WithinTrustedVelocity", withinTrustedVelocity);
+
+    // Rear Limelight
+    // If we have a valid target and we're moving in a trusted velocity range, update the pose estimator
+    var primaryTarget = LimelightRear.getApriltagId();
+    var isValidTarget = LimelightRear.isValidApriltag(primaryTarget);
+    d_rearTidEntry.setDouble(primaryTarget);
+    d_rearTxEntry.setDouble(LimelightRear.getHorizontalOffsetFromTarget().getDegrees());
+    SmartDashboard.putBoolean("Drive/PoseEstimation/Rear/IsValidTarget", isValidTarget);
     if (isValidTarget && withinTrustedVelocity) {
-      var llPose = Limelight.getRobotPose(Alliance.Blue);
+      var llPose = LimelightRear.getRobotPose(Alliance.Blue);
 
       // Check that the estimation target is not too far away or too large
       var isTrustedEstimation = isTrustedEstimation(llPose);
-      SmartDashboard.putBoolean("Drive/PoseEstimation/IsTrustedEstimation", isTrustedEstimation);
+      SmartDashboard.putBoolean("Drive/PoseEstimation/Rear/IsTrustedEstimation", isTrustedEstimation);
+      if (isTrustedEstimation) {
+        m_poseEstimator.addVisionMeasurement(llPose.Pose.toPose2d(), llPose.Timestamp, llPose.StdDeviations);
+      }
+    }
+
+    // Front Limelight
+    // If we have a valid target and we're moving in a trusted velocity range, update the pose estimator
+    var frontPrimaryTarget = LimelightFront.getApriltagId();
+    var frontIsValidTarget = LimelightFront.isValidApriltag(frontPrimaryTarget);
+    d_frontTidEntry.setDouble(frontPrimaryTarget);
+    SmartDashboard.putBoolean("Drive/PoseEstimation/Front/IsValidTarget", frontIsValidTarget);
+    if (frontIsValidTarget && withinTrustedVelocity) {
+      var llPose = LimelightFront.getRobotPose(Alliance.Blue);
+
+      // Check that the estimation target is not too far away or too large
+      var isTrustedEstimation = isTrustedEstimation(llPose);
+      SmartDashboard.putBoolean("Drive/PoseEstimation/Front/IsTrustedEstimation", isTrustedEstimation);
       if (isTrustedEstimation) {
         m_poseEstimator.addVisionMeasurement(llPose.Pose.toPose2d(), llPose.Timestamp, llPose.StdDeviations);
       }
@@ -419,12 +446,12 @@ public class Drivetrain extends SubsystemBase {
    */
   public Command enableLockOn() {
     return Commands.run(() -> {
-      var targetedAprilTag = Limelight.getApriltagId();
+      var targetedAprilTag = LimelightRear.getApriltagId();
 
       // If targetedAprilTag is in validTargets, snap to its offset
-      if (Limelight.isSpeakerCenterTarget(targetedAprilTag)) {
+      if (LimelightRear.isSpeakerCenterTarget(targetedAprilTag)) {
         // Calculate the target heading
-        var horizontalOffsetDeg = Limelight.getHorizontalOffsetFromTarget().getDegrees();
+        var horizontalOffsetDeg = LimelightRear.getHorizontalOffsetFromTarget().getDegrees();
         var robotHeadingDeg = getHeading();
         var targetHeadingDeg = robotHeadingDeg - horizontalOffsetDeg;
 
