@@ -94,7 +94,8 @@ public class Robot extends TimedRobot {
     }
 
     // Schedule the auto command
-    m_robotContainer.Drivetrain.EnableContinuousPoseEstimation = true;
+    m_robotContainer.Drivetrain.EnableContinuousPoseEstimationFront = true;
+    m_robotContainer.Drivetrain.EnableContinuousPoseEstimationRear = true;
     if (onRedAlliance()) m_robotContainer.Drivetrain.resetGyro();
 
     SmartDashboard.putString("Robot/Auto/CommandName", autoCommand.getName());
@@ -120,7 +121,8 @@ public class Robot extends TimedRobot {
       new ChasePattern(onRedAlliance() ? Color.RED : Color.BLUE, 0.75, false)
     );
 
-    m_robotContainer.Drivetrain.EnableContinuousPoseEstimation = false;
+    m_robotContainer.Drivetrain.EnableContinuousPoseEstimationFront = false;
+    m_robotContainer.Drivetrain.EnableContinuousPoseEstimationRear = false;
   }
 
   /**
