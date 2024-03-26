@@ -1,7 +1,5 @@
 package frc.robot.config;
 
-import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
-import com.pathplanner.lib.util.ReplanningConfig;
 import prime.control.PrimePIDConstants;
 
 public class DrivetrainConfig {
@@ -19,7 +17,6 @@ public class DrivetrainConfig {
 
   // Control properties
   public double LowGearScalar;
-  public boolean StartInHighGear;
   public double DriveDeadband;
   public double DeadbandCurveWeight;
 
@@ -30,6 +27,10 @@ public class DrivetrainConfig {
   public PrimePIDConstants PathingTranslationPid;
   public PrimePIDConstants PathingRotationPid;
 
+  // Limelight configs
+  public String LimelightRearName;
+  public String LimelightFrontName;
+
   public DrivetrainConfig(
     double trackWidthMeters,
     double wheelBaseMeters,
@@ -39,14 +40,15 @@ public class DrivetrainConfig {
     double maxAccelerationMetersPerSecondSquared,
     double maxAngularSpeedRadians,
     double lowGearScalar,
-    boolean startInHighGear,
     PrimePIDConstants drivePID,
     PrimePIDConstants steeringPID,
     PrimePIDConstants snapToPID,
     PrimePIDConstants pathingTranslationPid,
     PrimePIDConstants pathingRotationPid,
     double driveDeadband,
-    double deadbandCurveWeight
+    double deadbandCurveWeight,
+    String limelightRearName,
+    String limelightFrontName
   ) {
     TrackWidthMeters = trackWidthMeters;
     WheelBaseMeters = wheelBaseMeters;
@@ -58,7 +60,6 @@ public class DrivetrainConfig {
     PigeonId = pigeonId;
 
     LowGearScalar = lowGearScalar;
-    StartInHighGear = startInHighGear;
     DriveDeadband = driveDeadband;
     DeadbandCurveWeight = deadbandCurveWeight;
 
@@ -67,15 +68,8 @@ public class DrivetrainConfig {
     SnapToPID = snapToPID;
     PathingTranslationPid = pathingTranslationPid;
     PathingRotationPid = pathingRotationPid;
-  }
 
-  public HolonomicPathFollowerConfig getHolonomicPathFollowerConfig() {
-    return new HolonomicPathFollowerConfig(
-      PathingTranslationPid.toPIDConstants(),
-      PathingRotationPid.toPIDConstants(),
-      MaxSpeedMetersPerSecond,
-      MaxAccelerationMetersPerSecondSquared,
-      new ReplanningConfig(true, true)
-    );
+    LimelightRearName = limelightRearName;
+    LimelightFrontName = limelightFrontName;
   }
 }

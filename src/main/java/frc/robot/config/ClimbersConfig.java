@@ -14,10 +14,10 @@ public class ClimbersConfig {
   public int LeftLimitSwitchDIOChannel;
   public int RightLimitSwitchDIOChannel;
 
-  public int LeftServoChannel;
-  public int RightServoChannel;
-  public int ServoLockAngle;
-  public int ServoUnlockAngle;
+  public int LeftSolenoidForwardChannel;
+  public int LeftSolenoidReverseChannel;
+  public int RightSolenoidForwardChannel;
+  public int RightSolenoidReverseChannel;
 
   public ClimbersConfig(
     int victorSPXLeftCanID,
@@ -28,22 +28,26 @@ public class ClimbersConfig {
     int climberDownSpeed,
     int leftLimitSwitchDIOChannel,
     int rightLimitSwitchDIOChannel,
-    int leftServoChannel,
-    int rightServoChannel,
-    int servoLockAngle,
-    int servoUnlockAngle
+    int leftSolenoidForwardChannel,
+    int leftSolenoidReverseChannel,
+    int rightSolenoidForwardChannel,
+    int rightSolenoidReverseChannel
   ) {
     VictorSPXLeftCanID = victorSPXLeftCanID;
     VictorSPXRightCanID = victorSPXRightCanID;
+
     LeftInverted = leftInverted;
     RightInverted = rightInverted;
+
     ClimberUpSpeed = climberUpSpeed;
     ClimberDownSpeed = climberDownSpeed;
+
     LeftLimitSwitchDIOChannel = leftLimitSwitchDIOChannel;
     RightLimitSwitchDIOChannel = rightLimitSwitchDIOChannel;
-    LeftServoChannel = leftServoChannel;
-    RightServoChannel = rightServoChannel;
-    ServoLockAngle = servoLockAngle;
-    ServoUnlockAngle = servoUnlockAngle;
+
+    LeftSolenoidForwardChannel = leftSolenoidForwardChannel;
+    LeftSolenoidReverseChannel = leftSolenoidReverseChannel;
+    RightSolenoidForwardChannel = rightSolenoidForwardChannel;
+    RightSolenoidReverseChannel = rightSolenoidReverseChannel;
   }
 }
