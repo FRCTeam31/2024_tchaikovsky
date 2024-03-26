@@ -49,7 +49,7 @@ public class RobotConfig {
         new PrimePIDConstants(2, 0, 0), // Pathing Rotation PID
         0.15,
         0.5,
-        "limelight-rear",
+        "limelight",
         "limelight-front"
       );
 

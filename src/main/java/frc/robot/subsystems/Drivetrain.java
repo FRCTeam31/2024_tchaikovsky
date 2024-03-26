@@ -92,7 +92,7 @@ public class Drivetrain extends SubsystemBase {
 
   // Kinematics, odometry, and field widget
   public Limelight LimelightRear;
-  public Limelight LimelightFront;
+  // public Limelight LimelightFront;
   private SwerveDriveKinematics m_kinematics;
   private SwerveDrivePoseEstimator m_poseEstimator;
   public boolean EnableContinuousPoseEstimationFront = true;
@@ -139,7 +139,7 @@ public class Drivetrain extends SubsystemBase {
 
     // Create kinematics and odometry tooling
     LimelightRear = new Limelight(m_config.Drivetrain.LimelightRearName);
-    LimelightFront = new Limelight(m_config.Drivetrain.LimelightFrontName);
+    // LimelightFront = new Limelight(m_config.Drivetrain.LimelightFrontName);
     RobotContainer.DriverTab
       .addCamera(
         "Rear Stream",
@@ -381,25 +381,25 @@ public class Drivetrain extends SubsystemBase {
     var withinTrustedVelocity = withinTrustedVelocity();
     SmartDashboard.putBoolean("Drive/PoseEstimation/WithinTrustedVelocity", withinTrustedVelocity);
 
-    EnableContinuousPoseEstimationFront = d_frontPoseEstimationEnabledEntry.getBoolean(false);
-    if (EnableContinuousPoseEstimationFront) {
-      // Front Limelight
-      // If we have a valid target and we're moving in a trusted velocity range, update the pose estimator
-      var frontPrimaryTarget = LimelightFront.getApriltagId();
-      var frontIsValidTarget = LimelightFront.isValidApriltag(frontPrimaryTarget);
-      d_frontTidEntry.setDouble(frontPrimaryTarget);
-      SmartDashboard.putBoolean("Drive/PoseEstimation/Front/IsValidTarget", frontIsValidTarget);
-      if (frontIsValidTarget && withinTrustedVelocity) {
-        var llPose = LimelightFront.getRobotPose(Alliance.Blue);
+    // EnableContinuousPoseEstimationFront = d_frontPoseEstimationEnabledEntry.getBoolean(false);
+    // if (EnableContinuousPoseEstimationFront) {
+    //   // Front Limelight
+    //   // If we have a valid target and we're moving in a trusted velocity range, update the pose estimator
+    //   var frontPrimaryTarget = LimelightFront.getApriltagId();
+    //   var frontIsValidTarget = LimelightFront.isValidApriltag(frontPrimaryTarget);
+    //   d_frontTidEntry.setDouble(frontPrimaryTarget);
+    //   SmartDashboard.putBoolean("Drive/PoseEstimation/Front/IsValidTarget", frontIsValidTarget);
+    //   if (frontIsValidTarget && withinTrustedVelocity) {
+    //     var llPose = LimelightFront.getRobotPose(Alliance.Blue);
 
-        // Check that the estimation target is not too far away or too large
-        var isTrustedEstimation = isTrustedEstimation(llPose);
-        SmartDashboard.putBoolean("Drive/PoseEstimation/Front/IsTrustedEstimation", isTrustedEstimation);
-        if (isTrustedEstimation) {
-          m_poseEstimator.addVisionMeasurement(llPose.Pose.toPose2d(), llPose.Timestamp, llPose.StdDeviations);
-        }
-      }
-    }
+    //     // Check that the estimation target is not too far away or too large
+    //     var isTrustedEstimation = isTrustedEstimation(llPose);
+    //     SmartDashboard.putBoolean("Drive/PoseEstimation/Front/IsTrustedEstimation", isTrustedEstimation);
+    //     if (isTrustedEstimation) {
+    //       m_poseEstimator.addVisionMeasurement(llPose.Pose.toPose2d(), llPose.Timestamp, llPose.StdDeviations);
+    //     }
+    //   }
+    // }
 
     EnableContinuousPoseEstimationRear = d_rearPoseEstimationEnabledEntry.getBoolean(false);
     if (EnableContinuousPoseEstimationRear) {
