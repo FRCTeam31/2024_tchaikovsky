@@ -4,34 +4,29 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.VictorSPXControlMode;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Robot;
-import frc.robot.RobotContainer;
 import frc.robot.config.ClimbersConfig;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 public class Climbers extends SubsystemBase {
 
+  public enum Side {
+    kLeft,
+    kRight,
+  }
+
   // Configuration
   private ClimbersConfig m_config;
-
-  public GenericEntry d_climbControlsActiveEntry = RobotContainer.DriverTab
-    .add("Climbers Enabled", false)
-    .withWidget(BuiltInWidgets.kBooleanBox)
-    .withPosition(5, 4)
-    .withSize(3, 2)
-    .getEntry();
+  private DriverDashboard m_driverDashboard;
 
   // Motors
   private VictorSPX m_leftVictorSPX;
@@ -52,8 +47,9 @@ public class Climbers extends SubsystemBase {
    * Creates a new Climbers subsystem
    * @param config
    */
-  public Climbers(ClimbersConfig config) {
+  public Climbers(ClimbersConfig config, DriverDashboard dashboard) {
     m_config = config;
+    m_driverDashboard = dashboard;
 
     m_leftVictorSPX = new VictorSPX(config.VictorSPXLeftCanID);
     m_leftVictorSPX.configFactoryDefault();
@@ -90,12 +86,12 @@ public class Climbers extends SubsystemBase {
    * Raises the desired climber arm
    * @param side The side to raise
    */
-  public void raiseArm(Robot.Side side) {
-    if (side == Robot.Side.kLeft && !m_leftLimitSwitch.get()) {
+  public void raiseArm(Side side) {
+    if (side == Side.kLeft && !m_leftLimitSwitch.get()) {
       m_leftVictorSPX.set(VictorSPXControlMode.PercentOutput, m_config.ClimberUpSpeed);
     }
 
-    if (side == Robot.Side.kRight && !m_rightLimitSwitch.get()) {
+    if (side == Side.kRight && !m_rightLimitSwitch.get()) {
       m_rightVictorSPX.set(VictorSPXControlMode.PercentOutput, m_config.ClimberUpSpeed);
     }
   }
@@ -105,12 +101,12 @@ public class Climbers extends SubsystemBase {
    * @param side The side to lower
    * @param speed The speed to lower the arm at
    */
-  public void lowerArm(Robot.Side side, double speed) {
-    if (side == Robot.Side.kLeft) {
+  public void lowerArm(Side side, double speed) {
+    if (side == Side.kLeft) {
       m_leftVictorSPX.set(VictorSPXControlMode.PercentOutput, -speed);
     }
 
-    if (side == Robot.Side.kRight) {
+    if (side == Side.kRight) {
       m_rightVictorSPX.set(VictorSPXControlMode.PercentOutput, -speed);
     }
   }
@@ -119,12 +115,12 @@ public class Climbers extends SubsystemBase {
    * Stops the desired climber arm
    * @param side
    */
-  public void stopArm(Robot.Side side) {
-    if (side == Robot.Side.kLeft) {
+  public void stopArm(Side side) {
+    if (side == Side.kLeft) {
       m_leftVictorSPX.set(VictorSPXControlMode.PercentOutput, 0);
     }
 
-    if (side == Robot.Side.kRight) {
+    if (side == Side.kRight) {
       m_rightVictorSPX.set(VictorSPXControlMode.PercentOutput, 0);
     }
   }
@@ -134,12 +130,12 @@ public class Climbers extends SubsystemBase {
    * @param side The side to engage / disengage
    * @param engaged Whether to engage or disengage the clutch
    */
-  public void setClutch(Robot.Side side, boolean engaged) {
-    if (side == Robot.Side.kLeft) {
+  public void setClutch(Side side, boolean engaged) {
+    if (side == Side.kLeft) {
       m_clutchSolenoidLeft.set(engaged ? Value.kForward : Value.kReverse);
     }
 
-    if (side == Robot.Side.kRight) {
+    if (side == Side.kRight) {
       m_clutchSolenoidRight.set(engaged ? Value.kForward : Value.kReverse);
     }
   }
@@ -148,7 +144,7 @@ public class Climbers extends SubsystemBase {
   public void periodic() {
     // d_leftLimitEntry.setBoolean(m_leftLimitSwitch.get());
     // d_rightLimitEntry.setBoolean(m_rightLimitSwitch.get());
-    d_climbControlsActiveEntry.setBoolean(m_climbControlsEnabled);
+    m_driverDashboard.ClimberControlsActiveBox.setBoolean(m_climbControlsEnabled);
 
     // Level2 Logging
     SmartDashboard.putBoolean("Climbers/ControlsEnabled", m_climbControlsEnabled);
@@ -190,30 +186,30 @@ public class Climbers extends SubsystemBase {
         if (m_climbControlsEnabled) {
           // Raise Right
           if (raiseRightArm.getAsBoolean() && !m_rightLimitSwitch.get()) {
-            setClutch(Robot.Side.kRight, false);
-            raiseArm(Robot.Side.kRight);
+            setClutch(Side.kRight, false);
+            raiseArm(Side.kRight);
           } else {
-            stopArm(Robot.Side.kRight);
+            stopArm(Side.kRight);
           }
 
           // Raise left
           if (raiseLeftArm.getAsBoolean() && !m_leftLimitSwitch.get()) {
-            setClutch(Robot.Side.kLeft, false);
-            raiseArm(Robot.Side.kLeft);
+            setClutch(Side.kLeft, false);
+            raiseArm(Side.kLeft);
           } else {
-            stopArm(Robot.Side.kLeft);
+            stopArm(Side.kLeft);
           }
 
           // Lower Right
           if (!raiseRightArm.getAsBoolean() && !raiseLeftArm.getAsBoolean()) {
-            setClutch(Robot.Side.kRight, true);
-            lowerArm(Robot.Side.kRight, MathUtil.applyDeadband(lowerRightArm.getAsDouble(), 0.1));
+            setClutch(Side.kRight, true);
+            lowerArm(Side.kRight, MathUtil.applyDeadband(lowerRightArm.getAsDouble(), 0.1));
           }
 
           // Lower left
           if (!raiseRightArm.getAsBoolean() && !raiseLeftArm.getAsBoolean()) {
-            setClutch(Robot.Side.kLeft, true);
-            lowerArm(Robot.Side.kLeft, MathUtil.applyDeadband(lowerLeftArm.getAsDouble(), 0.1));
+            setClutch(Side.kLeft, true);
+            lowerArm(Side.kLeft, MathUtil.applyDeadband(lowerLeftArm.getAsDouble(), 0.1));
           }
         }
       });
@@ -224,32 +220,32 @@ public class Climbers extends SubsystemBase {
    */
   public SequentialCommandGroup setArmsUpCommand() {
     return this.runOnce(() -> {
-        setClutch(Robot.Side.kLeft, false);
-        setClutch(Robot.Side.kRight, false);
+        setClutch(Side.kLeft, false);
+        setClutch(Side.kRight, false);
       })
       .andThen(Commands.waitSeconds(0.075))
       .andThen(
         this.run(() -> {
             if (!m_leftLimitSwitch.get()) {
-              setClutch(Robot.Side.kLeft, false);
-              raiseArm(Robot.Side.kLeft);
+              setClutch(Side.kLeft, false);
+              raiseArm(Side.kLeft);
             } else {
-              setClutch(Robot.Side.kLeft, true);
-              stopArm(Robot.Side.kLeft);
+              setClutch(Side.kLeft, true);
+              stopArm(Side.kLeft);
             }
 
             if (!m_rightLimitSwitch.get()) {
-              setClutch(Robot.Side.kRight, false);
-              raiseArm(Robot.Side.kRight);
+              setClutch(Side.kRight, false);
+              raiseArm(Side.kRight);
             } else {
-              setClutch(Robot.Side.kRight, true);
-              stopArm(Robot.Side.kRight);
+              setClutch(Side.kRight, true);
+              stopArm(Side.kRight);
             }
           })
           .until(() -> m_leftLimitSwitch.get() && m_rightLimitSwitch.get())
           .finallyDo(() -> {
-            stopArm(Robot.Side.kLeft);
-            stopArm(Robot.Side.kRight);
+            stopArm(Side.kLeft);
+            stopArm(Side.kRight);
           })
       );
   }

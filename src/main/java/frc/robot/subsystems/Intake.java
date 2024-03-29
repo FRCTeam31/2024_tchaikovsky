@@ -55,7 +55,7 @@ public class Intake extends SubsystemBase {
     m_angleStartPoint = getPositionRight();
     SmartDashboard.putNumber("Intake/AngleStartPoint", m_angleStartPoint);
 
-    m_anglePid = m_config.IntakeAnglePid.getPIDController(0.02);
+    m_anglePid = m_config.IntakeAnglePid.createPIDController(0.02);
     m_anglePid.setSetpoint(m_angleStartPoint);
     m_angleToggledIn = true;
 

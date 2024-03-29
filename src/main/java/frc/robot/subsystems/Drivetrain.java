@@ -16,17 +16,16 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
-import frc.robot.RobotContainer;
 import frc.robot.config.RobotConfig;
 import java.util.Map;
 import java.util.Optional;
@@ -38,12 +37,12 @@ import prime.physics.LimelightPose;
 
 public class Drivetrain extends SubsystemBase {
 
-  // Container for robot configuration
   private RobotConfig m_config;
+  private PwmLEDs m_leds;
 
-  // Shuffleboard configuration
+  // Shuffleboard Drivetrain tab configuration
+  private DriverDashboard m_driverDashboard;
   private ShuffleboardTab d_drivetrainTab = Shuffleboard.getTab("Drivetrain");
-  public Field2d m_fieldWidget;
   public GenericEntry d_snapToEnabledEntry = d_drivetrainTab
     .add("SnapTo Enabled", false)
     .withWidget(BuiltInWidgets.kBooleanBox)
@@ -65,97 +64,45 @@ public class Drivetrain extends SubsystemBase {
     .withProperties(Map.of("Counter clockwise", true, "Major tick spacing", 45.0, "Minor tick spacing", 15.0))
     .getEntry();
 
-  // Driver Tab widgets
-  private GenericEntry d_rearTidEntry = RobotContainer.DriverTab
-    .add("Rear APTag", 0)
-    .withWidget(BuiltInWidgets.kTextView)
-    .withPosition(11, 3)
-    .withSize(2, 1)
-    .getEntry();
-  private GenericEntry d_rearTxEntry = RobotContainer.DriverTab
-    .add("Rear APTag X Offset", 0)
-    .withWidget(BuiltInWidgets.kDial)
-    .withProperties(Map.of("Min", -29.8, "Max", 29.8))
-    .withPosition(11, 4)
-    .withSize(2, 3)
-    .getEntry();
-  private GenericEntry d_frontTidEntry = RobotContainer.DriverTab
-    .add("Front APTag", 0)
-    .withWidget(BuiltInWidgets.kTextView)
-    .withPosition(12, 3)
-    .withSize(2, 1)
-    .getEntry();
-
-  // Gyro and swerve modules in CCW order from FL to FR
+  // Gyro and swerve module controller
   public Pigeon2 m_gyro;
   private SwerveController m_swerveController;
 
-  // Kinematics, odometry, and field widget
+  // Vision, Kinematics, odometry
   public Limelight LimelightRear;
-  // public Limelight LimelightFront;
+  // TODO: public Limelight LimelightFront;
   private SwerveDriveKinematics m_kinematics;
   private SwerveDrivePoseEstimator m_poseEstimator;
   public boolean EnableContinuousPoseEstimationFront = true;
   public boolean EnableContinuousPoseEstimationRear = true;
-  private GenericEntry d_frontPoseEstimationEnabledEntry = RobotContainer.DriverTab
-    .add("F Pose Est.", EnableContinuousPoseEstimationFront)
-    .withWidget(BuiltInWidgets.kToggleSwitch)
-    .withPosition(12, 4)
-    .withSize(1, 1)
-    .getEntry();
-  private GenericEntry d_rearPoseEstimationEnabledEntry = RobotContainer.DriverTab
-    .add("R Pose Est.", EnableContinuousPoseEstimationRear)
-    .withWidget(BuiltInWidgets.kToggleSwitch)
-    .withPosition(12, 4)
-    .withSize(1, 1)
-    .getEntry();
 
-  // Snap to Gyro Angle PID & Lock-on
+  // Snap-to PID
   public boolean m_snapToGyroEnabled = false;
   public PIDController m_snapToRotationController;
-
-  private PwmLEDs m_leds;
 
   /**
    * Creates a new Drivetrain.
    */
-  public Drivetrain(RobotConfig config, PwmLEDs leds) {
+  public Drivetrain(RobotConfig config, PwmLEDs leds, DriverDashboard driverDashboard) {
     setName("Drivetrain");
     m_config = config;
     m_leds = leds;
+    m_driverDashboard = driverDashboard;
 
     // Create gyro
     m_gyro = new Pigeon2(config.Drivetrain.PigeonId);
     m_gyro.getConfigurator().apply(new Pigeon2Configuration());
-    RobotContainer.DriverTab
-      .add("Current Heading", m_gyro)
-      .withWidget(BuiltInWidgets.kGyro)
-      .withPosition(8, 3)
-      .withSize(3, 3)
-      .withProperties(Map.of("Counter clockwise", true, "Major tick spacing", 45.0, "Minor tick spacing", 15.0));
 
     // Create swerve modules
     m_swerveController = new SwerveController(config, config.Drivetrain.DrivePID, config.Drivetrain.SteeringPID);
 
+    // Configure snap-to PID
+    m_snapToRotationController = m_config.Drivetrain.SnapToPID.createPIDController(0.02);
+    m_snapToRotationController.enableContinuousInput(-Math.PI, Math.PI);
+
     // Create kinematics and odometry tooling
     LimelightRear = new Limelight(m_config.Drivetrain.LimelightRearName);
-    // LimelightFront = new Limelight(m_config.Drivetrain.LimelightFrontName);
-    RobotContainer.DriverTab
-      .addCamera("Rear Stream", "LLRear", "http://" + m_config.Drivetrain.LimelightRearName + ".local:5800/stream.mjpg")
-      .withSize(4, 4)
-      .withPosition(0, 0)
-      .withWidget(BuiltInWidgets.kCameraStream)
-      .withProperties(Map.of("Show controls", false, "Show crosshair", false));
-    RobotContainer.DriverTab
-      .addCamera(
-        "Front Stream",
-        m_config.Drivetrain.LimelightFrontName,
-        "http://" + m_config.Drivetrain.LimelightFrontName + ".local:5800/stream.mjpg"
-      )
-      .withSize(4, 4)
-      .withPosition(5, 0)
-      .withWidget(BuiltInWidgets.kCameraStream)
-      .withProperties(Map.of("Show controls", false, "Show crosshair", false));
+    // TODO: LimelightFront = new Limelight(m_config.Drivetrain.LimelightFrontName);
 
     // Create kinematics in order FL, FR, RL, RR
     m_kinematics =
@@ -167,28 +114,16 @@ public class Drivetrain extends SubsystemBase {
       );
     m_poseEstimator =
       new SwerveDrivePoseEstimator(m_kinematics, m_gyro.getRotation2d(), getModulePositions(), new Pose2d());
-    EnableContinuousPoseEstimationFront = true;
-    EnableContinuousPoseEstimationRear = true;
 
-    // Create field widget, add it to the dashboard tabs, and feed it PathPlanner's current path poses
-    m_fieldWidget = new Field2d();
-    RobotContainer.DriverTab
-      .add("Field", m_fieldWidget)
-      .withWidget(BuiltInWidgets.kField)
-      .withPosition(8, 0)
-      .withSize(5, 3);
-    PathPlannerLogging.setLogActivePathCallback(poses -> m_fieldWidget.getObject("path").setPoses(poses));
-
-    // Configure snap-to PID
-    m_snapToRotationController = m_config.Drivetrain.SnapToPID.getPIDController(0.02);
-    m_snapToRotationController.enableContinuousInput(-Math.PI, Math.PI);
+    // Set up PP to feed current path poses to the field widget
+    PathPlannerLogging.setLogActivePathCallback(poses -> driverDashboard.FieldWidget.getObject("path").setPoses(poses));
 
     // Configure PathPlanner holonomic control
     AutoBuilder.configureHolonomic(
       this::getPose, // Robot pose supplier
       this::setEstimatorPose, // Method to reset odometry (will be called if your auto has a starting pose)
       this::getRobotRelativeChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-      this::driveFieldRelative, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
+      this::drivePathPlanner, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
       // this::drive, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
       new HolonomicPathFollowerConfig(
         m_config.Drivetrain.PathingTranslationPid.toPIDConstants(),
@@ -213,33 +148,10 @@ public class Drivetrain extends SubsystemBase {
   }
 
   /**
-   * Drives the robot using cartesian speeds, scaled to the max speed of the robot in meters per second
-   * @param inputYMPS The sideways motion of the chassis in meters per second
-   * @param inputXMPS The forward motion of the chassis in meters per second
-   * @param inputRotationRadiansPS The rotational motion of the chassis in radians per second
-   */
-  private void driveFieldRelative(double inputXMPS, double inputYMPS, double inputRotationRadiansPS) {
-    // Build chassis speeds
-    ChassisSpeeds robotRelativeSpeeds;
-    var invert = Robot.onRedAlliance() ? -1 : 1;
-
-    // Drive the robot with the driver-relative inputs, converting them to field-relative
-    robotRelativeSpeeds =
-      ChassisSpeeds.fromFieldRelativeSpeeds(
-        inputYMPS * invert, // Use Y as X for field-relative
-        inputXMPS * invert, // Use X as Y for field-relative
-        inputRotationRadiansPS,
-        m_gyro.getRotation2d()
-      );
-
-    drive(robotRelativeSpeeds);
-  }
-
-  /**
    * Drives using a ChassisSpeeds
    * @param desiredChassisSpeeds The desired speeds of the robot
    */
-  private void drive(ChassisSpeeds desiredChassisSpeeds) {
+  private void driveRobotRelative(ChassisSpeeds desiredChassisSpeeds) {
     // If snap-to is enabled, calculate and set the rotational speed to reach the setpoint
     if (m_snapToGyroEnabled) {
       var currentRotationRadians = MathUtil.angleModulus(m_gyro.getRotation2d().getRadians());
@@ -264,16 +176,31 @@ public class Drivetrain extends SubsystemBase {
     m_swerveController.setDesiredStates(swerveModuleStates);
   }
 
-  private void driveFieldRelative(ChassisSpeeds robotRelativeSpeeds) {
+  private void drivePathPlanner(ChassisSpeeds robotRelativeSpeeds) {
     if (Robot.onRedAlliance()) {
+      // If we're on the red alliance, we need to flip the gyro
       var gyroAngle = Robot.onRedAlliance()
         ? m_gyro.getRotation2d().plus(Rotation2d.fromDegrees(180))
         : m_gyro.getRotation2d();
+
+      // Convert the robot-relative speeds to field-relative speeds with the flipped gyro
       var fieldSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(robotRelativeSpeeds, gyroAngle);
-      drive(ChassisSpeeds.fromFieldRelativeSpeeds(fieldSpeeds, gyroAngle));
+
+      // Convert back to robot-relative speeds, also with the flipped gyro
+      // driveRobotRelative(ChassisSpeeds.fromFieldRelativeSpeeds(fieldSpeeds, gyroAngle));
+      driveFieldRelative(fieldSpeeds);
     } else {
-      drive(robotRelativeSpeeds);
+      driveRobotRelative(robotRelativeSpeeds);
     }
+  }
+
+  private void driveFieldRelative(ChassisSpeeds fieldRelativeSpeeds) {
+    var gyroAngle = Robot.onRedAlliance()
+      ? m_gyro.getRotation2d().plus(Rotation2d.fromDegrees(180))
+      : m_gyro.getRotation2d();
+
+    var robotRelativeSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(fieldRelativeSpeeds, gyroAngle);
+    driveRobotRelative(robotRelativeSpeeds);
   }
 
   /**
@@ -342,25 +269,55 @@ public class Drivetrain extends SubsystemBase {
   }
 
   /**
-   * Checks if the robot is moving at a velocity slow enough to trust the vision measurements
+   * Evaluates the pose estimation using the limelight cameras
    */
-  private boolean withinTrustedVelocity() {
-    var speeds = getRobotRelativeChassisSpeeds();
+  private void evaluatePoseEstimation() {
+    var currentSpeeds = getRobotRelativeChassisSpeeds();
 
-    return (
-      speeds.omegaRadiansPerSecond < 0.1 || // 0.1 rad/s is about 6 degrees/s
-      speeds.vxMetersPerSecond < 0.2 ||
-      speeds.vyMetersPerSecond < 0.2
-    );
-  }
+    var withinTrustedVelocity =
+      currentSpeeds.omegaRadiansPerSecond < 0.2 && // 1 rad/s is about 60 degrees/s
+      currentSpeeds.vxMetersPerSecond < 2 &&
+      currentSpeeds.vyMetersPerSecond < 2;
+    SmartDashboard.putBoolean("Drive/PoseEstimation/WithinTrustedVelocity", withinTrustedVelocity);
 
-  /**
-   * Checks if the vision estimation is trustworthy using the disance and area of the target
-   * @param llPose The pose from the limelight
-   */
-  private boolean isTrustedEstimation(LimelightPose llPose) {
-    return llPose.AvgTagDistanceMeters < 4;
-    // && llPose.AvgTagArea < 0.50;
+    EnableContinuousPoseEstimationRear =
+      m_driverDashboard.RearPoseEstimationSwitch.getBoolean(false) && DriverStation.isAutonomous();
+    SmartDashboard.putBoolean("Drive/PoseEstimation/RearEstimationEnabled", EnableContinuousPoseEstimationRear);
+    if (EnableContinuousPoseEstimationRear) {
+      // Rear Limelight
+      // If we have a valid target and we're moving in a trusted velocity range, update the pose estimator
+      var primaryTarget = LimelightRear.getApriltagId();
+      var isValidTarget = LimelightRear.isValidApriltag(primaryTarget);
+      SmartDashboard.putBoolean("Drive/PoseEstimation/Rear/IsValidTarget", isValidTarget);
+
+      m_driverDashboard.RearApTagIdField.setDouble(primaryTarget);
+      m_driverDashboard.RearApTagOffsetDial.setDouble(LimelightRear.getHorizontalOffsetFromTarget().getDegrees());
+
+      if (isValidTarget && withinTrustedVelocity) {
+        var llPose = LimelightRear.getRobotPose(Alliance.Blue);
+
+        m_poseEstimator.addVisionMeasurement(llPose.Pose.toPose2d(), llPose.Timestamp, llPose.StdDeviations);
+      }
+    }
+    /** TODO:
+     * 
+    EnableContinuousPoseEstimationFront = m_driverDashboard.FrontPoseEstimationSwitch.getBoolean(false) && DriverStation.isAutonomous();
+    SmartDashboard.putBoolean("Drive/PoseEstimation/FrontEstimationEnabled", EnableContinuousPoseEstimationFront);
+    if (EnableContinuousPoseEstimationFront) {
+      // Front Limelight
+      // If we have a valid target and we're moving in a trusted velocity range, update the pose estimator
+      var frontPrimaryTarget = LimelightFront.getApriltagId();
+      var frontIsValidTarget = LimelightFront.isValidApriltag(frontPrimaryTarget);
+      d_frontTidEntry.setDouble(frontPrimaryTarget);
+      SmartDashboard.putBoolean("Drive/PoseEstimation/Front/IsValidTarget", frontIsValidTarget);
+
+      if (frontIsValidTarget && withinTrustedVelocity) {
+        var llPose = LimelightFront.getRobotPose(Alliance.Blue);
+
+        m_poseEstimator.addVisionMeasurement(llPose.Pose.toPose2d(), llPose.Timestamp, llPose.StdDeviations);
+      }
+    }
+    */
   }
 
   //#endregion
@@ -370,75 +327,35 @@ public class Drivetrain extends SubsystemBase {
    */
   @Override
   public void periodic() {
-    var gyroAngle = m_gyro.getRotation2d();
-    d_currentHeading.setDouble(gyroAngle.getDegrees());
-    SmartDashboard.putNumber("Drive/Gyro (deg)", gyroAngle.getDegrees());
-
     // Level2 Logging
     var chassisSpeed = getRobotRelativeChassisSpeeds();
-    SmartDashboard.putNumber("Drive/Measured/Robot-X (m/s)", chassisSpeed.vxMetersPerSecond);
-    SmartDashboard.putNumber("Drive/Measured/Robot-Y (m/s)", chassisSpeed.vyMetersPerSecond);
-    SmartDashboard.putNumber("Drive/Measured/Robot-Z (rad/s)", chassisSpeed.omegaRadiansPerSecond);
+    SmartDashboard.putNumber("Drive/MeasuredChassisSpeeds/X (m/s)", chassisSpeed.vxMetersPerSecond);
+    SmartDashboard.putNumber("Drive/MeasuredChassisSpeeds/Y (m/s)", chassisSpeed.vyMetersPerSecond);
+    SmartDashboard.putNumber("Drive/MeasuredChassisSpeeds/Z (rad/s)", chassisSpeed.omegaRadiansPerSecond);
 
-    var estimatedPose = m_poseEstimator.getEstimatedPosition();
-    SmartDashboard.putNumber("Drive/Estimated X (m)", estimatedPose.getX());
-    SmartDashboard.putNumber("Drive/Estimator Y (m)", estimatedPose.getY());
-    SmartDashboard.putNumber("Drive/Estimator Rotation (deg)", estimatedPose.getRotation().getDegrees());
+    // Pose estimation
+    evaluatePoseEstimation();
 
-    /// Pose estimation
-    var withinTrustedVelocity = withinTrustedVelocity();
-    SmartDashboard.putBoolean("Drive/PoseEstimation/WithinTrustedVelocity", withinTrustedVelocity);
+    // Update pose estimation on shuffleboard and logging
+    var gyroAngle = m_gyro.getRotation2d();
+    d_currentHeading.setDouble(gyroAngle.getDegrees());
+    m_driverDashboard.HeadingGyro.setDouble(gyroAngle.getDegrees());
+    SmartDashboard.putNumber("Drive/Gyro (deg)", gyroAngle.getDegrees());
 
-    // EnableContinuousPoseEstimationFront = d_frontPoseEstimationEnabledEntry.getBoolean(false);
-    // if (EnableContinuousPoseEstimationFront) {
-    //   // Front Limelight
-    //   // If we have a valid target and we're moving in a trusted velocity range, update the pose estimator
-    //   var frontPrimaryTarget = LimelightFront.getApriltagId();
-    //   var frontIsValidTarget = LimelightFront.isValidApriltag(frontPrimaryTarget);
-    //   d_frontTidEntry.setDouble(frontPrimaryTarget);
-    //   SmartDashboard.putBoolean("Drive/PoseEstimation/Front/IsValidTarget", frontIsValidTarget);
-    //   if (frontIsValidTarget && withinTrustedVelocity) {
-    //     var llPose = LimelightFront.getRobotPose(Alliance.Blue);
+    var estimatedPose = m_poseEstimator.update(gyroAngle, getModulePositions());
+    SmartDashboard.putNumber("Drive/EstimatedPose/X (m)", estimatedPose.getX());
+    SmartDashboard.putNumber("Drive/EstimatedPose/Y (m)", estimatedPose.getY());
+    SmartDashboard.putNumber("Drive/EstimatedPose/Omega (deg)", estimatedPose.getRotation().getDegrees());
+    m_driverDashboard.FieldWidget.setRobotPose(estimatedPose);
 
-    //     // Check that the estimation target is not too far away or too large
-    //     var isTrustedEstimation = isTrustedEstimation(llPose);
-    //     SmartDashboard.putBoolean("Drive/PoseEstimation/Front/IsTrustedEstimation", isTrustedEstimation);
-    //     if (isTrustedEstimation) {
-    //       m_poseEstimator.addVisionMeasurement(llPose.Pose.toPose2d(), llPose.Timestamp, llPose.StdDeviations);
-    //     }
-    //   }
-    // }
-
-    // EnableContinuousPoseEstimationRear = d_rearPoseEstimationEnabledEntry.getBoolean(false);
-    EnableContinuousPoseEstimationRear = false;
-    // EnableContinuousPoseEstimationFront = false;
-    if (EnableContinuousPoseEstimationRear) {
-      // Rear Limelight
-      // If we have a valid target and we're moving in a trusted velocity range, update the pose estimator
-      var primaryTarget = LimelightRear.getApriltagId();
-      var isValidTarget = LimelightRear.isValidApriltag(primaryTarget);
-      d_rearTidEntry.setDouble(primaryTarget);
-      d_rearTxEntry.setDouble(LimelightRear.getHorizontalOffsetFromTarget().getDegrees());
-      SmartDashboard.putBoolean("Drive/PoseEstimation/Rear/IsValidTarget", isValidTarget);
-      if (isValidTarget && withinTrustedVelocity) {
-        var llPose = LimelightRear.getRobotPose(Alliance.Blue);
-
-        // Check that the estimation target is not too far away or too large
-        var isTrustedEstimation = isTrustedEstimation(llPose);
-        SmartDashboard.putBoolean("Drive/PoseEstimation/Rear/IsTrustedEstimation", isTrustedEstimation);
-        if (isTrustedEstimation) {
-          m_poseEstimator.addVisionMeasurement(llPose.Pose.toPose2d(), llPose.Timestamp, llPose.StdDeviations);
-        }
-      }
-    }
-
-    // Update odometry
-    m_poseEstimator.update(gyroAngle, getModulePositions());
-    m_fieldWidget.setRobotPose(m_poseEstimator.getEstimatedPosition());
-
-    // Update shuffleboard entries
+    // Update SnapTo shuffleboard and logging
     d_snapToEnabledEntry.setBoolean(m_snapToGyroEnabled);
-    d_snapAngle.setDouble(m_snapToRotationController.getSetpoint());
+    SmartDashboard.putBoolean("Drive/SnapTo/Enabled", m_snapToGyroEnabled);
+
+    var snapToSetpointRad = m_snapToRotationController.getSetpoint();
+    d_snapAngle.setDouble(snapToSetpointRad);
+    SmartDashboard.putNumber("Drive/SnapTo/Setpoint (rad)", snapToSetpointRad);
+    SmartDashboard.putNumber("Drive/SnapTo/Setpoint (deg)", Rotation2d.fromRadians(snapToSetpointRad).getDegrees());
   }
 
   //#region Commands
@@ -460,7 +377,20 @@ public class Drivetrain extends SubsystemBase {
         var inputYMPS = controlSuppliers.Y.getAsDouble() * m_config.Drivetrain.MaxSpeedMetersPerSecond;
         var inputRotationRadiansPS = controlSuppliers.Z.getAsDouble() * m_config.Drivetrain.MaxAngularSpeedRadians;
 
-        driveFieldRelative(-inputXMPS, inputYMPS, -inputRotationRadiansPS);
+        // Build chassis speeds
+        ChassisSpeeds robotRelativeSpeeds;
+        var invert = Robot.onRedAlliance() ? -1 : 1;
+
+        // Drive the robot with the driver-relative inputs, converted to field-relative based on which side we're on
+        robotRelativeSpeeds =
+          ChassisSpeeds.fromFieldRelativeSpeeds(
+            inputYMPS * invert, // Use Y as X for field-relative
+            inputXMPS * invert, // Use X as Y for field-relative
+            inputRotationRadiansPS,
+            m_gyro.getRotation2d()
+          );
+
+        driveRobotRelative(robotRelativeSpeeds);
       });
   }
 

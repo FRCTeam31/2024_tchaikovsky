@@ -45,7 +45,7 @@ public class PrimePIDConstants {
     return new PIDConstants(kP, kI, kD);
   }
 
-  public PIDController getPIDController(double controllerPeriod) {
+  public PIDController createPIDController(double controllerPeriod) {
     return new PIDController(kP, kI, kD, controllerPeriod);
   }
 }
