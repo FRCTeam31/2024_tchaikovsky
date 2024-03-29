@@ -171,9 +171,9 @@ public class Limelight extends SubsystemBase implements AutoCloseable {
    */
   public Matrix<N3, N1> calculateTrust(double tagCount) {
     // Trust level is a function of the number of tags in view
-    var trustLevel = 0.490956d + Math.pow(9998.51d, -(6.95795d * tagCount));
+    // var trustLevel = 0.490956d + Math.pow(9998.51d, -(6.95795d * tagCount));
 
-    // trustLevel = tagCount >= 2.0 ? 0.5 : 10
+    var trustLevel = tagCount >= 2.0 ? 2 : 20;
 
     // X Y Z trust levels (never trust Z)
     return VecBuilder.fill(trustLevel, trustLevel, 999999);

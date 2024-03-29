@@ -31,6 +31,7 @@ public class PwmLEDs extends SubsystemBase {
     // Initialize the LED strip
     m_led = new AddressableLED(5);
     m_ledBuffer = new AddressableLEDBuffer(78);
+    m_led.setLength(m_ledBuffer.getLength());
 
     // Set the strip to a default pattern
     setStripPersistentPattern(new PulsePattern(Color.WHITE, 4));
@@ -127,34 +128,31 @@ public class PwmLEDs extends SubsystemBase {
   }
 
   public void ledUpdateLoop() {
-    for (int i = 0; i < m_config.SectionCount; i++) {
-      try {
-        // Always try to use the persistent pattern first
-        var pattern = m_persistentPatterns[i];
-
+    try {
+      for (int sectionIndex = 0; sectionIndex < m_config.SectionCount; sectionIndex++) {
         // If the temporary pattern for this section is not null, use it instead of the persistent pattern
-        if (m_temporaryPatterns[i] != null) pattern = m_temporaryPatterns[i];
+        var pattern = m_temporaryPatterns[sectionIndex] != null
+          ? m_temporaryPatterns[sectionIndex]
+          : m_persistentPatterns[sectionIndex];
 
         // If the pattern is null, skip this section
-        if (pattern == null) continue;
-
-        // Request for the pattern to calculate the next frame and update the buffer
-        pattern.updateBuffer(i * m_config.PixelsPerSection, m_config.PixelsPerSection, m_ledBuffer);
-
-        // Update the LED strip with the new buffer
-        m_led.setData(m_ledBuffer);
-      } catch (Exception e) {
-        loopErrorCounter++;
-        if (loopErrorCounter > m_config.SectionCount) {
-          DriverStation.reportError(
-            "[LEDs:ERROR] LED update loop has failed " + m_config.SectionCount + " times. Stopping loop.",
-            e.getStackTrace()
-          );
-          System.out.println(
-            "[LEDs:ERROR] LED update loop has failed " + m_config.SectionCount + " times. Stopping loop."
-          );
-          updateLoopExecutor.shutdown();
+        if (pattern != null) {
+          // Request for the pattern to calculate the next frame and update the buffer
+          pattern.updateBuffer(sectionIndex * m_config.PixelsPerSection, m_config.PixelsPerSection, m_ledBuffer);
         }
+      }
+
+      // Update the LED strip with the new buffer
+      m_led.setData(m_ledBuffer);
+    } catch (Exception e) {
+      loopErrorCounter++;
+      DriverStation.reportError("[LEDs:ERROR] Error in update loop: " + e.getMessage(), e.getStackTrace());
+
+      if (loopErrorCounter > m_config.SectionCount) {
+        var msg = "[LEDs:ERROR] LED update loop has failed " + m_config.SectionCount + " times. Stopping loop.";
+        DriverStation.reportError(msg, false);
+        System.out.println(msg);
+        updateLoopExecutor.shutdown();
       }
     }
   }

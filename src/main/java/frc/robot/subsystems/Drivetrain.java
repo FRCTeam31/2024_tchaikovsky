@@ -104,7 +104,7 @@ public class Drivetrain extends SubsystemBase {
     .withSize(1, 1)
     .getEntry();
   private GenericEntry d_rearPoseEstimationEnabledEntry = RobotContainer.DriverTab
-    .add("F Pose Est.", EnableContinuousPoseEstimationRear)
+    .add("R Pose Est.", EnableContinuousPoseEstimationRear)
     .withWidget(BuiltInWidgets.kToggleSwitch)
     .withPosition(12, 4)
     .withSize(1, 1)
@@ -141,11 +141,7 @@ public class Drivetrain extends SubsystemBase {
     LimelightRear = new Limelight(m_config.Drivetrain.LimelightRearName);
     // LimelightFront = new Limelight(m_config.Drivetrain.LimelightFrontName);
     RobotContainer.DriverTab
-      .addCamera(
-        "Rear Stream",
-        m_config.Drivetrain.LimelightRearName,
-        "http://" + m_config.Drivetrain.LimelightRearName + ".local:5800/stream.mjpg"
-      )
+      .addCamera("Rear Stream", "LLRear", "http://" + m_config.Drivetrain.LimelightRearName + ".local:5800/stream.mjpg")
       .withSize(4, 4)
       .withPosition(0, 0)
       .withWidget(BuiltInWidgets.kCameraStream)
@@ -176,7 +172,6 @@ public class Drivetrain extends SubsystemBase {
 
     // Create field widget, add it to the dashboard tabs, and feed it PathPlanner's current path poses
     m_fieldWidget = new Field2d();
-    d_drivetrainTab.add("Field", m_fieldWidget).withWidget(BuiltInWidgets.kField).withPosition(6, 0).withSize(8, 5);
     RobotContainer.DriverTab
       .add("Field", m_fieldWidget)
       .withWidget(BuiltInWidgets.kField)
@@ -193,7 +188,8 @@ public class Drivetrain extends SubsystemBase {
       this::getPose, // Robot pose supplier
       this::setEstimatorPose, // Method to reset odometry (will be called if your auto has a starting pose)
       this::getRobotRelativeChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-      this::drive, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
+      this::driveFieldRelative, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
+      // this::drive, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
       new HolonomicPathFollowerConfig(
         m_config.Drivetrain.PathingTranslationPid.toPIDConstants(),
         m_config.Drivetrain.PathingRotationPid.toPIDConstants(),
@@ -224,11 +220,11 @@ public class Drivetrain extends SubsystemBase {
    */
   private void driveFieldRelative(double inputXMPS, double inputYMPS, double inputRotationRadiansPS) {
     // Build chassis speeds
-    ChassisSpeeds desiredChassisSpeeds;
+    ChassisSpeeds robotRelativeSpeeds;
     var invert = Robot.onRedAlliance() ? -1 : 1;
 
     // Drive the robot with the driver-relative inputs, converting them to field-relative
-    desiredChassisSpeeds =
+    robotRelativeSpeeds =
       ChassisSpeeds.fromFieldRelativeSpeeds(
         inputYMPS * invert, // Use Y as X for field-relative
         inputXMPS * invert, // Use X as Y for field-relative
@@ -236,7 +232,7 @@ public class Drivetrain extends SubsystemBase {
         m_gyro.getRotation2d()
       );
 
-    drive(desiredChassisSpeeds);
+    drive(robotRelativeSpeeds);
   }
 
   /**
@@ -266,6 +262,18 @@ public class Drivetrain extends SubsystemBase {
 
     // Set the desired states for each module
     m_swerveController.setDesiredStates(swerveModuleStates);
+  }
+
+  private void driveFieldRelative(ChassisSpeeds robotRelativeSpeeds) {
+    if (Robot.onRedAlliance()) {
+      var gyroAngle = Robot.onRedAlliance()
+        ? m_gyro.getRotation2d().plus(Rotation2d.fromDegrees(180))
+        : m_gyro.getRotation2d();
+      var fieldSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(robotRelativeSpeeds, gyroAngle);
+      drive(ChassisSpeeds.fromFieldRelativeSpeeds(fieldSpeeds, gyroAngle));
+    } else {
+      drive(robotRelativeSpeeds);
+    }
   }
 
   /**
@@ -401,7 +409,9 @@ public class Drivetrain extends SubsystemBase {
     //   }
     // }
 
-    EnableContinuousPoseEstimationRear = d_rearPoseEstimationEnabledEntry.getBoolean(false);
+    // EnableContinuousPoseEstimationRear = d_rearPoseEstimationEnabledEntry.getBoolean(false);
+    EnableContinuousPoseEstimationRear = false;
+    // EnableContinuousPoseEstimationFront = false;
     if (EnableContinuousPoseEstimationRear) {
       // Rear Limelight
       // If we have a valid target and we're moving in a trusted velocity range, update the pose estimator

@@ -16,8 +16,13 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.SwerveModuleConfig;
+import java.util.Map;
 import prime.control.PrimePIDConstants;
 import prime.movers.LazyCANSparkMax;
 import prime.utilities.CTREConverter;
@@ -25,6 +30,13 @@ import prime.utilities.CTREConverter;
 public class SwerveModule extends SubsystemBase {
 
   private SwerveModuleConfig m_config;
+
+  // Shuffleboard configuration
+  // private ShuffleboardTab d_moduleTab;
+  // private GenericEntry d_driveVelocityEntry;
+  // private GenericEntry d_driveVoltageEntry;
+  // private GenericEntry d_moduleHeadingEntry;
+  // private GenericEntry d_desiredVelocityEntry;
 
   // Devices
   private LazyCANSparkMax m_SteeringMotor;
@@ -38,6 +50,28 @@ public class SwerveModule extends SubsystemBase {
   public SwerveModule(SwerveModuleConfig moduleConfig, PrimePIDConstants drivePID, PrimePIDConstants steeringPID) {
     m_config = moduleConfig;
     setName(m_config.ModuleName);
+
+    // d_moduleTab = Shuffleboard.getTab(getName() + " Module");
+    // d_driveVelocityEntry =
+    //   d_moduleTab
+    //     .add("Velocity (MPS)", 0)
+    //     .withWidget(BuiltInWidgets.kNumberBar)
+    //     .withProperties(Map.of("min", 0, "max", 20))
+    //     .getEntry();
+    // d_driveVoltageEntry = d_moduleTab.add("Voltage (V)", 0).withWidget(BuiltInWidgets.kVoltageView).getEntry();
+    // d_moduleHeadingEntry =
+    //   d_moduleTab
+    //     .add("Heading (Degrees)", 0)
+    //     .withWidget(BuiltInWidgets.kGyro)
+    //     .withProperties(Map.of("major tick spacing", 15, "starting angle", 0))
+    //     .getEntry();
+
+    // d_desiredVelocityEntry =
+    //   d_moduleTab
+    //     .add("Desired Velocity", 0)
+    //     .withWidget(BuiltInWidgets.kNumberBar)
+    //     .withProperties(Map.of("min", 0, "max", 20))
+    //     .getEntry();
 
     setupSteeringMotor(steeringPID);
     setupDriveMotor(drivePID);
@@ -57,7 +91,7 @@ public class SwerveModule extends SubsystemBase {
     m_SteeringMotor.setInverted(m_config.SteerInverted); // CCW inversion
 
     // Create a PID controller to calculate steering motor output
-    m_steeringPidController = pid.getPIDController(0.02);
+    m_steeringPidController = new PIDController(pid.kP, pid.kI, pid.kD, 0.020);
     m_steeringPidController.enableContinuousInput(0, 1); // 0 to 1 rotation
     m_steeringPidController.setTolerance((1 / 360.0) * 5); // 5 degrees in units of rotations
   }
@@ -207,5 +241,16 @@ public class SwerveModule extends SubsystemBase {
   protected Rotation2d getEncoderHeadingRotation2d() {
     return Rotation2d.fromRotations(getEncoderHeading());
   }
+
   //#endregion
+
+  /**
+   * Updates dashboard data
+   */
+  @Override
+  public void periodic() {
+    // d_driveVelocityEntry.setDouble(getModuleState().speedMetersPerSecond);
+    // d_driveVoltageEntry.setDouble(m_driveMotor.getMotorVoltage().getValueAsDouble());
+    // d_moduleHeadingEntry.setDouble(getEncoderHeadingRotation2d().getDegrees());
+  }
 }

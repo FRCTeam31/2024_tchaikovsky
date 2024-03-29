@@ -7,7 +7,6 @@ package frc.robot;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
-import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -69,15 +68,6 @@ public class RobotContainer {
       Climbers = new Climbers(m_config.Climbers);
       Compressor = new Compressor(m_config.PneumaticsModuleId, PneumaticsModuleType.REVPH);
       // Compressor.enableDigital();
-
-      // Uncomment this if we use the USB camera
-      FrontCamera = CameraServer.startAutomaticCapture();
-      DriverTab
-        .add("Intake Camera", FrontCamera)
-        .withSize(4, 4)
-        .withPosition(5, 0)
-        .withWidget(BuiltInWidgets.kCameraStream)
-        .withProperties(Map.of("Show controls", false, "Show crosshair", false));
 
       m_combinedCommands = new CombinedCommands();
 
