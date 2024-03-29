@@ -145,6 +145,8 @@ public class Drivetrain extends SubsystemBase {
   // Resets the Gyro
   public void resetGyro() {
     m_gyro.setYaw(Robot.onRedAlliance() ? 180 : 0);
+
+    m_poseEstimator.resetPosition(m_gyro.getRotation2d(), getModulePositions(), m_poseEstimator.getEstimatedPosition());
   }
 
   /**
