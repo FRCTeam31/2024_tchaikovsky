@@ -142,7 +142,7 @@ public class Drivetrain extends SubsystemBase {
 
   // Resets the Gyro
   public void resetGyro() {
-    m_gyro.setYaw(Robot.onRedAlliance() ? 180 : 0);
+    m_gyro.setYaw(Robot.onBlueAlliance() ? 180 : 0);
 
     m_poseEstimator.resetPosition(m_gyro.getRotation2d(), getModulePositions(), m_poseEstimator.getEstimatedPosition());
   }
@@ -403,7 +403,7 @@ public class Drivetrain extends SubsystemBase {
    * @param angle
    */
   public Command setSnapToSetpointCommand(double angle) {
-    return Commands.runOnce(() -> setSnapToSetpoint(angle));
+    return Commands.runOnce(() -> setSnapToSetpoint(Robot.onBlueAlliance() ? angle + 180 : angle));
   }
 
   /**

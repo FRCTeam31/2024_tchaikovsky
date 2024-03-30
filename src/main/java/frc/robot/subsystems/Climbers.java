@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.config.ClimbersConfig;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -118,10 +119,12 @@ public class Climbers extends SubsystemBase {
   public void stopArm(Side side) {
     if (side == Side.kLeft) {
       m_leftVictorSPX.set(VictorSPXControlMode.PercentOutput, 0);
+      setClutch(Side.kLeft, true);
     }
 
     if (side == Side.kRight) {
       m_rightVictorSPX.set(VictorSPXControlMode.PercentOutput, 0);
+      setClutch(Side.kRight, true);
     }
   }
 
@@ -226,29 +229,16 @@ public class Climbers extends SubsystemBase {
       })
       .andThen(Commands.waitSeconds(0.075))
       .andThen(
-        this.run(() -> {
-            if (!m_leftLimitSwitch.get()) {
-              setClutch(Side.kLeft, false);
-              raiseArm(Side.kLeft);
-            } else {
-              setClutch(Side.kLeft, true);
-              stopArm(Side.kLeft);
-            }
-
-            if (!m_rightLimitSwitch.get()) {
-              setClutch(Side.kRight, false);
-              raiseArm(Side.kRight);
-            } else {
-              setClutch(Side.kRight, true);
-              stopArm(Side.kRight);
-            }
+        this.runOnce(() -> {
+            raiseArm(Side.kLeft);
+            raiseArm(Side.kRight);
           })
-          .until(() -> m_leftLimitSwitch.get() && m_rightLimitSwitch.get())
-          .finallyDo(() -> {
-            stopArm(Side.kLeft);
-            stopArm(Side.kRight);
-          })
-      );
+      )
+      .andThen(new WaitUntilCommand(() -> m_leftLimitSwitch.get() || m_rightLimitSwitch.get()).withTimeout(2))
+      .andThen(() -> {
+        stopArm(Side.kLeft);
+        stopArm(Side.kRight);
+      });
   }
   //#endregion
 }

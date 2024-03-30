@@ -197,11 +197,10 @@ public class RobotContainer {
      */
     public SequentialCommandGroup loadNoteForAmp() {
       return Commands
-        .runOnce(() -> Intake.runIntakeRollers(-0.6)) // Eject from the intake
-        .alongWith(Commands.runOnce(() -> Shooter.runShooter(0.10))) // Load into the shooter
-        .andThen(new WaitUntilCommand(Shooter::isNoteLoaded))
-        .withTimeout(1) // Wait until the note is loaded
-        .andThen(new WaitCommand(0.075)) // Give the note time to get into the shooter
+        .runOnce(() -> Intake.runIntakeRollers(-0.7)) // Eject from the intake
+        .alongWith(Commands.runOnce(() -> Shooter.runShooter(0.1))) // Load into the shooter
+        .andThen(new WaitUntilCommand(Shooter::isNoteLoaded).withTimeout(1)) // Wait until the note is loaded
+        .andThen(new WaitCommand(0.045)) // Give the note time to get into the shooter
         .andThen(stopShooterAndIntakeCommand()); // Stop both the shooter and intake
     }
 
