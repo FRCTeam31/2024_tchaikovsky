@@ -127,7 +127,6 @@ public class Shooter extends SubsystemBase {
     }
 
     // Level2 Logging
-    SmartDashboard.putString("Shooter/ElevationSolenoid", m_elevationSolenoid.get().name());
     SmartDashboard.putNumber("Shooter/LaunchMotorOutput", m_talonFX.get());
     SmartDashboard.putNumber("Shooter/LaunchMotorVelocity", m_talonFX.getVelocity().getValueAsDouble());
     SmartDashboard.putNumber("Shooter/GuideMotorOutput", m_victorSPX.getMotorOutputPercent());

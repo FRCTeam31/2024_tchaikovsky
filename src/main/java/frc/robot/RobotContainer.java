@@ -116,7 +116,7 @@ public class RobotContainer {
     );
 
     // While holding b, auto-aim the robot to the apriltag target using snap-to
-    m_driverController.leftBumper().whileTrue(Drivetrain.enableLockOn()).onFalse(Drivetrain.disableSnapToCommand());
+    m_driverController.leftStick().whileTrue(Drivetrain.enableLockOn()).onFalse(Drivetrain.disableSnapToCommand());
 
     // Controls for Snap-To with field-relative setpoints
     m_driverController.x().onTrue(Drivetrain.disableSnapToCommand());

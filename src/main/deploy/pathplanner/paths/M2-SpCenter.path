@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.350502394698482,
-        "y": 6.822590942479183
+        "x": 4.812737553403035,
+        "y": 7.959689432892379
       },
       "isLocked": false,
       "linkedName": null
@@ -45,7 +45,7 @@
   "eventMarkers": [
     {
       "name": "Bring Note In",
-      "waypointRelativePos": 0.05,
+      "waypointRelativePos": 0.0,
       "command": {
         "type": "sequential",
         "data": {

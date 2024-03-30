@@ -16,7 +16,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -33,7 +32,6 @@ import prime.control.LEDs.Color;
 import prime.control.LEDs.Patterns.PulsePattern;
 import prime.control.LEDs.Patterns.SolidPattern;
 import prime.control.SwerveControlSuppliers;
-import prime.physics.LimelightPose;
 
 public class Drivetrain extends SubsystemBase {
 
@@ -70,10 +68,10 @@ public class Drivetrain extends SubsystemBase {
 
   // Vision, Kinematics, odometry
   public Limelight LimelightRear;
-  // TODO: public Limelight LimelightFront;
+  public Limelight LimelightFront;
   private SwerveDriveKinematics m_kinematics;
   private SwerveDrivePoseEstimator m_poseEstimator;
-  public boolean EnableContinuousPoseEstimationFront = true;
+  public boolean EnableContinuousPoseEstimationFront = false;
   public boolean EnableContinuousPoseEstimationRear = true;
 
   // Snap-to PID
@@ -102,7 +100,7 @@ public class Drivetrain extends SubsystemBase {
 
     // Create kinematics and odometry tooling
     LimelightRear = new Limelight(m_config.Drivetrain.LimelightRearName);
-    // TODO: LimelightFront = new Limelight(m_config.Drivetrain.LimelightFrontName);
+    LimelightFront = new Limelight(m_config.Drivetrain.LimelightFrontName);
 
     // Create kinematics in order FL, FR, RL, RR
     m_kinematics =
@@ -282,8 +280,7 @@ public class Drivetrain extends SubsystemBase {
       currentSpeeds.vyMetersPerSecond < 2;
     SmartDashboard.putBoolean("Drive/PoseEstimation/WithinTrustedVelocity", withinTrustedVelocity);
 
-    EnableContinuousPoseEstimationRear =
-      m_driverDashboard.RearPoseEstimationSwitch.getBoolean(false) && DriverStation.isAutonomous();
+    EnableContinuousPoseEstimationRear = m_driverDashboard.RearPoseEstimationSwitch.getBoolean(false);
     SmartDashboard.putBoolean("Drive/PoseEstimation/RearEstimationEnabled", EnableContinuousPoseEstimationRear);
     if (EnableContinuousPoseEstimationRear) {
       // Rear Limelight
@@ -301,16 +298,15 @@ public class Drivetrain extends SubsystemBase {
         m_poseEstimator.addVisionMeasurement(llPose.Pose.toPose2d(), llPose.Timestamp, llPose.StdDeviations);
       }
     }
-    /** TODO:
-     * 
-    EnableContinuousPoseEstimationFront = m_driverDashboard.FrontPoseEstimationSwitch.getBoolean(false) && DriverStation.isAutonomous();
+
+    EnableContinuousPoseEstimationFront = m_driverDashboard.FrontPoseEstimationSwitch.getBoolean(false);
     SmartDashboard.putBoolean("Drive/PoseEstimation/FrontEstimationEnabled", EnableContinuousPoseEstimationFront);
     if (EnableContinuousPoseEstimationFront) {
       // Front Limelight
       // If we have a valid target and we're moving in a trusted velocity range, update the pose estimator
       var frontPrimaryTarget = LimelightFront.getApriltagId();
       var frontIsValidTarget = LimelightFront.isValidApriltag(frontPrimaryTarget);
-      d_frontTidEntry.setDouble(frontPrimaryTarget);
+      m_driverDashboard.FrontApTagIdField.setDouble(frontPrimaryTarget);
       SmartDashboard.putBoolean("Drive/PoseEstimation/Front/IsValidTarget", frontIsValidTarget);
 
       if (frontIsValidTarget && withinTrustedVelocity) {
@@ -319,7 +315,6 @@ public class Drivetrain extends SubsystemBase {
         m_poseEstimator.addVisionMeasurement(llPose.Pose.toPose2d(), llPose.Timestamp, llPose.StdDeviations);
       }
     }
-    */
   }
 
   //#endregion
@@ -376,8 +371,8 @@ public class Drivetrain extends SubsystemBase {
 
         // Convert inputs to MPS
         var inputXMPS = controlSuppliers.X.getAsDouble() * m_config.Drivetrain.MaxSpeedMetersPerSecond;
-        var inputYMPS = controlSuppliers.Y.getAsDouble() * m_config.Drivetrain.MaxSpeedMetersPerSecond;
-        var inputRotationRadiansPS = controlSuppliers.Z.getAsDouble() * m_config.Drivetrain.MaxAngularSpeedRadians;
+        var inputYMPS = -controlSuppliers.Y.getAsDouble() * m_config.Drivetrain.MaxSpeedMetersPerSecond;
+        var inputRotationRadiansPS = -controlSuppliers.Z.getAsDouble() * m_config.Drivetrain.MaxAngularSpeedRadians;
 
         // Build chassis speeds
         ChassisSpeeds robotRelativeSpeeds;

@@ -154,9 +154,6 @@ public class Climbers extends SubsystemBase {
 
     SmartDashboard.putBoolean("Climbers/LeftLimitSwitch", m_leftLimitSwitch.get());
     SmartDashboard.putBoolean("Climbers/RightLimitSwitch", m_rightLimitSwitch.get());
-
-    SmartDashboard.putString("Climbers/LeftClutchSolenoid", m_clutchSolenoidLeft.get().name());
-    SmartDashboard.putString("Climbers/RightClutchSolenoid", m_clutchSolenoidRight.get().name());
   }
 
   //#endregion
@@ -185,7 +182,9 @@ public class Climbers extends SubsystemBase {
         // Raise only if climbing controls is enabled
         if (m_climbControlsEnabled) {
           // Raise Right
-          if (raiseRightArm.getAsBoolean() && !m_rightLimitSwitch.get()) {
+          var raiseRightArmTriggered = raiseRightArm.getAsBoolean();
+          var rightLimitSwitchTriggered = m_rightLimitSwitch.get();
+          if (raiseRightArmTriggered && !rightLimitSwitchTriggered) {
             setClutch(Side.kRight, false);
             raiseArm(Side.kRight);
           } else {
@@ -193,7 +192,9 @@ public class Climbers extends SubsystemBase {
           }
 
           // Raise left
-          if (raiseLeftArm.getAsBoolean() && !m_leftLimitSwitch.get()) {
+          var raiseLeftArmTriggered = raiseLeftArm.getAsBoolean();
+          var leftLimitSwitchTriggered = m_leftLimitSwitch.get();
+          if (raiseLeftArmTriggered && !leftLimitSwitchTriggered) {
             setClutch(Side.kLeft, false);
             raiseArm(Side.kLeft);
           } else {

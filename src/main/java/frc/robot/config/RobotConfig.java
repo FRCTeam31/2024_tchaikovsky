@@ -49,7 +49,7 @@ public class RobotConfig {
         new PrimePIDConstants(2, 0, 0), // Pathing Rotation PID
         0.15,
         0.5,
-        "limelight",
+        "limelight-rear",
         "limelight-front"
       );
 
@@ -112,7 +112,7 @@ public class RobotConfig {
         0.1016
       );
 
-    config.Intake = new IntakeConfig(16, 15, 14, false, false, true, new PrimePIDConstants(0.05, 0, 0), 47, 4, 5);
+    config.Intake = new IntakeConfig(16, 15, 14, false, false, true, new PrimePIDConstants(0.05, 0, 0), 49, 4, 5);
 
     config.Shooter = new ShooterConfig(20, 19, false, false, 7, 6, 7);
 
