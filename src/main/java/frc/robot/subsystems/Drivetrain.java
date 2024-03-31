@@ -247,7 +247,7 @@ public class Drivetrain extends SubsystemBase {
    */
   private void setSnapToEnabled(boolean enabled) {
     m_snapToGyroEnabled = enabled;
-    if (!enabled) m_leds.restorePersistentStripState();
+    if (!enabled) m_leds.restorePersistentStripPattern();
   }
 
   /**
@@ -366,7 +366,7 @@ public class Drivetrain extends SubsystemBase {
         // If the driver is trying to rotate the robot, disable snap-to control
         if (Math.abs(controlSuppliers.Z.getAsDouble()) > 0.2) {
           setSnapToEnabled(false);
-          m_leds.restorePersistentStripState();
+          m_leds.restorePersistentStripPattern();
         }
 
         // Convert inputs to MPS

@@ -83,7 +83,7 @@ public class Shooter extends SubsystemBase {
   public void stopMotors() {
     m_talonFX.stopMotor();
     m_victorSPX.set(VictorSPXControlMode.PercentOutput, 0);
-    m_leds.restorePersistentStripState();
+    m_leds.restorePersistentStripPattern();
   }
 
   /**
@@ -105,7 +105,7 @@ public class Shooter extends SubsystemBase {
 
   public void setElevatorDown() {
     setElevator(Value.kReverse);
-    m_leds.restorePersistentStripState();
+    m_leds.restorePersistentStripPattern();
   }
 
   //#endregion
@@ -119,7 +119,7 @@ public class Shooter extends SubsystemBase {
       if (newNoteDetectedValue && !m_lastNoteDetectedValue) {
         m_leds.setStripTemporaryPattern(new BlinkPattern(prime.control.LEDs.Color.ORANGE, 0.2));
       } else {
-        m_leds.restorePersistentStripState();
+        m_leds.restorePersistentStripPattern();
       }
 
       // Save the new value
