@@ -6,6 +6,8 @@ import prime.control.LEDs.LEDEffect;
 
 public abstract class LEDPattern {
 
+  protected static final double MIN_FRAME_SPEED = 0.007;
+
   /**
    * The color of the pattern
    */
@@ -19,7 +21,7 @@ public abstract class LEDPattern {
   /**
    * The speed of the pattern in seconds per iteration
    */
-  public double SpeedSeconds;
+  public double EffectSpeedSeconds;
 
   /**
    * Whether the pattern is reversed. This is sometimes controlled by the pattern itself
@@ -30,18 +32,30 @@ public abstract class LEDPattern {
   protected long Frame = 0;
   protected long LastFrameTime = 0;
 
-  public LEDPattern(int r, int g, int b, LEDEffect effect, double speed, boolean reversed) {
+  public LEDPattern(int r, int g, int b, LEDEffect effect, double effectSpeedSeconds, boolean reversed) {
     this.Color = new Color((byte) r, (byte) g, (byte) b);
     this.Effect = effect;
-    this.SpeedSeconds = Math.max(speed, 0.005); // Minimum speed of 5ms
     this.Reversed = reversed;
+
+    if (effectSpeedSeconds < MIN_FRAME_SPEED) {
+      System.out.println("Speed for LED effect " + effect.name() + " is too fast, setting to minimum speed of 7ms");
+      this.EffectSpeedSeconds = MIN_FRAME_SPEED;
+    } else {
+      this.EffectSpeedSeconds = effectSpeedSeconds;
+    }
   }
 
-  public LEDPattern(Color color, LEDEffect effect, double speed, boolean reversed) {
+  public LEDPattern(Color color, LEDEffect effect, double effectSpeedSeconds, boolean reversed) {
     this.Color = color;
     this.Effect = effect;
-    this.SpeedSeconds = Math.max(speed, 0.005); // Minimum speed of 5ms
     this.Reversed = reversed;
+
+    if (effectSpeedSeconds < MIN_FRAME_SPEED) {
+      System.out.println("Speed for LED effect " + effect.name() + " is too fast, setting to minimum speed of 7ms");
+      this.EffectSpeedSeconds = MIN_FRAME_SPEED;
+    } else {
+      this.EffectSpeedSeconds = effectSpeedSeconds;
+    }
   }
 
   /**
@@ -60,7 +74,7 @@ public abstract class LEDPattern {
     return (
       this.Color.equals(other.Color) &&
       this.Effect == other.Effect &&
-      this.SpeedSeconds == other.SpeedSeconds &&
+      this.EffectSpeedSeconds == other.EffectSpeedSeconds &&
       this.Reversed == other.Reversed
     );
   }
@@ -71,6 +85,6 @@ public abstract class LEDPattern {
   protected boolean isUpdatable() {
     var currentTime = System.currentTimeMillis();
 
-    return currentTime - LastFrameTime >= (SpeedSeconds * 1000);
+    return currentTime - LastFrameTime >= (EffectSpeedSeconds * 1000);
   }
 }

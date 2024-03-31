@@ -24,17 +24,21 @@ public class PwmLEDs extends SubsystemBase {
   public PwmLEDs(LEDConfig config) {
     _config = config;
 
-    // Initialize the LED strip
-    _led = new AddressableLED(5);
+    // Initialize the LED strip and buffer
     _ledBuffer = new AddressableLEDBuffer(config.PixelsPerStrip);
+    _led = new AddressableLED(5);
     _led.setLength(_ledBuffer.getLength());
 
-    // Set the strip to a default pattern and start the update loop
-    _persistentPattern = new PulsePattern(Color.WHITE, 4);
-    _updateLoopExecutor.scheduleAtFixedRate(this::ledUpdateLoop, 0, 2, java.util.concurrent.TimeUnit.MILLISECONDS);
-
-    // Start the LED strip
+    // Set the strip to a default color and start the LED strip
+    for (var i = 0; i < _ledBuffer.getLength(); i++) {
+      _ledBuffer.setRGB(i, 100, 100, 100);
+    }
+    _led.setData(_ledBuffer);
     _led.start();
+
+    // Start the pattern update loop at 142hz with a default pattern
+    _persistentPattern = new PulsePattern(Color.MAROON, 4);
+    _updateLoopExecutor.scheduleAtFixedRate(this::ledUpdateLoop, 0, 7, java.util.concurrent.TimeUnit.MILLISECONDS);
   }
 
   /**

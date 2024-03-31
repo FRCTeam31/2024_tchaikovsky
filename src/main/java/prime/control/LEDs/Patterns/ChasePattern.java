@@ -33,7 +33,7 @@ public class ChasePattern extends LEDPattern {
   @Override
   public void updateBuffer(int startingIndex, int length, AddressableLEDBuffer buffer) {
     var totalFrameCount = length + CHASE_LENGTH + FADE_LENGTH;
-    var frameSpeedS = SpeedSeconds / totalFrameCount;
+    var frameSpeedS = EffectSpeedSeconds / totalFrameCount;
     var currentTime = System.currentTimeMillis();
 
     if (currentTime - LastFrameTime >= (frameSpeedS * 1000)) {
