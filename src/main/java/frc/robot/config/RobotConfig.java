@@ -1,8 +1,6 @@
 package frc.robot.config;
 
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.util.Units;
-import prime.control.PrimePIDConstants;
 
 public class RobotConfig {
 
@@ -32,26 +30,12 @@ public class RobotConfig {
    */
   public static RobotConfig getDefault() {
     var config = new RobotConfig("Default Config");
-    config.Drivetrain =
-      new DrivetrainConfig(
-        0.51181,
-        0.67945,
-        Math.PI * 0.7778174593052, // Wheelbase Circumference
-        1,
-        Units.feetToMeters(20), // Max Speed MPS
-        Units.feetToMeters(15), // Max Acceleration MPS^2
-        Math.PI * 3, // Max Angular Speed in Radians
-        0.5,
-        new PrimePIDConstants(0.019, 0, 0, 0, 0.091, 0, 0.05), // Drive PID
-        new PrimePIDConstants(2, 0, 0), // Steering PID
-        new PrimePIDConstants(6, 0, 0), // SnapTo PID
-        new PrimePIDConstants(3, 0, 0), // Pathing Translation PID
-        new PrimePIDConstants(2, 0, 0), // Pathing Rotation PID
-        0.15,
-        0.5,
-        "limelight-rear",
-        "limelight-front"
-      );
+    config.Drivetrain = new DrivetrainConfig();
+    config.Intake = new IntakeConfig();
+    config.Shooter = new ShooterConfig();
+    config.Climbers = new ClimbersConfig();
+    config.LEDs = new LEDConfig();
+    config.PneumaticsModuleId = 30;
 
     var wheelLocationAbsoluteX = config.Drivetrain.TrackWidthMeters / 2;
     var wheelLocationAbsoluteY = config.Drivetrain.WheelBaseMeters / 2;
@@ -111,16 +95,6 @@ public class RobotConfig {
         6.75,
         0.1016
       );
-
-    config.Intake = new IntakeConfig(16, 15, 14, false, false, true, new PrimePIDConstants(0.05, 0, 0), 49, 4, 5);
-
-    config.Shooter = new ShooterConfig(20, 19, false, false, 7, 6, 7);
-
-    config.Climbers = new ClimbersConfig(18, 17, true, true, 0.5, -1, 2, 3, 8, 9, 10, 11);
-
-    config.LEDs = new LEDConfig(5, 3, 26);
-
-    config.PneumaticsModuleId = 30;
 
     return config;
   }

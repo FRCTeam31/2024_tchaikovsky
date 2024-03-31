@@ -18,27 +18,19 @@ public class IntakeConfig {
   public int TopLimitSwitchChannel;
   public int BottomLimitSwitchChannel;
 
-  public IntakeConfig(
-    int rollersCanId,
-    int neoLeftCanId,
-    int neoRightCanId,
-    boolean rollersInverted,
-    boolean neoLeftInverted,
-    boolean neoRightInverted,
-    PrimePIDConstants intakeAnglePid,
-    double positionDelta,
-    int topLimitSwitchChannel,
-    int bottomLimitSwitchChannel
-  ) {
-    RollersCanId = rollersCanId;
-    NeoLeftCanId = neoLeftCanId;
-    NeoRightCanId = neoRightCanId;
-    RollersInverted = rollersInverted;
-    NeoLeftInverted = neoLeftInverted;
-    NeoRightInverted = neoRightInverted;
-    IntakeAnglePid = intakeAnglePid;
-    PositionDelta = positionDelta;
-    TopLimitSwitchChannel = topLimitSwitchChannel;
-    BottomLimitSwitchChannel = bottomLimitSwitchChannel;
+  /**
+   * Creates a new instance of IntakeConfig with default values
+   */
+  public IntakeConfig() {
+    RollersCanId = 16;
+    NeoLeftCanId = 15;
+    NeoRightCanId = 14;
+    RollersInverted = false;
+    NeoLeftInverted = false;
+    NeoRightInverted = true;
+    IntakeAnglePid = new PrimePIDConstants(0.05, 0, 0);
+    PositionDelta = 49;
+    TopLimitSwitchChannel = 4;
+    BottomLimitSwitchChannel = 5;
   }
 }

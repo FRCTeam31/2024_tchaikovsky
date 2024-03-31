@@ -10,21 +10,16 @@ public class ShooterConfig {
   public int ElevationSolenoidForwardChannel;
   public int ElevationSolenoidReverseChannel;
 
-  public ShooterConfig(
-    int shooterTalonFXCanID,
-    int shooterVictorSPXCanID,
-    boolean shooterTalonFXInverted,
-    boolean shooterVictorSPXInverted,
-    int noteDetectorDIOChannel,
-    int elevationSolenoidForwardChannel,
-    int elevationSolenoidReverseChannel
-  ) {
-    TalonFXCanID = shooterTalonFXCanID;
-    VictorSPXCanID = shooterVictorSPXCanID;
-    TalonFXInverted = shooterTalonFXInverted;
-    VictorSPXInverted = shooterVictorSPXInverted;
-    NoteDetectorDIOChannel = noteDetectorDIOChannel;
-    ElevationSolenoidForwardChannel = elevationSolenoidForwardChannel;
-    ElevationSolenoidReverseChannel = elevationSolenoidReverseChannel;
+  /**
+   * Creates a new instance of ShooterConfig with default values
+   */
+  public ShooterConfig() {
+    TalonFXCanID = 20;
+    VictorSPXCanID = 19;
+    TalonFXInverted = false;
+    VictorSPXInverted = false;
+    NoteDetectorDIOChannel = 7;
+    ElevationSolenoidForwardChannel = 6;
+    ElevationSolenoidReverseChannel = 7;
   }
 }

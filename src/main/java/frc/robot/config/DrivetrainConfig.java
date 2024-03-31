@@ -1,5 +1,6 @@
 package frc.robot.config;
 
+import edu.wpi.first.math.util.Units;
 import prime.control.PrimePIDConstants;
 
 public class DrivetrainConfig {
@@ -16,7 +17,6 @@ public class DrivetrainConfig {
   public int PigeonId;
 
   // Control properties
-  public double LowGearScalar;
   public double DriveDeadband;
   public double DeadbandCurveWeight;
 
@@ -31,45 +31,25 @@ public class DrivetrainConfig {
   public String LimelightRearName;
   public String LimelightFrontName;
 
-  public DrivetrainConfig(
-    double trackWidthMeters,
-    double wheelBaseMeters,
-    double wheelBaseCircumferenceMeters,
-    int pigeonId,
-    double maxSpeedMetersPerSecond,
-    double maxAccelerationMetersPerSecondSquared,
-    double maxAngularSpeedRadians,
-    double lowGearScalar,
-    PrimePIDConstants drivePID,
-    PrimePIDConstants steeringPID,
-    PrimePIDConstants snapToPID,
-    PrimePIDConstants pathingTranslationPid,
-    PrimePIDConstants pathingRotationPid,
-    double driveDeadband,
-    double deadbandCurveWeight,
-    String limelightRearName,
-    String limelightFrontName
-  ) {
-    TrackWidthMeters = trackWidthMeters;
-    WheelBaseMeters = wheelBaseMeters;
-    WheelBaseCircumferenceMeters = wheelBaseCircumferenceMeters;
-    MaxSpeedMetersPerSecond = maxSpeedMetersPerSecond;
-    MaxAccelerationMetersPerSecondSquared = maxAccelerationMetersPerSecondSquared;
-    MaxAngularSpeedRadians = maxAngularSpeedRadians;
-
-    PigeonId = pigeonId;
-
-    LowGearScalar = lowGearScalar;
-    DriveDeadband = driveDeadband;
-    DeadbandCurveWeight = deadbandCurveWeight;
-
-    DrivePID = drivePID;
-    SteeringPID = steeringPID;
-    SnapToPID = snapToPID;
-    PathingTranslationPid = pathingTranslationPid;
-    PathingRotationPid = pathingRotationPid;
-
-    LimelightRearName = limelightRearName;
-    LimelightFrontName = limelightFrontName;
+  /**
+   * Gets a default instance of a DrivetrainConfig with all properties set to 2024 robot values
+   */
+  public DrivetrainConfig() {
+    TrackWidthMeters = 0.51181;
+    WheelBaseMeters = 0.67945;
+    WheelBaseCircumferenceMeters = Math.PI * 0.7778174593052;
+    MaxSpeedMetersPerSecond = Units.feetToMeters(20);
+    MaxAccelerationMetersPerSecondSquared = Units.feetToMeters(15);
+    MaxAngularSpeedRadians = Math.PI * 3;
+    PigeonId = 1;
+    DriveDeadband = 0.15;
+    DeadbandCurveWeight = 0.5;
+    DrivePID = new PrimePIDConstants(0.019, 0, 0, 0, 0.091, 0, 0.05);
+    SteeringPID = new PrimePIDConstants(2, 0, 0);
+    SnapToPID = new PrimePIDConstants(6, 0, 0);
+    PathingTranslationPid = new PrimePIDConstants(3, 0, 0);
+    PathingRotationPid = new PrimePIDConstants(2, 0, 0);
+    LimelightRearName = "limelight-rear";
+    LimelightFrontName = "limelight-front";
   }
 }

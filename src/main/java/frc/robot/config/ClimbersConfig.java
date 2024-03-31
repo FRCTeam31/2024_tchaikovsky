@@ -19,35 +19,21 @@ public class ClimbersConfig {
   public int RightSolenoidForwardChannel;
   public int RightSolenoidReverseChannel;
 
-  public ClimbersConfig(
-    int victorSPXLeftCanID,
-    int victorSPXRightCanID,
-    boolean leftInverted,
-    boolean rightInverted,
-    double climberUpSpeed,
-    int climberDownSpeed,
-    int leftLimitSwitchDIOChannel,
-    int rightLimitSwitchDIOChannel,
-    int leftSolenoidForwardChannel,
-    int leftSolenoidReverseChannel,
-    int rightSolenoidForwardChannel,
-    int rightSolenoidReverseChannel
-  ) {
-    VictorSPXLeftCanID = victorSPXLeftCanID;
-    VictorSPXRightCanID = victorSPXRightCanID;
-
-    LeftInverted = leftInverted;
-    RightInverted = rightInverted;
-
-    ClimberUpSpeed = climberUpSpeed;
-    ClimberDownSpeed = climberDownSpeed;
-
-    LeftLimitSwitchDIOChannel = leftLimitSwitchDIOChannel;
-    RightLimitSwitchDIOChannel = rightLimitSwitchDIOChannel;
-
-    LeftSolenoidForwardChannel = leftSolenoidForwardChannel;
-    LeftSolenoidReverseChannel = leftSolenoidReverseChannel;
-    RightSolenoidForwardChannel = rightSolenoidForwardChannel;
-    RightSolenoidReverseChannel = rightSolenoidReverseChannel;
+  /**
+   * Creates a new instance of ClimbersConfig with default values
+   */
+  public ClimbersConfig() {
+    VictorSPXLeftCanID = 18;
+    VictorSPXRightCanID = 17;
+    LeftInverted = true;
+    RightInverted = true;
+    ClimberUpSpeed = 0.5;
+    ClimberDownSpeed = -1;
+    LeftLimitSwitchDIOChannel = 2;
+    RightLimitSwitchDIOChannel = 3;
+    LeftSolenoidForwardChannel = 8;
+    LeftSolenoidReverseChannel = 9;
+    RightSolenoidForwardChannel = 12;
+    RightSolenoidReverseChannel = 11;
   }
 }

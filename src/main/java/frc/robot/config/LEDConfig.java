@@ -6,9 +6,12 @@ public class LEDConfig {
   public int SectionCount;
   public int PixelsPerSection;
 
-  public LEDConfig(int pwmPort, int sectionCount, int pixelsPerSection) {
-    PwmPort = pwmPort;
-    SectionCount = sectionCount;
-    PixelsPerSection = pixelsPerSection;
+  /**
+   * Creates a new instance of LEDConfig with default values
+   */
+  public LEDConfig() {
+    PwmPort = 5;
+    SectionCount = 1;
+    PixelsPerSection = 78;
   }
 }
