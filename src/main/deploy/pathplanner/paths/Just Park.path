@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.0,
-        "y": 5.23
+        "x": 1.4,
+        "y": 1.5
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.0347874519281977,
-        "y": 5.23
+        "x": 2.8605753327000683,
+        "y": 1.5
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 3.0,
-        "y": 6.23
+        "x": 3.5,
+        "y": 1.5
       },
       "prevControl": {
-        "x": 2.982072629126527,
-        "y": 6.23
+        "x": 2.3166418821455848,
+        "y": 1.5
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,18 +32,21 @@
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 1.0,
-    "maxAcceleration": 1.0,
-    "maxAngularVelocity": 180.0,
-    "maxAngularAcceleration": 180.0
+    "maxVelocity": 5.0,
+    "maxAcceleration": 4.0,
+    "maxAngularVelocity": 360.0,
+    "maxAngularAcceleration": 540.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 90.67209552796092,
+    "rotation": 0.7631436521121626,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "Test Autos",
-  "previewStartingState": null,
-  "useDefaultConstraints": false
+  "folder": "Park Auto Paths",
+  "previewStartingState": {
+    "rotation": 1.2167323560941719,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
 }

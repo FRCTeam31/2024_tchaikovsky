@@ -2,40 +2,34 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import prime.physics.LimelightPose;
 
-public class Limelight extends SubsystemBase {
+public class Limelight extends SubsystemBase implements AutoCloseable {
 
   private NetworkTable m_limelightTable;
-
-  private ShuffleboardTab d_tab = Shuffleboard.getTab("Driver");
-  private GenericEntry d_tidEntry = d_tab
-    .add("Primary AprilTag #", 0)
-    .withWidget(BuiltInWidgets.kTextView)
-    .withPosition(12, 3)
-    .withSize(1, 1)
-    .getEntry();
+  private ExecutorService m_executorService = Executors.newSingleThreadExecutor();
 
   /**
    * Creates a new Limelight subsystem and sets the camera's pose in the coordinate system of the robot.
    * @param cameraPose
    */
-  public Limelight(Pose3d cameraPose) {
-    m_limelightTable = NetworkTableInstance.getDefault().getTable("limelight");
-    setCameraPose(cameraPose);
+  public Limelight(String tableName) {
+    m_limelightTable = NetworkTableInstance.getDefault().getTable(tableName);
   }
 
   //#region Basic Targeting Data
@@ -75,6 +69,14 @@ public class Limelight extends SubsystemBase {
     return (long) m_limelightTable.getEntry("cl").getDouble(0.0);
   }
 
+  /**
+   * The total latency of the capture and pipeline processing in milliseconds.
+   * @return
+   */
+  public long getTotalLatencyMs() {
+    return getPipelineLatencyMs() + getCapturePipelineLatencyMs();
+  }
+
   //#endregion
 
   //#region AprilTag and 3D Data
@@ -83,77 +85,98 @@ public class Limelight extends SubsystemBase {
    * ID of the primary in-view AprilTag
    */
   public int getApriltagId() {
-    return (int) m_limelightTable.getEntry("tid").getDouble(0.0);
+    return (int) m_limelightTable.getEntry("tid").getDouble(-1);
+  }
+
+  /**
+   * Returns the number of AprilTags in the image.
+   * @return
+   */
+  public double getTagCount() {
+    // Robot transform in field-space. Translation (X,Y,Z) in meters Rotation(Roll,Pitch,Yaw) in degrees, total latency (cl+tl), tag count, tag span, average tag distance from camera, average tag area (percentage of image)
+    var botPose = m_limelightTable.getEntry("botpose").getDoubleArray(new double[11]);
+
+    return botPose[7];
   }
 
   /**
    * Robot transform in field-space.
    */
-  public Pose3d getRobotPose() {
-    var poseData = m_limelightTable.getEntry("botpose").getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
+  public LimelightPose getRobotPose() {
+    var poseData = m_limelightTable.getEntry("botpose").getDoubleArray(new double[11]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
 
-    return toPose3d(poseData);
+    return new LimelightPose(poseData, calculateTrust(poseData[7]));
   }
 
   /**
    * Robot transform in field-space (alliance driverstation WPILIB origin).
    * @param alliance
    */
-  public Pose3d getRobotPose(DriverStation.Alliance alliance) {
-    if (alliance == DriverStation.Alliance.Blue) {
-      var poseData = m_limelightTable.getEntry("botpose_wpiblue").getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
+  public LimelightPose getRobotPose(DriverStation.Alliance alliance) {
+    var poseData = alliance == Alliance.Blue
+      ? m_limelightTable.getEntry("botpose_wpiblue").getDoubleArray(new double[11])
+      : m_limelightTable.getEntry("botpose_wpired").getDoubleArray(new double[11]);
 
-      return toPose3d(poseData);
-    } else {
-      var poseData = m_limelightTable.getEntry("botpose_wpired").getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
-
-      return toPose3d(poseData);
-    }
+    return new LimelightPose(poseData, calculateTrust(poseData[7]));
   }
 
   /**
    * 3D transform of the robot in the coordinate system of the primary in-view AprilTag
    */
-  public Pose3d getRobotPoseInTargetSpace() {
-    var poseData = m_limelightTable.getEntry("botpose_targetspace").getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
+  public LimelightPose getRobotPoseInTargetSpace() {
+    var poseData = m_limelightTable.getEntry("botpose_targetspace").getDoubleArray(new double[11]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
 
-    return toPose3d(poseData);
+    return new LimelightPose(poseData, calculateTrust(poseData[7]));
   }
 
   /**
    * 3D transform of the camera in the coordinate system of the primary in-view AprilTag
    */
-  public Pose3d getCameraPoseInTargetSpace() {
-    var poseData = m_limelightTable.getEntry("camerapose_targetspace").getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
+  public LimelightPose getCameraPoseInTargetSpace() {
+    var poseData = m_limelightTable.getEntry("camerapose_targetspace").getDoubleArray(new double[11]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
 
-    return toPose3d(poseData);
+    return new LimelightPose(poseData, calculateTrust(poseData[7]));
   }
 
   /**
    * 3D transform of the camera in the coordinate system of the robot
    */
-  public Pose3d getCameraPoseInRobotSpace() {
-    var poseData = m_limelightTable.getEntry("camerapose_robotspace").getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
+  public LimelightPose getCameraPoseInRobotSpace() {
+    var poseData = m_limelightTable.getEntry("camerapose_robotspace").getDoubleArray(new double[11]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
 
-    return toPose3d(poseData);
+    return new LimelightPose(poseData, calculateTrust(poseData[7]));
   }
 
   /**
    * 3D transform of the primary in-view AprilTag in the coordinate system of the Camera
    */
-  public Pose3d getTargetPoseInCameraSpace() {
-    var poseData = m_limelightTable.getEntry("targetpose_cameraspace").getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
+  public LimelightPose getTargetPoseInCameraSpace() {
+    var poseData = m_limelightTable.getEntry("targetpose_cameraspace").getDoubleArray(new double[11]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
 
-    return toPose3d(poseData);
+    return new LimelightPose(poseData, calculateTrust(poseData[7]));
   }
 
   /**
    * 3D transform of the primary in-view AprilTag in the coordinate system of the Robot
    */
-  public Pose3d getTargetPoseInRobotSpace() {
-    var poseData = m_limelightTable.getEntry("targetpose_robotspace").getDoubleArray(new double[6]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
+  public LimelightPose getTargetPoseInRobotSpace() {
+    var poseData = m_limelightTable.getEntry("targetpose_robotspace").getDoubleArray(new double[11]); // Translation (X,Y,Z) Rotation(Roll,Pitch,Yaw)
 
-    return toPose3d(poseData);
+    return new LimelightPose(poseData, calculateTrust(poseData[7]));
+  }
+
+  /**
+   * Calculates a trust value based on the number of tags in view.
+   * @return
+   */
+  public Matrix<N3, N1> calculateTrust(double tagCount) {
+    // Trust level is a function of the number of tags in view
+    // var trustLevel = 0.490956d + Math.pow(9998.51d, -(6.95795d * tagCount));
+
+    var trustLevel = tagCount >= 2.0 ? 2 : 20;
+
+    // X Y Z trust levels (never trust Z)
+    return VecBuilder.fill(trustLevel, trustLevel, 999999);
   }
 
   //#endregion
@@ -170,6 +193,34 @@ public class Limelight extends SubsystemBase {
    */
   public void setLedMode(int mode) {
     m_limelightTable.getEntry("ledMode").setNumber(mode);
+  }
+
+  /**
+   * Forces the LED to blink a specified number of times, then returns to pipeline control.
+   */
+  public void blinkLed(int blinkCount) {
+    m_executorService.submit(() -> {
+      // Blink the LED X times with 100ms on, 200ms off for each blink
+      for (int i = 0; i < blinkCount; i++) {
+        m_limelightTable.getEntry("ledMode").setNumber(3);
+
+        try {
+          Thread.sleep(100);
+        } catch (Exception e) {
+          Thread.currentThread().interrupt();
+        }
+
+        m_limelightTable.getEntry("ledMode").setNumber(1);
+        try {
+          Thread.sleep(200);
+        } catch (Exception e) {
+          Thread.currentThread().interrupt();
+        }
+      }
+
+      // Then return to pipeline control
+      setLedMode(0);
+    });
   }
 
   /**
@@ -228,23 +279,20 @@ public class Limelight extends SubsystemBase {
   //#endregion
 
   public void periodic() {
-    d_tidEntry.setDouble(getApriltagId());
+    // Level2 logging
+    SmartDashboard.putNumber("Limelight/PrimaryTargetID", getApriltagId());
+    SmartDashboard.putNumber("Limelight/HorizontalOffset", getHorizontalOffsetFromTarget().getDegrees());
   }
 
-  private Pose3d toPose3d(double[] poseData) {
-    if (poseData.length < 6) {
-      System.err.println("Bad LL 3D Pose Data!");
+  public boolean isSpeakerCenterTarget(int apriltagId) {
+    return apriltagId == 4 || apriltagId == 7;
+  }
 
-      return new Pose3d();
-    }
+  public boolean isValidApriltag(int apriltagId) {
+    return apriltagId >= 1 && apriltagId <= 16;
+  }
 
-    return new Pose3d(
-      new Translation3d(poseData[0], poseData[1], poseData[2]),
-      new Rotation3d(
-        Units.degreesToRadians(poseData[3]),
-        Units.degreesToRadians(poseData[4]),
-        Units.degreesToRadians(poseData[5])
-      )
-    );
+  public void close() {
+    m_executorService.shutdown();
   }
 }

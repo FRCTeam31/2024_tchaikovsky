@@ -14,36 +14,26 @@ public class ClimbersConfig {
   public int LeftLimitSwitchDIOChannel;
   public int RightLimitSwitchDIOChannel;
 
-  public int LeftServoChannel;
-  public int RightServoChannel;
-  public int ServoLockAngle;
-  public int ServoUnlockAngle;
+  public int LeftSolenoidForwardChannel;
+  public int LeftSolenoidReverseChannel;
+  public int RightSolenoidForwardChannel;
+  public int RightSolenoidReverseChannel;
 
-  public ClimbersConfig(
-    int victorSPXLeftCanID,
-    int victorSPXRightCanID,
-    boolean leftInverted,
-    boolean rightInverted,
-    double climberUpSpeed,
-    int climberDownSpeed,
-    int leftLimitSwitchDIOChannel,
-    int rightLimitSwitchDIOChannel,
-    int leftServoChannel,
-    int rightServoChannel,
-    int servoLockAngle,
-    int servoUnlockAngle
-  ) {
-    VictorSPXLeftCanID = victorSPXLeftCanID;
-    VictorSPXRightCanID = victorSPXRightCanID;
-    LeftInverted = leftInverted;
-    RightInverted = rightInverted;
-    ClimberUpSpeed = climberUpSpeed;
-    ClimberDownSpeed = climberDownSpeed;
-    LeftLimitSwitchDIOChannel = leftLimitSwitchDIOChannel;
-    RightLimitSwitchDIOChannel = rightLimitSwitchDIOChannel;
-    LeftServoChannel = leftServoChannel;
-    RightServoChannel = rightServoChannel;
-    ServoLockAngle = servoLockAngle;
-    ServoUnlockAngle = servoUnlockAngle;
+  /**
+   * Creates a new instance of ClimbersConfig with default values
+   */
+  public ClimbersConfig() {
+    VictorSPXLeftCanID = 18;
+    VictorSPXRightCanID = 17;
+    LeftInverted = true;
+    RightInverted = true;
+    ClimberUpSpeed = 0.5;
+    ClimberDownSpeed = -1;
+    LeftLimitSwitchDIOChannel = 2;
+    RightLimitSwitchDIOChannel = 3;
+    LeftSolenoidForwardChannel = 8;
+    LeftSolenoidReverseChannel = 9;
+    RightSolenoidForwardChannel = 12;
+    RightSolenoidReverseChannel = 11;
   }
 }

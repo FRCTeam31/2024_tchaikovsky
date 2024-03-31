@@ -1,0 +1,31 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 0.8,
+      "y": 4.6
+    },
+    "rotation": -60.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "Score_In_Speaker"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "SpSource-M5"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "Source-Side",
+  "choreoAuto": false
+}

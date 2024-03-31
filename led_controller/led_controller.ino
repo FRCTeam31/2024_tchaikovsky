@@ -82,70 +82,51 @@ class LEDSection {
 
 #define PIN1 10 // D10
 #define NUMPIXELS 78
-#define SECTION_COUNT 3
-#define LEDS_PER_SECTION 26
+#define SECTION_COUNT 1
+#define LEDS_PER_SECTION 78
 
 Adafruit_NeoPixel strip(NUMPIXELS, PIN1, NEO_GRB + NEO_KHZ800);
-LEDSection sectionStateBuffer[SECTION_COUNT] = {
+LEDSection pendingStateBuffer[SECTION_COUNT] = {
   // Section, R, G, B, Pattern, Speed, Direction
   LEDSection(255, 255, 0, Pulse, 100, false),
-  LEDSection(255, 255, 0, Pulse, 100, false),
-  LEDSection(255, 255, 0, Pulse, 100, false),
+  // LEDSection(255, 255, 0, Pulse, 100, false),
+  // LEDSection(255, 255, 0, Pulse, 100, false),
 };
-LEDSection sectionStates[SECTION_COUNT] = {
+LEDSection displayedStates[SECTION_COUNT] = {
   // Section, R, G, B, Pattern, Speed, Direction
   LEDSection(),
-  LEDSection(),
-  LEDSection(),
+  // LEDSection(),
+  // LEDSection(),
 };
-
-void receiveData() {
-    while (Serial.available() > 7) {
-      LEDSection packet;
-
-      byte sectionNum = Serial.read(); // Section (1 byte)
-
-      // Validate the section number
-      if (sectionNum < 0 || sectionNum >= SECTION_COUNT) {
-
-        // Skip the rest of the packet
-        for (int i = 1; i < 7; i++) {
-          Serial.read();
-        }
-      }
-      
-      // Read the color (3 bytes)
-      byte r = Serial.read(); // R
-      byte g = Serial.read(); // G
-      byte b = Serial.read(); // B
-      packet.color = packet.packColor(r, g, b);
-
-      packet.pattern = (LEDPattern)Serial.read(); // Pattern (1 byte)
-      packet.speed = Serial.read() * 10; // Speed (1 bytes)
-      packet.direction = Serial.read() > 0; // Direction (1 byte)
-      
-      // Save the packet to the section buffer
-      sectionStateBuffer[sectionNum] = packet;
-    }
-
-    // Clear any extra data in the Serial buffer that isn't a full packet
-    while (Serial.available() > 0) {
-      Serial.read();
-    }
-}
 
 void setup() {
   // Set up serial comms
   Serial.begin(115200);
+  Serial.setTimeout(10);
 
   // Set up LED strip
   strip.begin();
 }
 
 void loop() {
-  if (Serial.available() > 0) {
-    receiveData();
-  }
+  while (Serial.available() >= 7) {
+      byte buffer[7] = {-1, -1, -1, -1, -1, -1, -1}; // R, G, B, Pattern, Speed, Direction
+      int bytesRead = Serial.readBytes(buffer, 7);
+
+      if (bytesRead != 7) {
+        // Incomplete packet, skip
+        continue;
+      }
+
+      // Validate the section number
+      if (buffer[0] < 0 || buffer[0] >= SECTION_COUNT) {
+        // Skip the rest of this packet
+        continue;
+      }
+
+      // Save the packet to the section buffer
+      pendingStateBuffer[buffer[0]] = LEDSection(buffer[1], buffer[2], buffer[3], (LEDPattern)buffer[4], (uint16_t)buffer[5], buffer[6] == 1);
+    }
 
   // Update each section of the LED strip
   for (int i = 0; i < SECTION_COUNT; i++) {
@@ -156,31 +137,31 @@ void loop() {
 
 void updateSection(int section) {
   // If the buffer data is different from the section state, set the new section pattern
-  if (sectionStateBuffer[section] != sectionStates[section]) {
-    if (sectionStateBuffer[section].pattern == Solid) {
-        setSolid(section, sectionStateBuffer[section].color);
+  if (pendingStateBuffer[section] != displayedStates[section]) {
+    if (pendingStateBuffer[section].pattern == Solid) {
+        setSolid(section, pendingStateBuffer[section].color);
         return;
     }
 
     // Move the buffer to the current state
-    sectionStates[section] = sectionStateBuffer[section];
+    displayedStates[section] = pendingStateBuffer[section];
 
     // Set section to frame 0: LEDs off
     // Save the timestamp
     setSolid(section, 0);
-    sectionStates[section].frame = 0;
-    sectionStates[section].lastFrameTimestamp = millis();
+    displayedStates[section].frame = 0;
+    displayedStates[section].lastFrameTimestamp = millis();
   } else {
     // No change, update the section's pattern
-    switch (sectionStates[section].pattern) {
+    switch (displayedStates[section].pattern) {
       case Blink:
-        updateBlink(section, sectionStateBuffer[section]);
+        updateBlink(section, pendingStateBuffer[section]);
         break;
       case Race:
-        updateRace(section, sectionStateBuffer[section]);
+        updateRace(section, pendingStateBuffer[section]);
         break;
       case Pulse:
-        updatePulse(section, sectionStateBuffer[section]);
+        updatePulse(section, pendingStateBuffer[section]);
         break;
     }
   }

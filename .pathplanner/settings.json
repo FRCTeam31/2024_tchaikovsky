@@ -1,24 +1,23 @@
 {
-  "robotWidth": 0.51,
-  "robotLength": 0.68,
+  "robotWidth": 0.68,
+  "robotLength": 0.51,
   "holonomicMode": true,
   "pathFolders": [
     "Amp Side Auto Paths",
     "Center Auto Paths",
-    "Miscellaneous",
     "Park Auto Paths",
     "Source Side Auto Paths",
     "Test Autos"
   ],
   "autoFolders": [
-    "Blue Amp Side Speaker Autos",
-    "Blue Feed Side Speaker Autos",
-    "Blue Center Speaker Autos",
+    "Amp-Side",
+    "Center",
+    "Source-Side",
     "Park Autos"
   ],
   "defaultMaxVel": 4.0,
   "defaultMaxAccel": 4.0,
-  "defaultMaxAngVel": 180.0,
-  "defaultMaxAngAccel": 360.0,
-  "maxModuleSpeed": 4.0
+  "defaultMaxAngVel": 360.0,
+  "defaultMaxAngAccel": 540.0,
+  "maxModuleSpeed": 4.5
 }

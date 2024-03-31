@@ -6,72 +6,30 @@ import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.config.ShooterConfig;
 import java.util.Map;
-import prime.movers.IPlannable;
-import prime.movers.LinearActuator;
+import prime.control.LEDs.Color;
+import prime.control.LEDs.Patterns.BlinkPattern;
+import prime.control.LEDs.Patterns.ChasePattern;
+import prime.control.LEDs.Patterns.SolidPattern;
 
-public class Shooter extends SubsystemBase implements IPlannable {
+public class Shooter extends SubsystemBase {
 
   private ShooterConfig m_config;
 
+  private PwmLEDs m_leds;
   private TalonFX m_talonFX;
   private VictorSPX m_victorSPX;
-  private LinearActuator m_leftLinearActuator;
-  private LinearActuator m_rightLinearActuator;
+  private DoubleSolenoid m_elevationSolenoid;
   private DigitalInput m_noteDetector;
-
-  public boolean m_shooterIsUp;
-  private PIDController m_elevationPidController;
-  private Debouncer m_elevationToggleDebouncer = new Debouncer(0.1, Debouncer.DebounceType.kBoth);
-
-  // #region Shuffleboard
-  // Shuffleboard configuration
-  // private ShuffleboardTab d_shooterTab = Shuffleboard.getTab("Shooter");
-  // private GenericEntry d_talonFXSpeed = d_shooterTab
-  //   .add("TalonFX Speed", 0)
-  //   .withWidget(BuiltInWidgets.kDial)
-  //   .withProperties(Map.of("Min", -1, "Max", 1))
-  //   .getEntry();
-  // private GenericEntry d_victorSPXSpeed = d_shooterTab
-  //   .add("VictorSPX Speed", 0)
-  //   .withWidget(BuiltInWidgets.kDial)
-  //   .withProperties(Map.of("Min", -1, "Max", 1))
-  //   .getEntry();
-  // private GenericEntry d_leftLinearActuator = d_shooterTab
-  //   .add("Left Actuator Position", 0)
-  //   .withWidget(BuiltInWidgets.kNumberBar)
-  //   .withProperties(Map.of("Min", 0, "Max", 1))
-  //   .getEntry();
-  // private GenericEntry d_rightLinearActuator = d_shooterTab
-  //   .add("Right Actuator Position", 0)
-  //   .withWidget(BuiltInWidgets.kNumberBar)
-  //   .withProperties(Map.of("Min", 0, "Max", 1))
-  //   .getEntry();
-  // private GenericEntry d_noteDetector = d_shooterTab
-  //   .add("Note Detected", false)
-  //   .withWidget(BuiltInWidgets.kBooleanBox)
-  //   .getEntry();
-  // private GenericEntry d_shooterIsUp = d_shooterTab
-  //   .add("Shooter is up", false)
-  //   .withWidget(BuiltInWidgets.kBooleanBox)
-  //   .getEntry();
-  // private GenericEntry d_pidOutputEntry = d_shooterTab
-  //   .add("PID output", 0)
-  //   .withWidget(BuiltInWidgets.kNumberBar)
-  //   .withProperties(Map.of("Max", 2, "Min", -2))
-  //   .getEntry();
 
   // #endregion
 
@@ -79,8 +37,9 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * Creates a new Shooter with a given configuration
    * @param config
    */
-  public Shooter(ShooterConfig config) {
+  public Shooter(ShooterConfig config, PwmLEDs leds) {
     m_config = config;
+    m_leds = leds;
     setName("Shooter");
 
     m_talonFX = new TalonFX(m_config.TalonFXCanID);
@@ -92,16 +51,15 @@ public class Shooter extends SubsystemBase implements IPlannable {
     m_victorSPX.configFactoryDefault();
     m_victorSPX.setNeutralMode(NeutralMode.Brake);
 
-    m_leftLinearActuator =
-      new LinearActuator(m_config.LeftLinearActuatorCanID, m_config.LeftLinearActuatorAnalogChannel);
-    m_rightLinearActuator =
-      new LinearActuator(m_config.RightLinearActuatorCanID, m_config.RightLinearActuatorAnalogChannel);
+    m_elevationSolenoid =
+      new DoubleSolenoid(
+        30,
+        PneumaticsModuleType.REVPH,
+        m_config.ElevationSolenoidForwardChannel,
+        m_config.ElevationSolenoidReverseChannel
+      );
 
     m_noteDetector = new DigitalInput(m_config.NoteDetectorDIOChannel);
-    m_shooterIsUp = false;
-    m_elevationPidController = new PIDController(25, 0, 0, 0.02);
-    m_elevationPidController.setSetpoint(m_config.MinimumElevation);
-    // d_shooterTab.add("Elevation PID", m_elevationPidController).withWidget(BuiltInWidgets.kPIDController);
   }
 
   //#region Control Methods
@@ -125,13 +83,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
   public void stopMotors() {
     m_talonFX.stopMotor();
     m_victorSPX.set(VictorSPXControlMode.PercentOutput, 0);
-  }
-
-  /**
-   * Gets the position of the right linear actuator
-   */
-  public double getRightActuatorPosition() {
-    return m_rightLinearActuator.getPosition();
+    m_leds.restorePersistentStripState();
   }
 
   /**
@@ -140,54 +92,48 @@ public class Shooter extends SubsystemBase implements IPlannable {
    */
   public boolean isNoteLoaded() {
     return !m_noteDetector.get();
-    // return false;
   }
 
-  /**
-   * Sets the elevation of the shooter
-   * @param percentRaised How far, in percentage, the shooter should be raised
-   */
-  public void seekElevationSetpoint() {
-    double currentPosition = getRightActuatorPosition();
+  public void setElevator(Value value) {
+    m_elevationSolenoid.set(value);
+  }
 
-    // if the shooter is up, set the setpoint to the maximum elevation
-    var setpoint = m_shooterIsUp ? m_config.MaximumElevation : m_config.MinimumElevation;
+  public void setElevatorUp() {
+    setElevator(Value.kForward);
+    m_leds.setStripTemporaryPattern(new SolidPattern(Color.WHITE));
+  }
 
-    var pidOutput = m_elevationPidController.calculate(currentPosition, setpoint);
-
-    // d_pidOutputEntry.setDouble(pidOutput);
-    var canGoHigher = currentPosition < m_config.MaximumElevation && pidOutput > 0;
-    var canGoLower = currentPosition > m_config.MinimumElevation && pidOutput < 0;
-
-    if (canGoHigher) {
-      m_leftLinearActuator.set(pidOutput);
-      m_rightLinearActuator.set(pidOutput);
-    } else if (canGoLower) {
-      m_leftLinearActuator.set(pidOutput);
-      m_rightLinearActuator.set(pidOutput);
-    } else {
-      m_leftLinearActuator.stop();
-      m_rightLinearActuator.stop();
-    }
+  public void setElevatorDown() {
+    setElevator(Value.kReverse);
+    m_leds.restorePersistentStripState();
   }
 
   //#endregion
 
+  private boolean m_lastNoteDetectedValue = false;
+
   @Override
   public void periodic() {
-    // d_talonFXSpeed.setDouble(m_talonFX.get());
-    // d_victorSPXSpeed.setDouble(m_victorSPX.getMotorOutputPercent());
-    // d_leftLinearActuator.setDouble(m_leftLinearActuator.getPosition());
-    // d_rightLinearActuator.setDouble(m_rightLinearActuator.getPosition());
-    // d_noteDetector.setBoolean(isNoteLoaded());
-    // d_shooterIsUp.setBoolean(m_shooterIsUp);
+    var newNoteDetectedValue = isNoteLoaded();
+    if (newNoteDetectedValue != m_lastNoteDetectedValue) {
+      if (newNoteDetectedValue && !m_lastNoteDetectedValue) {
+        m_leds.setStripTemporaryPattern(new BlinkPattern(prime.control.LEDs.Color.ORANGE, 0.2));
+      } else {
+        m_leds.restorePersistentStripState();
+      }
+
+      // Save the new value
+      m_lastNoteDetectedValue = newNoteDetectedValue;
+    }
+
+    // Level2 Logging
+    SmartDashboard.putNumber("Shooter/LaunchMotorOutput", m_talonFX.get());
+    SmartDashboard.putNumber("Shooter/LaunchMotorVelocity", m_talonFX.getVelocity().getValueAsDouble());
+    SmartDashboard.putNumber("Shooter/GuideMotorOutput", m_victorSPX.getMotorOutputPercent());
+    SmartDashboard.putBoolean("Shooter/NoteDetected", newNoteDetectedValue);
   }
 
   //#region Shooter Commands
-
-  public Command setShooterSpeedCommand() {
-    return Commands.run(() -> {});
-  }
 
   /**
    * Stops the shooter motors
@@ -210,7 +156,10 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * @return
    */
   public Command startShootingNoteCommand() {
-    return Commands.runOnce(() -> runShooter(1));
+    return Commands.runOnce(() -> {
+      runShooter(1);
+      m_leds.setStripTemporaryPattern(new ChasePattern(Color.GREEN, 0.25, isNoteLoaded()));
+    });
   }
 
   /**
@@ -218,7 +167,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * @return
    */
   public Command setElevationUpCommand() {
-    return Commands.runOnce(() -> m_shooterIsUp = true);
+    return Commands.runOnce(this::setElevatorUp);
   }
 
   /**
@@ -226,7 +175,7 @@ public class Shooter extends SubsystemBase implements IPlannable {
    * @return
    */
   public Command setElevationDownCommand() {
-    return Commands.runOnce(() -> m_shooterIsUp = false);
+    return Commands.runOnce(this::setElevatorDown);
   }
 
   /**
@@ -235,37 +184,12 @@ public class Shooter extends SubsystemBase implements IPlannable {
    */
   public Command toggleElevationCommand() {
     return Commands.runOnce(() -> {
-      m_shooterIsUp = !m_elevationToggleDebouncer.calculate(m_shooterIsUp);
+      if (m_elevationSolenoid.get() == Value.kForward) setElevatorDown(); else setElevatorUp();
     });
-  }
-
-  /**
-   * Constantly seeks the elevation setpoint until cancelled
-   * @return
-   */
-  public Command seekElevationSetpointCommand() {
-    return this.run(() -> seekElevationSetpoint());
-  }
-
-  public Command runShooterForTime(double seconds, double speed) {
-    return Commands
-      .runOnce(() -> {
-        runShooter(speed);
-      })
-      .andThen(new WaitCommand(seconds))
-      .andThen(stopMotorsCommand());
   }
 
   public Map<String, Command> getNamedCommands() {
     return Map.of("Set_Elevation_Up", setElevationUpCommand(), "Set_Elevation_Down", setElevationDownCommand());
   }
-
   //#endregion
-
-  /**
-   * Closes the Shooter
-   */
-  public void close() {
-    m_talonFX.close();
-  }
 }

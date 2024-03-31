@@ -14,16 +14,8 @@ public class PrimeXboxController extends CommandXboxController {
    * @param deadband (0-1)
    * @param curveWeight (0-1)
    */
-  public DoubleSupplier getLeftStickYSupplier(
-    double deadband,
-    double curveWeight
-  ) {
-    return () ->
-      Controls.cubicScaledDeadband(
-        getRawAxis(Controls.LEFT_STICK_Y),
-        deadband,
-        curveWeight
-      );
+  public DoubleSupplier getLeftStickYSupplier(double deadband, double curveWeight) {
+    return () -> -Controls.cubicScaledDeadband(getRawAxis(Controls.LEFT_STICK_Y), deadband, curveWeight);
   }
 
   /**
@@ -31,11 +23,7 @@ public class PrimeXboxController extends CommandXboxController {
    * @param deadband (0-1)
    */
   public DoubleSupplier getLeftStickYSupplier(double deadband) {
-    return () ->
-      Controls.linearScaledDeadband(
-        getRawAxis(Controls.LEFT_STICK_Y),
-        deadband
-      );
+    return () -> -Controls.linearScaledDeadband(getRawAxis(Controls.LEFT_STICK_Y), deadband);
   }
 
   /**
@@ -43,16 +31,8 @@ public class PrimeXboxController extends CommandXboxController {
    * @param deadband (0-1)
    * @param curveWeight (0-1)
    */
-  public DoubleSupplier getLeftStickXSupplier(
-    double deadband,
-    double curveWeight
-  ) {
-    return () ->
-      Controls.cubicScaledDeadband(
-        getRawAxis(Controls.LEFT_STICK_X),
-        deadband,
-        curveWeight
-      );
+  public DoubleSupplier getLeftStickXSupplier(double deadband, double curveWeight) {
+    return () -> Controls.cubicScaledDeadband(getRawAxis(Controls.LEFT_STICK_X), deadband, curveWeight);
   }
 
   /**
@@ -60,11 +40,7 @@ public class PrimeXboxController extends CommandXboxController {
    * @param deadband (0-1)
    */
   public DoubleSupplier getLeftStickXSupplier(double deadband) {
-    return () ->
-      Controls.linearScaledDeadband(
-        getRawAxis(Controls.LEFT_STICK_X),
-        deadband
-      );
+    return () -> Controls.linearScaledDeadband(getRawAxis(Controls.LEFT_STICK_X), deadband);
   }
 
   /**
@@ -72,16 +48,8 @@ public class PrimeXboxController extends CommandXboxController {
    * @param deadband (0-1)
    * @param curveWeight (0-1)
    */
-  public DoubleSupplier getRightStickYSupplier(
-    double deadband,
-    double curveWeight
-  ) {
-    return () ->
-      Controls.cubicScaledDeadband(
-        getRawAxis(Controls.RIGHT_STICK_Y),
-        deadband,
-        curveWeight
-      );
+  public DoubleSupplier getRightStickYSupplier(double deadband, double curveWeight) {
+    return () -> -Controls.cubicScaledDeadband(getRawAxis(Controls.RIGHT_STICK_Y), deadband, curveWeight);
   }
 
   /**
@@ -89,11 +57,7 @@ public class PrimeXboxController extends CommandXboxController {
    * @param deadband (0-1)
    */
   public DoubleSupplier getRightStickYSupplier(double deadband) {
-    return () ->
-      Controls.linearScaledDeadband(
-        getRawAxis(Controls.RIGHT_STICK_Y),
-        deadband
-      );
+    return () -> -Controls.linearScaledDeadband(getRawAxis(Controls.RIGHT_STICK_Y), deadband);
   }
 
   /**
@@ -101,16 +65,8 @@ public class PrimeXboxController extends CommandXboxController {
    * @param deadband (0-1)
    * @param curveWeight (0-1)
    */
-  public DoubleSupplier getRightStickXSupplier(
-    double deadband,
-    double curveWeight
-  ) {
-    return () ->
-      Controls.cubicScaledDeadband(
-        getRawAxis(Controls.RIGHT_STICK_X),
-        deadband,
-        curveWeight
-      );
+  public DoubleSupplier getRightStickXSupplier(double deadband, double curveWeight) {
+    return () -> Controls.cubicScaledDeadband(getRawAxis(Controls.RIGHT_STICK_X), deadband, curveWeight);
   }
 
   /**
@@ -118,26 +74,44 @@ public class PrimeXboxController extends CommandXboxController {
    * @param deadband (0-1)
    */
   public DoubleSupplier getRightStickXSupplier(double deadband) {
-    return () ->
-      Controls.linearScaledDeadband(
-        getRawAxis(Controls.RIGHT_STICK_X),
-        deadband
-      );
+    return () -> Controls.linearScaledDeadband(getRawAxis(Controls.RIGHT_STICK_X), deadband);
   }
 
   /**
    * Returns a supplier for the trigger axis with the left trigger subtracted from the right trigger
    */
-  public DoubleSupplier getTriggerSupplier() {
+  public DoubleSupplier getTriggerSupplier(double deadband, double curveWeight) {
     return () ->
-      getRawAxis(Controls.RIGHT_TRIGGER) - getRawAxis(Controls.LEFT_TRIGGER);
+      Controls.cubicScaledDeadband(getRawAxis(Controls.RIGHT_TRIGGER), deadband, curveWeight) -
+      Controls.cubicScaledDeadband(getRawAxis(Controls.LEFT_TRIGGER), deadband, curveWeight);
   }
 
   /**
    * Returns a supplier for the trigger axis with the right trigger subtracted from the left trigger
    */
   public DoubleSupplier getInvertedTriggerSupplier() {
-    return () ->
-      getRawAxis(Controls.LEFT_TRIGGER) - getRawAxis(Controls.RIGHT_TRIGGER);
+    return () -> getRawAxis(Controls.LEFT_TRIGGER) - getRawAxis(Controls.RIGHT_TRIGGER);
+  }
+
+  public SwerveControlSuppliers getSwerveControlProfile(
+    HolonomicControlStyle style,
+    double driveDeadband,
+    double curveWeight
+  ) {
+    switch (style) {
+      default:
+      case Standard:
+        return new SwerveControlSuppliers(
+          getLeftStickXSupplier(driveDeadband, curveWeight),
+          getLeftStickYSupplier(driveDeadband, curveWeight),
+          getTriggerSupplier(driveDeadband, curveWeight)
+        );
+      case Drone:
+        return new SwerveControlSuppliers(
+          getRightStickXSupplier(driveDeadband, curveWeight),
+          getRightStickYSupplier(driveDeadband, curveWeight),
+          getLeftStickXSupplier(driveDeadband, curveWeight)
+        );
+    }
   }
 }

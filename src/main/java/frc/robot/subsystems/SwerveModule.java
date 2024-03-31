@@ -16,29 +16,15 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Robot;
 import frc.robot.config.SwerveModuleConfig;
-import java.util.Map;
 import prime.control.PrimePIDConstants;
 import prime.movers.LazyCANSparkMax;
 import prime.utilities.CTREConverter;
 
-public class SwerveModule extends SubsystemBase implements AutoCloseable {
+public class SwerveModule extends SubsystemBase {
 
   private SwerveModuleConfig m_config;
-
-  // Shuffleboard configuration
-  // private ShuffleboardTab d_moduleTab;
-  // private GenericEntry d_driveVelocityEntry;
-  // private GenericEntry d_driveVoltageEntry;
-  // private GenericEntry d_moduleHeadingEntry;
-  // private GenericEntry d_desiredVelocityEntry;
 
   // Devices
   private LazyCANSparkMax m_SteeringMotor;
@@ -53,43 +39,12 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
     m_config = moduleConfig;
     setName(m_config.ModuleName);
 
-    // Set up the shuffleboard tab
-    setupDashboard();
-
-    // Set up the steering motor
     setupSteeringMotor(steeringPID);
-
-    // Set up the drive motor
     setupDriveMotor(drivePID);
-
-    // Set up our encoder
     setupCanCoder();
   }
 
-  // Sets up the shuffleboard tab for the module and the simple entries
-  private void setupDashboard() {
-    // d_moduleTab = Shuffleboard.getTab(getName() + " Module");
-    // d_driveVelocityEntry =
-    //   d_moduleTab
-    //     .add("Velocity (MPS)", 0)
-    //     .withWidget(BuiltInWidgets.kNumberBar)
-    //     .withProperties(Map.of("min", 0, "max", 20))
-    //     .getEntry();
-    // d_driveVoltageEntry = d_moduleTab.add("Voltage (V)", 0).withWidget(BuiltInWidgets.kVoltageView).getEntry();
-    // d_moduleHeadingEntry =
-    //   d_moduleTab
-    //     .add("Heading (Degrees)", 0)
-    //     .withWidget(BuiltInWidgets.kGyro)
-    //     .withProperties(Map.of("major tick spacing", 15, "starting angle", 0))
-    //     .getEntry();
-
-    // d_desiredVelocityEntry =
-    //   d_moduleTab
-    //     .add("Desired Velocity", 0)
-    //     .withWidget(BuiltInWidgets.kNumberBar)
-    //     .withProperties(Map.of("min", 0, "max", 20))
-    //     .getEntry();
-  }
+  //#region Setup methods
 
   // Sets up the steering motor and PID controller
   private void setupSteeringMotor(PrimePIDConstants pid) {
@@ -102,10 +57,9 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
     m_SteeringMotor.setInverted(m_config.SteerInverted); // CCW inversion
 
     // Create a PID controller to calculate steering motor output
-    m_steeringPidController = new PIDController(pid.kP, pid.kI, pid.kD, 0.020);
+    m_steeringPidController = pid.createPIDController(0.02);
     m_steeringPidController.enableContinuousInput(0, 1); // 0 to 1 rotation
-    m_steeringPidController.setTolerance((1 / 360.0) * 5); // 5 degrees in units of rotations
-    // d_moduleTab.add("Steering PID", m_steeringPidController).withWidget(BuiltInWidgets.kPIDController);
+    m_steeringPidController.setTolerance((1 / 360.0) * 2); // 2 degrees in units of rotations
   }
 
   // Sets up the drive motors
@@ -155,6 +109,10 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
       );
   }
 
+  //#endregion
+
+  //#region Control methods
+
   /**
    * Sets the desired state of the module.
    *
@@ -162,39 +120,22 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
    *                     period
    */
   public void setDesiredState(SwerveModuleState desiredState) {
+    // Optimize the desired state
     desiredState = optimize(desiredState);
-    // desiredSpeed = desiredState.speedMetersPerSecond;
-    setDesiredSpeed(
-      CTREConverter.metersToRotations(
-        desiredState.speedMetersPerSecond,
-        m_config.DriveWheelCircumferenceMeters,
-        m_config.DriveGearRatio
-      )
+
+    // Set the drive motor to the desired speed
+    var speedRotationsPerSecond = CTREConverter.metersToRotations(
+      desiredState.speedMetersPerSecond,
+      m_config.DriveWheelCircumferenceMeters,
+      m_config.DriveGearRatio
     );
 
-    // d_desiredVelocityEntry.setDouble(desiredState.speedMetersPerSecond);
-
-    setDesiredAngle(desiredState.angle);
-  }
-
-  /**
-   * Sets the desired speed of the module in closed-loop velocity mode
-   *
-   * @param speedMetersPerSecond The desired speed in meters per second
-   */
-  public void setDesiredSpeed(double speedRotationsPerSecond) {
     m_driveMotor.setControl(
-      m_voltageVelocity.withVelocity(speedRotationsPerSecond).withAcceleration(speedRotationsPerSecond / 2)
+      m_voltageVelocity.withVelocity(speedRotationsPerSecond) // TODO: evaluate effect of removing ".withAcceleration(speedRotationsPerSecond / 2)"
     );
-  }
 
-  /**
-   * Sets the setpoint of the steering PID to the new angle provided
-   *
-   * @param angle the new angle for the module to steer to
-   */
-  public void setDesiredAngle(Rotation2d angle) {
-    var setpoint = angle.getRotations() % 1;
+    // Set the steering motor to the desired angle
+    var setpoint = desiredState.angle.getRotations() % 1;
     if (setpoint < 0) setpoint += 1;
 
     var newOutput = m_steeringPidController.calculate(getEncoderHeading(), setpoint);
@@ -203,14 +144,9 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Sets the voltage of the drive motor. Used for SysID routines
-   *
-   * @param voltage The voltage to set the drive motor to
+   * Optimizes the module angle & drive inversion to ensure the module takes the shortest path to drive at the desired angle
+   * @param desiredState
    */
-  public void setDriveVoltage(double voltage) {
-    m_driveMotor.setVoltage(voltage);
-  }
-
   private SwerveModuleState optimize(SwerveModuleState desiredState) {
     Rotation2d currentAngle = getEncoderHeadingRotation2d();
     var delta = desiredState.angle.minus(currentAngle);
@@ -222,15 +158,6 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
     } else {
       return desiredState;
     }
-  }
-
-  /**
-   * Sets the encoder position to a new value
-   *
-   * @param newPosition the new position of the encoder
-   */
-  public void setEncoderPosition(double newPosition) {
-    m_encoder.setPosition(newPosition);
   }
 
   // Stops both motors within the Module
@@ -273,9 +200,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
 
   // Gets the heading of the encoder in rotations
   public double getEncoderHeading() {
-    var rawHeading = m_encoder.getAbsolutePosition().getValueAsDouble();
-
-    return rawHeading;
+    return m_encoder.getPosition().getValueAsDouble();
   }
 
   // Gets the encoder heading as a Rotation2d
@@ -283,13 +208,7 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
     return Rotation2d.fromRotations(getEncoderHeading());
   }
 
-  /**
-   * Gets the voltage of the drive motor
-   * @return
-   */
-  public double getDriveVoltage() {
-    return m_driveMotor.getMotorVoltage().getValueAsDouble();
-  }
+  //#endregion
 
   /**
    * Updates dashboard data
@@ -299,17 +218,5 @@ public class SwerveModule extends SubsystemBase implements AutoCloseable {
     // d_driveVelocityEntry.setDouble(getModuleState().speedMetersPerSecond);
     // d_driveVoltageEntry.setDouble(m_driveMotor.getMotorVoltage().getValueAsDouble());
     // d_moduleHeadingEntry.setDouble(getEncoderHeadingRotation2d().getDegrees());
-  }
-
-  /**
-   * Closes the module and its devices
-   */
-  @Override
-  public void close() {
-    DriverStation.reportWarning(">> Module " + getName() + " closing...", false);
-    m_SteeringMotor.close();
-    m_driveMotor.close();
-    m_encoder.close();
-    m_steeringPidController.close();
   }
 }

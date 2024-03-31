@@ -1,12 +1,17 @@
 package frc.robot.config;
 
-import edu.wpi.first.wpilibj.SerialPort.Port;
-
 public class LEDConfig {
 
-  public Port Port;
+  public int PwmPort;
+  public int SectionCount;
+  public int PixelsPerSection;
 
-  public LEDConfig(Port port) {
-    Port = port;
+  /**
+   * Creates a new instance of LEDConfig with default values
+   */
+  public LEDConfig() {
+    PwmPort = 5;
+    SectionCount = 1;
+    PixelsPerSection = 78;
   }
 }

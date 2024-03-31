@@ -1,6 +1,7 @@
 package prime.control;
 
 import com.pathplanner.lib.util.PIDConstants;
+import edu.wpi.first.math.controller.PIDController;
 
 public class PrimePIDConstants {
 
@@ -14,15 +15,7 @@ public class PrimePIDConstants {
   public double kA; // Voltage needed to induce a given acceleration in the system
   public double kS; // Voltage needed to overcome the system’s static friction
 
-  public PrimePIDConstants(
-    double kP,
-    double kI,
-    double kD,
-    double kF,
-    double kV,
-    double kA,
-    double kS
-  ) {
+  public PrimePIDConstants(double kP, double kI, double kD, double kF, double kV, double kA, double kS) {
     this.kP = kP;
     this.kI = kI;
     this.kD = kD;
@@ -44,17 +37,15 @@ public class PrimePIDConstants {
     this(kP, kI, kD, kF, 0, 0, 0);
   }
 
-  public PrimePIDConstants(
-    double kP,
-    double kI,
-    double kD,
-    double kF,
-    double kV
-  ) {
+  public PrimePIDConstants(double kP, double kI, double kD, double kF, double kV) {
     this(kP, kI, kD, kF, kV, 0, 0);
   }
 
   public PIDConstants toPIDConstants() {
     return new PIDConstants(kP, kI, kD);
+  }
+
+  public PIDController createPIDController(double controllerPeriod) {
+    return new PIDController(kP, kI, kD, controllerPeriod);
   }
 }
