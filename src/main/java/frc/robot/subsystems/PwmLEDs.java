@@ -26,7 +26,7 @@ public class PwmLEDs extends SubsystemBase {
 
     // Initialize the LED strip and buffer
     _ledBuffer = new AddressableLEDBuffer(config.PixelsPerStrip);
-    _led = new AddressableLED(5);
+    _led = new AddressableLED(config.PwmPort);
     _led.setLength(_ledBuffer.getLength());
 
     // Set the strip to a default color and start the LED strip

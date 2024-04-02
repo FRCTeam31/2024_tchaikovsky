@@ -9,7 +9,7 @@ public class LEDConfig {
    * Creates a new instance of LEDConfig with default values
    */
   public LEDConfig() {
-    PwmPort = 5;
+    PwmPort = 9;
     PixelsPerStrip = 78;
   }
 }

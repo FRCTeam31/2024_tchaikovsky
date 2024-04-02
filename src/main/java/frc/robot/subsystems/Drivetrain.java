@@ -179,28 +179,16 @@ public class Drivetrain extends SubsystemBase {
   private void drivePathPlanner(ChassisSpeeds robotRelativeSpeeds) {
     if (Robot.onRedAlliance()) {
       // If we're on the red alliance, we need to flip the gyro
-      var gyroAngle = Robot.onRedAlliance()
-        ? m_gyro.getRotation2d().plus(Rotation2d.fromDegrees(180))
-        : m_gyro.getRotation2d();
+      var gyroAngle = m_gyro.getRotation2d().plus(Rotation2d.fromDegrees(180));
 
       // Convert the robot-relative speeds to field-relative speeds with the flipped gyro
       var fieldSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(robotRelativeSpeeds, gyroAngle);
 
       // Convert back to robot-relative speeds, also with the flipped gyro
-      // driveRobotRelative(ChassisSpeeds.fromFieldRelativeSpeeds(fieldSpeeds, gyroAngle));
-      driveFieldRelative(fieldSpeeds);
+      driveRobotRelative(ChassisSpeeds.fromFieldRelativeSpeeds(fieldSpeeds, gyroAngle));
     } else {
       driveRobotRelative(robotRelativeSpeeds);
     }
-  }
-
-  private void driveFieldRelative(ChassisSpeeds fieldRelativeSpeeds) {
-    var gyroAngle = Robot.onRedAlliance()
-      ? m_gyro.getRotation2d().plus(Rotation2d.fromDegrees(180))
-      : m_gyro.getRotation2d();
-
-    var robotRelativeSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(fieldRelativeSpeeds, gyroAngle);
-    driveRobotRelative(robotRelativeSpeeds);
   }
 
   /**

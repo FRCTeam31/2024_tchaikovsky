@@ -81,6 +81,7 @@ public class Robot extends TimedRobot {
       // Schedule the auto command
       m_robotContainer.Drivetrain.EnableContinuousPoseEstimationFront = true;
       m_robotContainer.Drivetrain.EnableContinuousPoseEstimationRear = true;
+
       if (onRedAlliance()) m_robotContainer.Drivetrain.resetGyro();
 
       SmartDashboard.putString("Robot/Auto/CommandName", m_autonomousCommand.getName());
