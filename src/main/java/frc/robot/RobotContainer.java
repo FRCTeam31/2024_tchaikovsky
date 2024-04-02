@@ -81,7 +81,7 @@ public class RobotContainer {
    */
   public void configAutonomousDashboardItems() {
     // Build an auto chooser. This will use Commands.none() as the default option.
-    DriverDashboard.addAutoChooser(AutoBuilder.buildAutoChooser("Park Auto"));
+    DriverDashboard.addAutoChooser(AutoBuilder.buildAutoChooser("Straight Park"));
 
     // Add all autos to the auto tab
     var possibleAutos = AutoBuilder.getAllAutoNames();
