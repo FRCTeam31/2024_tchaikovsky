@@ -20,18 +20,6 @@ public class PulsePattern extends LEDPattern {
   }
 
   /**
-   * Create a new PulsePattern with an RGB color and speed
-   * @param r The red value of the color
-   * @param g The green value of the color
-   * @param b The blue value of the color
-   * @param pulseSpeedSeconds The speed of the pattern in seconds per iteration
-   */
-  public PulsePattern(int r, int g, int b, double pulseSpeedSeconds) {
-    super(r, g, b, LEDEffect.Pulse, getFastestFrameSpeed(pulseSpeedSeconds), false);
-    _frameCount = getMaxFrameCount(pulseSpeedSeconds);
-  }
-
-  /**
    * Get the fastest frame speed for the given pulse speed
    */
   private static double getFastestFrameSpeed(double pulseSpeedSeconds) {
@@ -51,9 +39,9 @@ public class PulsePattern extends LEDPattern {
       // calculate brightness of the color by the current Frame. Frame 0 is OFF, frame FRAME_COUNT is MAX_BRIGHTNESS
       var scalar = (float) Frame / _frameCount;
       var color = new prime.control.LEDs.Color(
-        (byte) (Color.r * scalar),
-        (byte) (Color.g * scalar),
-        (byte) (Color.b * scalar)
+        (int) (Color.r * scalar),
+        (int) (Color.g * scalar),
+        (int) (Color.b * scalar)
       );
 
       // Set the color of each pixel in the buffer length
@@ -62,14 +50,16 @@ public class PulsePattern extends LEDPattern {
       }
 
       // Increment the frame forward if not reversed, decrement if reversed
-      Frame += !Reversed ? 1 : -1;
+      Frame += !Reversed ? 4 : -4;
 
       if (Frame >= _frameCount) {
         // If the frame is at the end, set to reverse direction
         Reversed = true;
-      } else if (Frame == 0) {
+        Frame = _frameCount;
+      } else if (Frame <= 0) {
         // If the frame is at the start, set to forward direction
         Reversed = false;
+        Frame = 0;
       }
 
       LastFrameTime = System.currentTimeMillis();

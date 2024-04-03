@@ -29,7 +29,7 @@ public abstract class LEDPattern {
   public boolean Reversed;
 
   // State variables
-  protected long Frame = 0;
+  protected int Frame = 0;
   protected long LastFrameTime = 0;
 
   public LEDPattern(int r, int g, int b, LEDEffect effect, double effectSpeedSeconds, boolean reversed) {

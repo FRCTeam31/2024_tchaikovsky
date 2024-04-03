@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.4263451142661836,
-        "y": 2.9793289805913488
+        "x": 3.25038271698165,
+        "y": 2.634740404615945
       },
       "isLocked": false,
       "linkedName": "Speaker Source-Side"
@@ -20,8 +20,8 @@
         "y": 0.8899302932643233
       },
       "prevControl": {
-        "x": 5.061816614510785,
-        "y": 2.1706282880953722
+        "x": 4.988386913710764,
+        "y": 2.0338346983000273
       },
       "nextControl": null,
       "isLocked": false,
@@ -29,7 +29,19 @@
     }
   ],
   "rotationTargets": [],
-  "constraintZones": [],
+  "constraintZones": [
+    {
+      "name": "New Constraints Zone",
+      "minWaypointRelativePos": 0.65,
+      "maxWaypointRelativePos": 1.0,
+      "constraints": {
+        "maxVelocity": 3.0,
+        "maxAcceleration": 4.0,
+        "maxAngularVelocity": 360.0,
+        "maxAngularAcceleration": 540.0
+      }
+    }
+  ],
   "eventMarkers": [
     {
       "name": "Set Intake Out",

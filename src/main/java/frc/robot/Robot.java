@@ -24,10 +24,6 @@ public class Robot extends TimedRobot {
   private RobotContainer m_robotContainer;
   private Command m_autonomousCommand;
 
-  private LEDPattern _disabledLEDPattern = new PulsePattern(onRedAlliance() ? Color.RED : Color.BLUE, 2);
-  private LEDPattern _autoLEDPattern = new BlinkPattern(onRedAlliance() ? Color.RED : Color.BLUE, 0.15);
-  private LEDPattern _teleopLEDPattern = new ChasePattern(onRedAlliance() ? Color.RED : Color.BLUE, 0.75, false);
-
   @Override
   public void robotInit() {
     // Start L2 logging
@@ -40,7 +36,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void disabledInit() {
-    m_robotContainer.LEDs.setStripPersistentPattern(_disabledLEDPattern);
+    m_robotContainer.LEDs.setStripPersistentPattern(new PulsePattern(onRedAlliance() ? Color.RED : Color.BLUE, 2));
   }
 
   /**
@@ -59,7 +55,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    m_robotContainer.LEDs.setStripPersistentPattern(_autoLEDPattern);
+    m_robotContainer.LEDs.setStripPersistentPattern(new BlinkPattern(onRedAlliance() ? Color.RED : Color.BLUE, 0.250));
 
     // Cancel any auto command that's still running and reset the subsystem states
     if (m_autonomousCommand != null) {
@@ -104,7 +100,9 @@ public class Robot extends TimedRobot {
     }
 
     // Set teleop LED pattern
-    m_robotContainer.LEDs.setStripPersistentPattern(_teleopLEDPattern);
+    m_robotContainer.LEDs.setStripPersistentPattern(
+      new ChasePattern(onRedAlliance() ? Color.RED : Color.BLUE, 0.5, false)
+    );
 
     m_robotContainer.Drivetrain.EnableContinuousPoseEstimationFront = false;
     m_robotContainer.Drivetrain.EnableContinuousPoseEstimationRear = false;

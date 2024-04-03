@@ -17,17 +17,6 @@ public class BlinkPattern extends LEDPattern {
     super(color, LEDEffect.Blink, speed / FRAME_COUNT, false);
   }
 
-  /**
-   * Create a new BlinkPattern with an RGB color and speed
-   * @param r The red value of the color
-   * @param g The green value of the color
-   * @param b The blue value of the color
-   * @param speed The speed of the pattern in seconds per iteration
-   */
-  public BlinkPattern(int r, int g, int b, float speed) {
-    super(r, g, b, LEDEffect.Blink, speed, false);
-  }
-
   @Override
   public void updateBuffer(int startingIndex, int length, AddressableLEDBuffer buffer) {
     if (isUpdatable()) {

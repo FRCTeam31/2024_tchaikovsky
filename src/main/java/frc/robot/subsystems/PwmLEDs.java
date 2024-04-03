@@ -7,9 +7,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.config.LEDConfig;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import prime.control.LEDs.Color;
 import prime.control.LEDs.Patterns.LEDPattern;
-import prime.control.LEDs.Patterns.PulsePattern;
 
 public class PwmLEDs extends SubsystemBase {
 
@@ -37,7 +35,6 @@ public class PwmLEDs extends SubsystemBase {
     _led.start();
 
     // Start the pattern update loop at 142hz with a default pattern
-    _persistentPattern = new PulsePattern(Color.MAROON, 4);
     _updateLoopExecutor.scheduleAtFixedRate(this::ledUpdateLoop, 0, 7, java.util.concurrent.TimeUnit.MILLISECONDS);
   }
 

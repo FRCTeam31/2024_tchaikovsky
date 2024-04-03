@@ -33,7 +33,7 @@ public class ClimbersConfig {
     RightLimitSwitchDIOChannel = 3;
     LeftSolenoidForwardChannel = 8;
     LeftSolenoidReverseChannel = 9;
-    RightSolenoidForwardChannel = 12;
+    RightSolenoidForwardChannel = 10;
     RightSolenoidReverseChannel = 11;
   }
 }
