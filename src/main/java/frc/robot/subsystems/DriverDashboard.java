@@ -92,6 +92,7 @@ public class DriverDashboard {
       .withWidget(BuiltInWidgets.kCameraStream)
       .withProperties(Map.of("Show controls", false, "Show crosshair", false));
     m_frontColorCam = CameraServer.startAutomaticCapture();
+    m_frontColorCam.setResolution(640, 480);
     DriverTab
       .add(m_frontColorCam)
       .withPosition(6, 0)
