@@ -49,6 +49,12 @@
               "data": {
                 "name": "Set_Intake_In"
               }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "Start_Shooting"
+              }
             }
           ]
         }

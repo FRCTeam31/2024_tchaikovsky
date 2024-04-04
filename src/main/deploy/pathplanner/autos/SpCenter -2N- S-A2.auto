@@ -32,7 +32,19 @@
         {
           "type": "named",
           "data": {
-            "name": "Score_In_Speaker"
+            "name": "Eject_Note"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.75
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stop_Shooter_And_Intake"
           }
         },
         {

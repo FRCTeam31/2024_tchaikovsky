@@ -2,7 +2,9 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.UsbCamera;
+import edu.wpi.first.cscore.VideoMode;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.util.PixelFormat;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -81,24 +83,27 @@ public class DriverDashboard {
    * @param config
    */
   public DriverDashboard(RobotConfig config) {
-    DriverTab
-      .addCamera(
-        "Rear Limelight",
-        "Limelight Rear",
-        "http://" + config.Drivetrain.LimelightRearName + ".local:5800/stream.mjpg"
-      )
-      .withPosition(0, 0)
-      .withSize(6, 6)
-      .withWidget(BuiltInWidgets.kCameraStream)
-      .withProperties(Map.of("Show controls", false, "Show crosshair", false));
+    // DriverTab
+    //   .addCamera(
+    //     "Rear Limelight",
+    //     "Limelight Rear",
+    //     "http://" + config.Drivetrain.LimelightRearName + ".local:5800/stream.mjpg"
+    //   )
+    //   .withPosition(0, 0)
+    //   .withSize(6, 6)
+    //   .withWidget(BuiltInWidgets.kCameraStream)
+    //   .withProperties(Map.of("Show controls", false, "Show crosshair", false));
     m_frontColorCam = CameraServer.startAutomaticCapture();
     m_frontColorCam.setResolution(640, 480);
-    DriverTab
-      .add(m_frontColorCam)
-      .withPosition(6, 0)
-      .withSize(6, 6)
-      .withWidget(BuiltInWidgets.kCameraStream)
-      .withProperties(Map.of("Show controls", false, "Show crosshair", false));
+    m_frontColorCam.setFPS(20);
+    m_frontColorCam.setPixelFormat(PixelFormat.kMJPEG);
+
+    // DriverTab
+    //   .add(m_frontColorCam)
+    //   .withPosition(6, 0)
+    //   .withSize(6, 6)
+    //   .withWidget(BuiltInWidgets.kCameraStream)
+    //   .withProperties(Map.of("Show controls", false, "Show crosshair", false));
 
     DriverTab.add("Field", FieldWidget).withWidget(BuiltInWidgets.kField).withPosition(12, 0).withSize(5, 3);
   }

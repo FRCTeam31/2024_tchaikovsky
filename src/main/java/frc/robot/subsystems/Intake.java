@@ -221,7 +221,9 @@ public class Intake extends SubsystemBase {
       "Start_Note_Intake",
       setRollersSpeedCommand(() -> 1),
       "Stop_Note_Intake",
-      stopRollersCommand()
+      stopRollersCommand(),
+      "Eject_Note",
+      ejectNoteCommand()
     );
   }
   //#endregion

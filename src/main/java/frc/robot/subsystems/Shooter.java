@@ -189,7 +189,16 @@ public class Shooter extends SubsystemBase {
   }
 
   public Map<String, Command> getNamedCommands() {
-    return Map.of("Set_Elevation_Up", setElevationUpCommand(), "Set_Elevation_Down", setElevationDownCommand());
+    return Map.of(
+      "Set_Elevation_Up",
+      setElevationUpCommand(),
+      "Set_Elevation_Down",
+      setElevationDownCommand(),
+      "Start_Shooting",
+      startShootingNoteCommand(),
+      "Stop_Shooting",
+      stopMotorsCommand()
+    );
   }
   //#endregion
 }

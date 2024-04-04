@@ -65,6 +65,23 @@
           ]
         }
       }
+    },
+    {
+      "name": "Run Shooter Up to Speed",
+      "waypointRelativePos": 0.7,
+      "command": {
+        "type": "sequential",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Start_Shooting"
+              }
+            }
+          ]
+        }
+      }
     }
   ],
   "globalConstraints": {
