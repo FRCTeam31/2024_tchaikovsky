@@ -23,7 +23,7 @@ public class DriverDashboard {
   public SendableChooser<Command> AutoChooser;
   public GenericEntry AllianceBox = DriverTab
     .add("Alliance", false)
-    .withPosition(17, 0)
+    .withPosition(15, 0)
     .withSize(2, 3)
     .withWidget(BuiltInWidgets.kBooleanBox)
     .withProperties(Map.of("Color when true", "#FF0000", "Color when false", "#0000FF"))
@@ -34,39 +34,39 @@ public class DriverDashboard {
   public GenericEntry HeadingGyro = DriverTab
     .add("Current Heading", 0)
     .withWidget(BuiltInWidgets.kGyro)
-    .withPosition(12, 3)
+    .withPosition(12, 0)
     .withSize(3, 3)
     .withProperties(Map.of("Counter clockwise", true, "Major tick spacing", 45.0, "Minor tick spacing", 15.0))
     .getEntry();
   public GenericEntry RearApTagIdField = DriverTab
     .add("Rear APTag", 0)
     .withWidget(BuiltInWidgets.kTextView)
-    .withPosition(15, 3)
+    .withPosition(12, 3)
     .withSize(2, 1)
     .getEntry();
   public GenericEntry FrontApTagIdField = DriverTab
     .add("Front APTag", 0)
     .withWidget(BuiltInWidgets.kTextView)
-    .withPosition(17, 3)
+    .withPosition(14, 3)
     .withSize(2, 1)
     .getEntry();
   public GenericEntry RearApTagOffsetDial = DriverTab
     .add("Rear APTag X Offset", 0)
     .withWidget(BuiltInWidgets.kDial)
     .withProperties(Map.of("Min", -29.8, "Max", 29.8))
-    .withPosition(15, 4)
+    .withPosition(12, 4)
     .withSize(2, 3)
     .getEntry();
   public GenericEntry FrontPoseEstimationSwitch = DriverTab
     .add("F Pose Est.", true)
     .withWidget(BuiltInWidgets.kToggleSwitch)
-    .withPosition(17, 4)
+    .withPosition(14, 4)
     .withSize(2, 1)
     .getEntry();
   public GenericEntry RearPoseEstimationSwitch = DriverTab
     .add("R Pose Est.", true)
     .withWidget(BuiltInWidgets.kToggleSwitch)
-    .withPosition(17, 5)
+    .withPosition(14, 5)
     .withSize(2, 1)
     .getEntry();
 
@@ -94,7 +94,7 @@ public class DriverDashboard {
     //   .withWidget(BuiltInWidgets.kCameraStream)
     //   .withProperties(Map.of("Show controls", false, "Show crosshair", false));
     m_frontColorCam = CameraServer.startAutomaticCapture();
-    m_frontColorCam.setResolution(640, 480);
+    m_frontColorCam.setResolution(320, 240);
     m_frontColorCam.setFPS(20);
     m_frontColorCam.setPixelFormat(PixelFormat.kMJPEG);
 
@@ -105,7 +105,7 @@ public class DriverDashboard {
     //   .withWidget(BuiltInWidgets.kCameraStream)
     //   .withProperties(Map.of("Show controls", false, "Show crosshair", false));
 
-    DriverTab.add("Field", FieldWidget).withWidget(BuiltInWidgets.kField).withPosition(12, 0).withSize(5, 3);
+    DriverTab.add("Field", FieldWidget).withWidget(BuiltInWidgets.kField).withPosition(0, 0).withSize(12, 6);
   }
 
   /**
