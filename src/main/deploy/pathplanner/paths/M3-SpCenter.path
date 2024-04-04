@@ -3,49 +3,49 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.8,
-        "y": 4.6
+        "x": 7.77,
+        "y": 4.1
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.25038271698165,
-        "y": 2.634740404615945
+        "x": 6.486028827913511,
+        "y": 2.9583050157091306
       },
       "isLocked": false,
-      "linkedName": "Speaker Source-Side"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.752945611496423,
-        "y": 0.8899302932643233
+        "x": 1.3,
+        "y": 5.5
       },
       "prevControl": {
-        "x": 4.988386913710764,
-        "y": 2.0338346983000273
+        "x": 3.6109261407712,
+        "y": 5.814918296503261
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Speaker Center"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [
     {
-      "name": "New Constraints Zone",
-      "minWaypointRelativePos": 0.65,
-      "maxWaypointRelativePos": 1.0,
+      "name": "Stage Zone",
+      "minWaypointRelativePos": 0.35,
+      "maxWaypointRelativePos": 0.75,
       "constraints": {
         "maxVelocity": 3.0,
-        "maxAcceleration": 4.0,
-        "maxAngularVelocity": 360.0,
-        "maxAngularAcceleration": 540.0
+        "maxAcceleration": 3.0,
+        "maxAngularVelocity": 180.0,
+        "maxAngularAcceleration": 360.0
       }
     }
   ],
   "eventMarkers": [
     {
-      "name": "Set Intake Out",
-      "waypointRelativePos": 0.6,
+      "name": "Prepare to Score",
+      "waypointRelativePos": 0.0,
       "command": {
         "type": "sequential",
         "data": {
@@ -53,24 +53,13 @@
             {
               "type": "named",
               "data": {
-                "name": "Set_Intake_Out"
+                "name": "Stop_Note_Intake"
               }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "Intake Note",
-      "waypointRelativePos": 0.95,
-      "command": {
-        "type": "sequential",
-        "data": {
-          "commands": [
+            },
             {
               "type": "named",
               "data": {
-                "name": "Start_Note_Intake"
+                "name": "Set_Intake_In"
               }
             }
           ]
@@ -79,20 +68,20 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 5.0,
+    "maxVelocity": 4.0,
     "maxAcceleration": 4.0,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 540.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -15.018360631150598,
+    "rotation": 0.0,
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "Source Side Auto Paths",
+  "folder": "Center Auto Paths",
   "previewStartingState": {
-    "rotation": -60.326805543460246,
+    "rotation": 0.05537491902364609,
     "velocity": 0
   },
   "useDefaultConstraints": true
