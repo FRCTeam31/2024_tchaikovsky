@@ -71,7 +71,7 @@ public class Drivetrain extends SubsystemBase {
   public Limelight LimelightFront;
   private SwerveDriveKinematics m_kinematics;
   private SwerveDrivePoseEstimator m_poseEstimator;
-  public boolean EnableContinuousPoseEstimationFront = false;
+  public boolean EnableContinuousPoseEstimationFront = true;
   public boolean EnableContinuousPoseEstimationRear = true;
 
   // Snap-to PID

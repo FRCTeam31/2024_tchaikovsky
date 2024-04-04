@@ -56,7 +56,7 @@ public class DriverDashboard {
     .withSize(2, 3)
     .getEntry();
   public GenericEntry FrontPoseEstimationSwitch = DriverTab
-    .add("F Pose Est.", false)
+    .add("F Pose Est.", true)
     .withWidget(BuiltInWidgets.kToggleSwitch)
     .withPosition(17, 4)
     .withSize(2, 1)
