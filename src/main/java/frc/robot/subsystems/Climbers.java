@@ -56,11 +56,13 @@ public class Climbers extends SubsystemBase {
     m_leftVictorSPX.configFactoryDefault();
     m_leftVictorSPX.setInverted(config.LeftInverted);
     m_leftVictorSPX.setNeutralMode(NeutralMode.Brake);
+    m_leftVictorSPX.configOpenloopRamp(0.5);
 
     m_rightVictorSPX = new VictorSPX(config.VictorSPXRightCanID);
     m_rightVictorSPX.configFactoryDefault();
     m_rightVictorSPX.setInverted(config.RightInverted);
     m_rightVictorSPX.setNeutralMode(NeutralMode.Brake);
+    m_rightVictorSPX.configOpenloopRamp(0.5);
 
     m_leftLimitSwitch = new DigitalInput(config.LeftLimitSwitchDIOChannel);
     m_rightLimitSwitch = new DigitalInput(config.RightLimitSwitchDIOChannel);

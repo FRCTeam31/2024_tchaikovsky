@@ -106,6 +106,12 @@
           "data": {
             "name": "Stop_Shooter_And_Intake"
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "SpCenter-ParkAtA2"
+          }
         }
       ]
     }
