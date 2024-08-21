@@ -16,7 +16,6 @@ import frc.robot.config.RobotConfig;
 import prime.control.LEDs.Color;
 import prime.control.LEDs.Patterns.BlinkPattern;
 import prime.control.LEDs.Patterns.ChasePattern;
-import prime.control.LEDs.Patterns.LEDPattern;
 import prime.control.LEDs.Patterns.PulsePattern;
 
 public class Robot extends TimedRobot {
