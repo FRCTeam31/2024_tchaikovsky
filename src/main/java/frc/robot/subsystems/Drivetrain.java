@@ -326,6 +326,9 @@ public class Drivetrain extends SubsystemBase {
     d_currentHeading.setDouble(gyroAngle.getDegrees());
     m_driverDashboard.HeadingGyro.setDouble(gyroAngle.getDegrees());
     SmartDashboard.putNumber("Drive/Gyro (deg)", gyroAngle.getDegrees());
+    SmartDashboard.putNumber("Drive/Acceleration/X", m_gyro.getAccelerationX().getValueAsDouble());
+    SmartDashboard.putNumber("Drive/Acceleration/Y", m_gyro.getAccelerationY().getValueAsDouble());
+    SmartDashboard.putNumber("Drive/Acceleration/Z", m_gyro.getAccelerationZ().getValueAsDouble());
 
     var estimatedPose = m_poseEstimator.update(gyroAngle, getModulePositions());
     SmartDashboard.putNumber("Drive/EstimatedPose/X (m)", estimatedPose.getX());
@@ -369,9 +372,9 @@ public class Drivetrain extends SubsystemBase {
         // Drive the robot with the driver-relative inputs, converted to field-relative based on which side we're on
         robotRelativeSpeeds =
           ChassisSpeeds.fromFieldRelativeSpeeds(
-            inputYMPS * invert, // Use Y as X for field-relative
-            inputXMPS * invert, // Use X as Y for field-relative
-            inputRotationRadiansPS,
+            (inputYMPS * invert) * 0.3, // Use Y as X for field-relative
+            (inputXMPS * invert) * 0.3, // Use X as Y for field-relative
+            inputRotationRadiansPS * 0.3,
             m_gyro.getRotation2d()
           );
 
