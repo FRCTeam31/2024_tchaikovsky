@@ -18,6 +18,10 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.config.RobotConfig;
 import frc.robot.subsystems.*;
+import frc.robot.subsystems.Climb.ClimbSubsystem;
+import frc.robot.subsystems.Intake.IntakeSubsystem;
+import frc.robot.subsystems.Shooter.ShooterSubsystem;
+
 import java.util.Map;
 import prime.control.Controls;
 import prime.control.HolonomicControlStyle;
@@ -30,9 +34,9 @@ public class RobotContainer {
   private PrimeXboxController m_operatorController;
 
   public Drivetrain Drivetrain;
-  public Shooter Shooter;
-  public Intake Intake;
-  public Climbers Climbers;
+  public ShooterSubsystem Shooter;
+  public IntakeSubsystem Intake;
+  public ClimbSubsystem Climbers;
   public PwmLEDs LEDs;
   public Compressor Compressor;
   public DriverDashboard DriverDashboard;
@@ -51,9 +55,9 @@ public class RobotContainer {
       LEDs = new PwmLEDs(m_config.LEDs);
       DriverDashboard = new DriverDashboard(m_config);
       Drivetrain = new Drivetrain(m_config, LEDs, DriverDashboard);
-      Shooter = new Shooter(m_config.Shooter, LEDs);
-      Intake = new Intake(m_config.Intake);
-      Climbers = new Climbers(m_config.Climbers, DriverDashboard);
+      Shooter = new ShooterSubsystem(true, LEDs);
+      Intake = new IntakeSubsystem(true);
+      Climbers = new ClimbSubsystem(true, DriverDashboard);
       Compressor = new Compressor(m_config.PneumaticsModuleId, PneumaticsModuleType.REVPH);
       Compressor.enableDigital();
 
