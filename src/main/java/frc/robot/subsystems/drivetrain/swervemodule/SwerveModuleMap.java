@@ -1,13 +1,12 @@
-package frc.robot.config;
+package frc.robot.subsystems.drivetrain.swervemodule;
 
 import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import edu.wpi.first.math.geometry.Translation2d;
 
-public class SwerveModuleConfig {
+public class SwerveModuleMap {
 
   public String ModuleName = "DefaultModuleName";
-
   public int DriveMotorCanId;
   public int SteeringMotorCanId;
   public int CANCoderCanId;
@@ -30,7 +29,7 @@ public class SwerveModuleConfig {
     .withSupplyCurrentThreshold(50)
     .withSupplyTimeThreshold(100);
 
-  public SwerveModuleConfig(
+  public SwerveModuleMap(
     String moduleName,
     int driveMotorCanId,
     int steeringMotorCanId,

@@ -10,7 +10,6 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.config.RobotConfig;
 import java.util.Map;
 
 public class DriverDashboard {
@@ -81,7 +80,7 @@ public class DriverDashboard {
    * Constructs a new DriverDashboard and adds complex widgets that must be created in the constructor
    * @param config
    */
-  public DriverDashboard(RobotConfig config) {
+  public DriverDashboard() {
     // DriverTab
     //   .addCamera(
     //     "Rear Limelight",

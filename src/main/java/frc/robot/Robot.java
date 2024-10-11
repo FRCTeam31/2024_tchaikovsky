@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.config.RobotConfig;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -38,7 +37,7 @@ public class Robot extends LoggedRobot {
     DriverStation.startDataLog(DataLogManager.getLog());
 
     // Initialize the robot container
-    m_robotContainer = new RobotContainer(RobotConfig.getDefault());
+    m_robotContainer = new RobotContainer(isReal());
 
     // Configure AdvantageKit
     Logger.recordMetadata("ProjectName", "MyProject"); // Set a metadata value

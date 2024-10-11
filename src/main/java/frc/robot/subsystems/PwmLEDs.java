@@ -4,14 +4,18 @@ import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.config.LEDConfig;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import prime.control.LEDs.Patterns.LEDPattern;
 
 public class PwmLEDs extends SubsystemBase {
 
-  private LEDConfig _config;
+  public static class VMap {
+
+    public static final int PwmPort = 9;
+    public static final int PixelsPerStrip = 78;
+  }
+
   private AddressableLED _led;
   private AddressableLEDBuffer _ledBuffer;
 
@@ -19,12 +23,10 @@ public class PwmLEDs extends SubsystemBase {
   private LEDPattern _persistentPattern;
   private LEDPattern _temporaryPattern;
 
-  public PwmLEDs(LEDConfig config) {
-    _config = config;
-
+  public PwmLEDs() {
     // Initialize the LED strip and buffer
-    _ledBuffer = new AddressableLEDBuffer(config.PixelsPerStrip);
-    _led = new AddressableLED(config.PwmPort);
+    _ledBuffer = new AddressableLEDBuffer(VMap.PixelsPerStrip);
+    _led = new AddressableLED(VMap.PwmPort);
     _led.setLength(_ledBuffer.getLength());
 
     // Set the strip to a default color and start the LED strip
@@ -69,7 +71,7 @@ public class PwmLEDs extends SubsystemBase {
       // If the pattern is not null, update the LED strip
       if (pattern != null) {
         // Request for the pattern to calculate the next frame and update the buffer
-        pattern.updateBuffer(0, _config.PixelsPerStrip, _ledBuffer);
+        pattern.updateBuffer(0, VMap.PixelsPerStrip, _ledBuffer);
 
         // Update the LED strip with the new buffer
         _led.setData(_ledBuffer);

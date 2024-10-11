@@ -9,14 +9,26 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.config.IntakeConfig;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
+import prime.control.PrimePIDConstants;
 import prime.movers.LazyCANSparkMax;
 
 public class Intake extends SubsystemBase {
 
-  private IntakeConfig m_config;
+  public static class VMap {
+
+    public static final int RollersCanId = 16;
+    public static final int NeoLeftCanId = 15;
+    public static final int NeoRightCanId = 14;
+    public static final boolean RollersInverted = false;
+    public static final boolean NeoLeftInverted = false;
+    public static final boolean NeoRightInverted = true;
+    public static final PrimePIDConstants IntakeAnglePid = new PrimePIDConstants(0.05, 0, 0);
+    public static final int PositionDelta = 49;
+    public static final int TopLimitSwitchChannel = 4;
+    public static final int BottomLimitSwitchChannel = 5;
+  }
 
   private DigitalInput m_topLimitSwitch;
   private DigitalInput m_bottomLimitSwitch;
@@ -34,32 +46,31 @@ public class Intake extends SubsystemBase {
    * Creates a new Intake subsystem
    * @param robotConfig
    */
-  public Intake(IntakeConfig config) {
-    m_config = config;
+  public Intake() {
     setName("Intake");
-    m_topLimitSwitch = new DigitalInput(m_config.TopLimitSwitchChannel);
-    m_bottomLimitSwitch = new DigitalInput(m_config.BottomLimitSwitchChannel);
+    m_topLimitSwitch = new DigitalInput(VMap.TopLimitSwitchChannel);
+    m_bottomLimitSwitch = new DigitalInput(VMap.BottomLimitSwitchChannel);
 
-    m_rollers = new LazyCANSparkMax(m_config.RollersCanId, MotorType.kBrushless);
+    m_rollers = new LazyCANSparkMax(VMap.RollersCanId, MotorType.kBrushless);
     m_rollers.restoreFactoryDefaults();
-    m_rollers.setInverted(m_config.RollersInverted);
+    m_rollers.setInverted(VMap.RollersInverted);
     m_rollers.setSmartCurrentLimit(40, 50);
     // m_rollers.setOpenLoopRampRate(0.250);
 
-    m_angleLeft = new LazyCANSparkMax(m_config.NeoLeftCanId, MotorType.kBrushless);
+    m_angleLeft = new LazyCANSparkMax(VMap.NeoLeftCanId, MotorType.kBrushless);
     m_angleLeft.restoreFactoryDefaults();
-    m_angleLeft.setInverted(m_config.NeoLeftInverted);
+    m_angleLeft.setInverted(VMap.NeoLeftInverted);
     m_angleLeft.setSmartCurrentLimit(40, 60);
 
-    m_angleRight = new LazyCANSparkMax(m_config.NeoRightCanId, MotorType.kBrushless);
+    m_angleRight = new LazyCANSparkMax(VMap.NeoRightCanId, MotorType.kBrushless);
     m_angleRight.restoreFactoryDefaults();
-    m_angleRight.setInverted(m_config.NeoRightInverted);
+    m_angleRight.setInverted(VMap.NeoRightInverted);
     m_angleRight.setSmartCurrentLimit(40, 60);
 
     m_angleStartPoint = getPositionRight();
     SmartDashboard.putNumber("Intake/AngleStartPoint", m_angleStartPoint);
 
-    m_anglePid = m_config.IntakeAnglePid.createPIDController(0.02);
+    m_anglePid = VMap.IntakeAnglePid.createPIDController(0.02);
     m_anglePid.setSetpoint(m_angleStartPoint);
     m_angleToggledIn = true;
 
@@ -108,7 +119,7 @@ public class Intake extends SubsystemBase {
    */
   public void setIntakeRotation() {
     var currentPosition = getPositionRight();
-    var setpoint = m_angleToggledIn ? m_angleStartPoint : (m_angleStartPoint - m_config.PositionDelta);
+    var setpoint = m_angleToggledIn ? m_angleStartPoint : (m_angleStartPoint - VMap.PositionDelta);
     SmartDashboard.putNumber("Intake/AngleSetpoint", setpoint);
 
     var pidOutput = m_anglePid.calculate(currentPosition, setpoint);
@@ -118,7 +129,7 @@ public class Intake extends SubsystemBase {
     if (currentPosition < m_angleStartPoint && pidOutput > 0 && !m_topLimitSwitch.get()) {
       setAngleMotorSpeed(MathUtil.clamp(pidOutput, 0, 1));
     } else if (
-      currentPosition > (m_angleStartPoint - m_config.PositionDelta) && pidOutput < 0 && !m_bottomLimitSwitch.get()
+      currentPosition > (m_angleStartPoint - VMap.PositionDelta) && pidOutput < 0 && !m_bottomLimitSwitch.get()
     ) {
       setAngleMotorSpeed(MathUtil.clamp(pidOutput, -1, 0));
     } else {

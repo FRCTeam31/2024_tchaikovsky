@@ -16,8 +16,9 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
-import frc.robot.config.RobotConfig;
 import frc.robot.subsystems.*;
+import frc.robot.subsystems.drivetrain.DrivetrainSubsystem;
+import frc.robot.subsystems.drivetrain.DrivetrainSubsystem.DriveMap;
 import java.util.Map;
 import prime.control.Controls;
 import prime.control.HolonomicControlStyle;
@@ -25,11 +26,10 @@ import prime.control.PrimeXboxController;
 
 public class RobotContainer {
 
-  private RobotConfig m_config;
   private PrimeXboxController m_driverController;
   private PrimeXboxController m_operatorController;
 
-  public Drivetrain Drivetrain;
+  public DrivetrainSubsystem Drivetrain;
   public Shooter Shooter;
   public Intake Intake;
   public Climbers Climbers;
@@ -39,22 +39,19 @@ public class RobotContainer {
 
   private CombinedCommands m_combinedCommands;
 
-  public RobotContainer(RobotConfig config) {
-    // Save new config
-    m_config = config;
-
+  public RobotContainer(boolean isReal) {
     try {
       m_driverController = new PrimeXboxController(Controls.DRIVER_PORT);
       m_operatorController = new PrimeXboxController(Controls.OPERATOR_PORT);
 
       // Create new subsystems
-      LEDs = new PwmLEDs(m_config.LEDs);
-      DriverDashboard = new DriverDashboard(m_config);
-      Drivetrain = new Drivetrain(m_config, LEDs, DriverDashboard);
-      Shooter = new Shooter(m_config.Shooter, LEDs);
-      Intake = new Intake(m_config.Intake);
-      Climbers = new Climbers(m_config.Climbers, DriverDashboard);
-      Compressor = new Compressor(m_config.PneumaticsModuleId, PneumaticsModuleType.REVPH);
+      LEDs = new PwmLEDs();
+      DriverDashboard = new DriverDashboard();
+      Drivetrain = new DrivetrainSubsystem(isReal, LEDs, DriverDashboard);
+      Shooter = new Shooter(LEDs);
+      Intake = new Intake();
+      Climbers = new Climbers(DriverDashboard);
+      Compressor = new Compressor(30, PneumaticsModuleType.REVPH);
       Compressor.enableDigital();
 
       m_combinedCommands = new CombinedCommands();
@@ -109,8 +106,8 @@ public class RobotContainer {
       Drivetrain.defaultDriveCommand(
         m_driverController.getSwerveControlProfile(
           HolonomicControlStyle.Drone,
-          m_config.Drivetrain.DriveDeadband,
-          m_config.Drivetrain.DeadbandCurveWeight
+          DriveMap.DriveDeadband,
+          DriveMap.DeadbandCurveWeight
         )
       )
     );

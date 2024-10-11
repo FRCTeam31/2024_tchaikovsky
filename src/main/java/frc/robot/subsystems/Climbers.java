@@ -14,11 +14,26 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
-import frc.robot.config.ClimbersConfig;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 public class Climbers extends SubsystemBase {
+
+  public static class VMap {
+
+    public static final int VictorSPXLeftCanID = 18;
+    public static final int VictorSPXRightCanID = 17;
+    public static final boolean LeftInverted = true;
+    public static final boolean RightInverted = true;
+    public static final double ClimberUpSpeed = 0.5;
+    public static final int ClimberDownSpeed = -1;
+    public static final int LeftLimitSwitchDIOChannel = 2;
+    public static final int RightLimitSwitchDIOChannel = 3;
+    public static final int LeftSolenoidForwardChannel = 8;
+    public static final int LeftSolenoidReverseChannel = 9;
+    public static final int RightSolenoidForwardChannel = 10;
+    public static final int RightSolenoidReverseChannel = 11;
+  }
 
   public enum Side {
     kLeft,
@@ -26,7 +41,6 @@ public class Climbers extends SubsystemBase {
   }
 
   // Configuration
-  private ClimbersConfig m_config;
   private DriverDashboard m_driverDashboard;
 
   // Motors
@@ -48,38 +62,37 @@ public class Climbers extends SubsystemBase {
    * Creates a new Climbers subsystem
    * @param config
    */
-  public Climbers(ClimbersConfig config, DriverDashboard dashboard) {
-    m_config = config;
+  public Climbers(DriverDashboard dashboard) {
     m_driverDashboard = dashboard;
 
-    m_leftVictorSPX = new VictorSPX(config.VictorSPXLeftCanID);
+    m_leftVictorSPX = new VictorSPX(VMap.VictorSPXLeftCanID);
     m_leftVictorSPX.configFactoryDefault();
-    m_leftVictorSPX.setInverted(config.LeftInverted);
+    m_leftVictorSPX.setInverted(VMap.LeftInverted);
     m_leftVictorSPX.setNeutralMode(NeutralMode.Brake);
     m_leftVictorSPX.configOpenloopRamp(0.5);
 
-    m_rightVictorSPX = new VictorSPX(config.VictorSPXRightCanID);
+    m_rightVictorSPX = new VictorSPX(VMap.VictorSPXRightCanID);
     m_rightVictorSPX.configFactoryDefault();
-    m_rightVictorSPX.setInverted(config.RightInverted);
+    m_rightVictorSPX.setInverted(VMap.RightInverted);
     m_rightVictorSPX.setNeutralMode(NeutralMode.Brake);
     m_rightVictorSPX.configOpenloopRamp(0.5);
 
-    m_leftLimitSwitch = new DigitalInput(config.LeftLimitSwitchDIOChannel);
-    m_rightLimitSwitch = new DigitalInput(config.RightLimitSwitchDIOChannel);
+    m_leftLimitSwitch = new DigitalInput(VMap.LeftLimitSwitchDIOChannel);
+    m_rightLimitSwitch = new DigitalInput(VMap.RightLimitSwitchDIOChannel);
 
     m_clutchSolenoidLeft =
       new DoubleSolenoid(
         30,
         PneumaticsModuleType.REVPH,
-        m_config.LeftSolenoidForwardChannel,
-        m_config.LeftSolenoidReverseChannel
+        VMap.LeftSolenoidForwardChannel,
+        VMap.LeftSolenoidReverseChannel
       );
     m_clutchSolenoidRight =
       new DoubleSolenoid(
         30,
         PneumaticsModuleType.REVPH,
-        m_config.RightSolenoidForwardChannel,
-        m_config.RightSolenoidReverseChannel
+        VMap.RightSolenoidForwardChannel,
+        VMap.RightSolenoidReverseChannel
       );
   }
 
@@ -91,11 +104,11 @@ public class Climbers extends SubsystemBase {
    */
   public void raiseArm(Side side) {
     if (side == Side.kLeft && !m_leftLimitSwitch.get()) {
-      m_leftVictorSPX.set(VictorSPXControlMode.PercentOutput, m_config.ClimberUpSpeed);
+      m_leftVictorSPX.set(VictorSPXControlMode.PercentOutput, VMap.ClimberUpSpeed);
     }
 
     if (side == Side.kRight && !m_rightLimitSwitch.get()) {
-      m_rightVictorSPX.set(VictorSPXControlMode.PercentOutput, m_config.ClimberUpSpeed);
+      m_rightVictorSPX.set(VictorSPXControlMode.PercentOutput, VMap.ClimberUpSpeed);
     }
   }
 

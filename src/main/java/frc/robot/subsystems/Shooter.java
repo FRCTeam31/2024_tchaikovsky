@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.config.ShooterConfig;
 import java.util.Map;
 import prime.control.LEDs.Color;
 import prime.control.LEDs.Patterns.BlinkPattern;
@@ -23,7 +22,16 @@ import prime.control.LEDs.Patterns.SolidPattern;
 
 public class Shooter extends SubsystemBase {
 
-  private ShooterConfig m_config;
+  public static class VMap {
+
+    public static final int TalonFXCanID = 20;
+    public static final int VictorSPXCanID = 19;
+    public static final boolean TalonFXInverted = false;
+    public static final boolean VictorSPXInverted = false;
+    public static final int NoteDetectorDIOChannel = 7;
+    public static final int ElevationSolenoidForwardChannel = 6;
+    public static final int ElevationSolenoidReverseChannel = 7;
+  }
 
   private PwmLEDs m_leds;
   private TalonFX m_talonFX;
@@ -37,17 +45,16 @@ public class Shooter extends SubsystemBase {
    * Creates a new Shooter with a given configuration
    * @param config
    */
-  public Shooter(ShooterConfig config, PwmLEDs leds) {
-    m_config = config;
+  public Shooter(PwmLEDs leds) {
     m_leds = leds;
     setName("Shooter");
 
-    m_talonFX = new TalonFX(m_config.TalonFXCanID);
+    m_talonFX = new TalonFX(VMap.TalonFXCanID);
     m_talonFX.getConfigurator().apply(new TalonFXConfiguration());
     m_talonFX.setInverted(true);
     m_talonFX.setNeutralMode(NeutralModeValue.Brake);
 
-    m_victorSPX = new VictorSPX(m_config.VictorSPXCanID);
+    m_victorSPX = new VictorSPX(VMap.VictorSPXCanID);
     m_victorSPX.configFactoryDefault();
     m_victorSPX.setNeutralMode(NeutralMode.Brake);
 
@@ -55,11 +62,11 @@ public class Shooter extends SubsystemBase {
       new DoubleSolenoid(
         30,
         PneumaticsModuleType.REVPH,
-        m_config.ElevationSolenoidForwardChannel,
-        m_config.ElevationSolenoidReverseChannel
+        VMap.ElevationSolenoidForwardChannel,
+        VMap.ElevationSolenoidReverseChannel
       );
 
-    m_noteDetector = new DigitalInput(m_config.NoteDetectorDIOChannel);
+    m_noteDetector = new DigitalInput(VMap.NoteDetectorDIOChannel);
   }
 
   //#region Control Methods
