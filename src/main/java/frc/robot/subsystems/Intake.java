@@ -43,14 +43,18 @@ public class Intake extends SubsystemBase {
     m_rollers = new LazyCANSparkMax(m_config.RollersCanId, MotorType.kBrushless);
     m_rollers.restoreFactoryDefaults();
     m_rollers.setInverted(m_config.RollersInverted);
+    m_rollers.setSmartCurrentLimit(40, 50);
+    // m_rollers.setOpenLoopRampRate(0.250);
 
     m_angleLeft = new LazyCANSparkMax(m_config.NeoLeftCanId, MotorType.kBrushless);
     m_angleLeft.restoreFactoryDefaults();
     m_angleLeft.setInverted(m_config.NeoLeftInverted);
+    m_angleLeft.setSmartCurrentLimit(40, 60);
 
     m_angleRight = new LazyCANSparkMax(m_config.NeoRightCanId, MotorType.kBrushless);
     m_angleRight.restoreFactoryDefaults();
     m_angleRight.setInverted(m_config.NeoRightInverted);
+    m_angleRight.setSmartCurrentLimit(40, 60);
 
     m_angleStartPoint = getPositionRight();
     SmartDashboard.putNumber("Intake/AngleStartPoint", m_angleStartPoint);
