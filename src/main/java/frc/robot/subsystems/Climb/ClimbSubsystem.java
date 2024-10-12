@@ -1,20 +1,12 @@
 package frc.robot.subsystems.Climb;
 
-import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.VictorSPXControlMode;
-import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
-import frc.robot.config.ClimbersConfig;
 import frc.robot.subsystems.DriverDashboard;
 import frc.robot.subsystems.Climb.IClimbIO.Side;
 import frc.robot.subsystems.Climb.IClimbIO.ClimbIOInputs;
@@ -72,14 +64,14 @@ public class ClimbSubsystem extends SubsystemBase {
    * Controls the movement of the desired climb arm
    * @param side The side to move
    * @param direction The direction of travel
-   * @param speed The speed at which to travel (Only aplicable for downward direction)
+   * @param speed The speed at which to travel (Only set up for downward direction)
    */
   public void moveArm(Side side, Direction direction, double speed) {
     climbIO.MoveArm(side, direction, speed);
   }
 
   /**
-   * Stops the desired climber arm
+   * Stops the desired climber arm and engages the clutch
    * @param side
    */
   public void stopArm(Side side) {

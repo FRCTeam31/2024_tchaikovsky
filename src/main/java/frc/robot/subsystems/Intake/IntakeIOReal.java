@@ -1,13 +1,7 @@
 package frc.robot.subsystems.Intake;
 
-import java.util.Map;
-
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import prime.movers.LazyCANSparkMax;
 
 public class IntakeIOReal implements IIntakeIO {
@@ -24,7 +18,6 @@ public class IntakeIOReal implements IIntakeIO {
     private LazyCANSparkMax m_angleRight;
 
     private PIDController m_anglePid;
-    private Debouncer m_angleToggleDebouncer = new Debouncer(0.1, Debouncer.DebounceType.kBoth);
 
     public IntakeIOReal() {
 

@@ -1,32 +1,15 @@
 package frc.robot.subsystems.Shooter;
 
-import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.VictorSPXControlMode;
-import com.ctre.phoenix.motorcontrol.can.VictorSPX;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.config.ShooterConfig;
 import frc.robot.subsystems.PwmLEDs;
-import frc.robot.subsystems.Intake.IIntakeIO;
-import frc.robot.subsystems.Intake.IIntakeIO.IntakeIOInputs;
-import frc.robot.subsystems.Intake.IIntakeIO.IntakeIOOutputs;
 import frc.robot.subsystems.Shooter.IShooterIO.ShooterIOInputs;
 import frc.robot.subsystems.Shooter.IShooterIO.ShooterIOOutputs;
 
 import java.util.Map;
-import prime.control.LEDs.Color;
-import prime.control.LEDs.Patterns.BlinkPattern;
-import prime.control.LEDs.Patterns.ChasePattern;
-import prime.control.LEDs.Patterns.SolidPattern;
 
 public class ShooterSubsystem extends SubsystemBase {
     public class VMap {

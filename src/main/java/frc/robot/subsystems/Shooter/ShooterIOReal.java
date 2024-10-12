@@ -15,7 +15,6 @@ import frc.robot.subsystems.PwmLEDs;
 import prime.control.LEDs.Color;
 import prime.control.LEDs.Patterns.BlinkPattern;
 import prime.control.LEDs.Patterns.ChasePattern;
-import prime.control.LEDs.Patterns.SolidPattern;
 
 public class ShooterIOReal implements IShooterIO{
     private PwmLEDs m_leds;

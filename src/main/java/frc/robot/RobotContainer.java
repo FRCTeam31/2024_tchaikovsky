@@ -43,7 +43,7 @@ public class RobotContainer {
 
   private CombinedCommands m_combinedCommands;
 
-  public RobotContainer(RobotConfig config) {
+  public RobotContainer(Boolean isReal, RobotConfig config) {
     // Save new config
     m_config = config;
 
@@ -55,9 +55,9 @@ public class RobotContainer {
       LEDs = new PwmLEDs(m_config.LEDs);
       DriverDashboard = new DriverDashboard(m_config);
       Drivetrain = new Drivetrain(m_config, LEDs, DriverDashboard);
-      Shooter = new ShooterSubsystem(true, LEDs);
-      Intake = new IntakeSubsystem(true);
-      Climbers = new ClimbSubsystem(true, DriverDashboard);
+      Shooter = new ShooterSubsystem(isReal, LEDs);
+      Intake = new IntakeSubsystem(isReal);
+      Climbers = new ClimbSubsystem(isReal, DriverDashboard);
       Compressor = new Compressor(m_config.PneumaticsModuleId, PneumaticsModuleType.REVPH);
       Compressor.enableDigital();
 

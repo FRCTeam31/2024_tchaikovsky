@@ -8,8 +8,7 @@ import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
-import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -25,7 +24,6 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 import prime.control.LEDs.Color;
 import prime.control.LEDs.Patterns.BlinkPattern;
 import prime.control.LEDs.Patterns.ChasePattern;
-import prime.control.LEDs.Patterns.LEDPattern;
 import prime.control.LEDs.Patterns.PulsePattern;
 
 public class Robot extends LoggedRobot {
@@ -41,7 +39,7 @@ public class Robot extends LoggedRobot {
     DriverStation.startDataLog(DataLogManager.getLog());
 
     // Initialize the robot container
-    m_robotContainer = new RobotContainer(RobotConfig.getDefault());
+    m_robotContainer = new RobotContainer(RobotBase.isReal(), RobotConfig.getDefault());
     
     // Configure AdvantageKit
     Logger.recordMetadata("ProjectName", "MyProject"); // Set a metadata value

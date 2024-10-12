@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.UsbCamera;
-import edu.wpi.first.cscore.VideoMode;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.util.PixelFormat;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
