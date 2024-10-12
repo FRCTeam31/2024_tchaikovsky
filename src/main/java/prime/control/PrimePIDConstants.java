@@ -1,6 +1,6 @@
 package prime.control;
 
-import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.config.PIDConstants;
 import edu.wpi.first.math.controller.PIDController;
 
 public class PrimePIDConstants {

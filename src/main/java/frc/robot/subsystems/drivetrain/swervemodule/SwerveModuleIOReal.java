@@ -16,14 +16,14 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import frc.robot.subsystems.drivetrain.DrivetrainSubsystem.DriveMap;
+import frc.robot.subsystems.drivetrain.DriveMap;
 import prime.control.PrimePIDConstants;
 import prime.movers.LazyCANSparkMax;
 import prime.utilities.CTREConverter;
 
 public class SwerveModuleIOReal implements ISwerveModuleIO {
 
-  private SwerveModuleMap m_map;
+  private SwerveModuleConfig m_map;
   private SwerveModuleIOInputs m_inputs;
 
   // Devices
@@ -36,7 +36,7 @@ public class SwerveModuleIOReal implements ISwerveModuleIO {
   // Starts at velocity 0, no feed forward. Uses PID slot 0.
   private final VelocityVoltage m_voltageVelocity = new VelocityVoltage(0, 0, false, 0, 0, false, false, false);
 
-  public SwerveModuleIOReal(SwerveModuleMap moduleMap) {
+  public SwerveModuleIOReal(SwerveModuleConfig moduleMap) {
     m_map = moduleMap;
 
     setupSteeringMotor(DriveMap.SteeringPID);
@@ -49,8 +49,8 @@ public class SwerveModuleIOReal implements ISwerveModuleIO {
     var rotation = Rotation2d.fromRotations(m_encoder.getPosition().getValueAsDouble());
     var speedMps = CTREConverter.rotationsToMeters(
       m_driveMotor.getVelocity().getValueAsDouble(),
-      m_map.DriveWheelCircumferenceMeters,
-      m_map.DriveGearRatio
+      DriveMap.DriveWheelCircumferenceMeters,
+      DriveMap.DriveGearRatio
     );
 
     m_inputs.ModuleState = new SwerveModuleState(speedMps, rotation);
@@ -58,8 +58,8 @@ public class SwerveModuleIOReal implements ISwerveModuleIO {
       new SwerveModulePosition(
         CTREConverter.rotationsToMeters(
           m_driveMotor.getPosition().getValueAsDouble(),
-          m_map.DriveWheelCircumferenceMeters,
-          m_map.DriveGearRatio
+          DriveMap.DriveWheelCircumferenceMeters,
+          DriveMap.DriveGearRatio
         ),
         rotation
       );
@@ -143,7 +143,7 @@ public class SwerveModuleIOReal implements ISwerveModuleIO {
           .withMagnetSensor(
             new MagnetSensorConfigs()
               .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Unsigned_0To1)
-              .withMagnetOffset(-m_map.StartingOffset)
+              .withMagnetOffset(-m_map.CanCoderStartingOffset)
           )
       );
   }
@@ -155,11 +155,14 @@ public class SwerveModuleIOReal implements ISwerveModuleIO {
    *                     period
    */
   private void setDesiredState(SwerveModuleState desiredState) {
+    // Optimize the desired state
+    desiredState = optimize(desiredState);
+
     // Set the drive motor to the desired speed
     var speedRotationsPerSecond = CTREConverter.metersToRotations(
       desiredState.speedMetersPerSecond,
-      m_map.DriveWheelCircumferenceMeters,
-      m_map.DriveGearRatio
+      DriveMap.DriveWheelCircumferenceMeters,
+      DriveMap.DriveGearRatio
     );
 
     m_driveMotor.setControl(m_voltageVelocity.withVelocity(speedRotationsPerSecond));
@@ -171,5 +174,22 @@ public class SwerveModuleIOReal implements ISwerveModuleIO {
     var newOutput = m_steeringPidController.calculate(m_inputs.ModuleState.angle.getRotations(), setpoint);
 
     m_SteeringMotor.set(MathUtil.clamp(newOutput, -1, 1));
+  }
+
+  /**
+   * Optimizes the module angle & drive inversion to ensure the module takes the shortest path to drive at the desired angle
+   * @param desiredState
+   */
+  private SwerveModuleState optimize(SwerveModuleState desiredState) {
+    Rotation2d currentAngle = m_inputs.ModulePosition.angle;
+    var delta = desiredState.angle.minus(currentAngle);
+    if (Math.abs(delta.getDegrees()) > 90.0) {
+      return new SwerveModuleState(
+        -desiredState.speedMetersPerSecond,
+        desiredState.angle.rotateBy(Rotation2d.fromDegrees(180.0))
+      );
+    } else {
+      return desiredState;
+    }
   }
 }

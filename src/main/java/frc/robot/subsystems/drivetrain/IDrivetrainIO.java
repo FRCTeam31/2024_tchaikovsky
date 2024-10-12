@@ -4,7 +4,6 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import org.littletonrobotics.junction.AutoLog;
@@ -20,7 +19,7 @@ public interface IDrivetrainIO {
     public boolean SnapOnTarget = false;
     public ChassisSpeeds RobotRelativeChassisSpeeds = new ChassisSpeeds();
     public Pose2d EstimatedRobotPose = new Pose2d();
-    public SwerveModulePosition[] ModulePositions = new SwerveModulePosition[4];
+    public double SnapCorrectionRadiansPerSecond = 0;
   }
 
   @AutoLog
@@ -47,4 +46,6 @@ public interface IDrivetrainIO {
   public void setEstimatorPose(Pose2d pose);
 
   public void addPoseEstimatorVisionMeasurement(Pose2d pose, double timestamp, Matrix<N3, N1> stdDeviations);
+
+  public void stopAllMotors();
 }

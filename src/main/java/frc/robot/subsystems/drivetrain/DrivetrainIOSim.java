@@ -36,4 +36,10 @@ public class DrivetrainIOSim implements IDrivetrainIO {
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException("Unimplemented method 'addPoseEstimatorVisionMeasurement'");
   }
+
+  @Override
+  public void stopAllMotors() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'addPoseEstimatorVisionMeasurement'");
+  }
 }

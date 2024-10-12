@@ -1,23 +1,15 @@
 package frc.robot.subsystems.drivetrain;
 
-import com.ctre.phoenix6.configs.Pigeon2Configuration;
-import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PathPlannerLogging;
-import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -30,88 +22,14 @@ import frc.robot.Robot;
 import frc.robot.subsystems.DriverDashboard;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.PwmLEDs;
-import frc.robot.subsystems.drivetrain.IDrivetrainIO.DriveControlMode;
-import frc.robot.subsystems.drivetrain.IDrivetrainIO.DrivetrainIOInputs;
-import frc.robot.subsystems.drivetrain.IDrivetrainIO.DrivetrainIOOutputs;
-import frc.robot.subsystems.drivetrain.swervemodule.SwerveModuleMap;
+import frc.robot.subsystems.drivetrain.IDrivetrainIO.*;
 import java.util.Map;
-import java.util.Optional;
 import prime.control.LEDs.Color;
 import prime.control.LEDs.Patterns.PulsePattern;
 import prime.control.LEDs.Patterns.SolidPattern;
-import prime.control.PrimePIDConstants;
 import prime.control.SwerveControlSuppliers;
 
 public class DrivetrainSubsystem extends SubsystemBase {
-
-  public static class DriveMap {
-
-    public static final double TrackWidthMeters = 0.51181;
-    public static final double WheelBaseMeters = 0.67945;
-    public static final double WheelBaseCircumferenceMeters = Math.PI * 0.7778174593052;
-    public static final double MaxSpeedMetersPerSecond = Units.feetToMeters(20);
-    public static final double MaxAccelerationMetersPerSecondSquared = Units.feetToMeters(15);
-    public static final double MaxAngularSpeedRadians = Math.PI * 3;
-    public static final int PigeonId = 1;
-    public static final double DriveDeadband = 0.15;
-    public static final double DeadbandCurveWeight = 0.5;
-    public static final PrimePIDConstants DrivePID = new PrimePIDConstants(0.019, 0, 0, 0, 0.091, 0, 0.05);
-    public static final PrimePIDConstants SteeringPID = new PrimePIDConstants(2, 0, 0);
-    public static final PrimePIDConstants SnapToPID = new PrimePIDConstants(6, 0, 0);
-    public static final PrimePIDConstants PathingTranslationPid = new PrimePIDConstants(3, 0, 0);
-    public static final PrimePIDConstants PathingRotationPid = new PrimePIDConstants(2, 0, 0);
-    public static final String LimelightRearName = "limelight-rear";
-    public static final String LimelightFrontName = "limelight-front";
-
-    public static final SwerveModuleMap FrontLeftSwerveModule = new SwerveModuleMap(
-      "Front-Left",
-      2,
-      3,
-      4,
-      0.407 + 0.25,
-      true,
-      true,
-      new Translation2d(TrackWidthMeters / 2, WheelBaseMeters / 2),
-      6.75,
-      0.1016
-    );
-    public static final SwerveModuleMap FrontRightSwerveModule = new SwerveModuleMap(
-      "Front-Right",
-      5,
-      6,
-      7,
-      0.105 + 0.25,
-      true,
-      true,
-      new Translation2d(TrackWidthMeters / 2, -(WheelBaseMeters / 2)),
-      6.75,
-      0.1016
-    );
-    public static final SwerveModuleMap RearRightSwerveModule = new SwerveModuleMap(
-      "Rear-Right",
-      8,
-      9,
-      10,
-      0.459 + 0.25,
-      true,
-      true,
-      new Translation2d(-(TrackWidthMeters / 2), -(WheelBaseMeters / 2)),
-      6.75,
-      0.1016
-    );
-    public static final SwerveModuleMap RearLeftSwerveModule = new SwerveModuleMap(
-      "Rear-Left",
-      11,
-      12,
-      13,
-      0.421 + 0.25,
-      true,
-      true,
-      new Translation2d(-TrackWidthMeters / 2, WheelBaseMeters / 2),
-      6.75,
-      0.1016
-    );
-  }
 
   private PwmLEDs m_leds;
 
@@ -123,13 +41,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
     .withWidget(BuiltInWidgets.kBooleanBox)
     .withPosition(0, 0)
     .withSize(2, 2)
-    .getEntry();
-  private GenericEntry d_currentHeading = d_drivetrainTab
-    .add("Current Heading", 0)
-    .withWidget(BuiltInWidgets.kGyro)
-    .withPosition(14, 0)
-    .withSize(4, 5)
-    .withProperties(Map.of("Counter clockwise", true, "Major tick spacing", 45.0, "Minor tick spacing", 15.0))
     .getEntry();
   private GenericEntry d_snapAngle = d_drivetrainTab
     .add("SnapTo Angle", 0)
@@ -166,29 +77,44 @@ public class DrivetrainSubsystem extends SubsystemBase {
     LimelightRear = new Limelight(DriveMap.LimelightRearName);
     LimelightFront = new Limelight(DriveMap.LimelightFrontName);
 
+    // ==================================== PATHPLANNER 2025 ====================================
+    // Load the RobotConfig from the GUI settings, or use the default if an exception occurs
+    RobotConfig config = DriveMap.PathPlannerRobotConfiguration;
+    try {
+      config = RobotConfig.fromGUISettings();
+    } catch (Exception e) {
+      // Handle exception as needed
+      e.printStackTrace();
+    }
+
     // Set up PP to feed current path poses to the field widget
+    PathPlannerLogging.setLogCurrentPoseCallback(pose -> driverDashboard.FieldWidget.setRobotPose(pose));
+    PathPlannerLogging.setLogTargetPoseCallback(pose ->
+      driverDashboard.FieldWidget.getObject("target pose").setPose(pose)
+    );
     PathPlannerLogging.setLogActivePathCallback(poses -> driverDashboard.FieldWidget.getObject("path").setPoses(poses));
 
     // Configure PathPlanner holonomic control
-    AutoBuilder.configureHolonomic(
-      this::getPose, // Robot pose supplier
-      this::setEstimatorPose, // Method to reset odometry (will be called if your auto has a starting pose)
-      this::getRobotRelativeChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-      this::drivePathPlanner, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
-      // this::drive, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
-      new HolonomicPathFollowerConfig(
+    AutoBuilder.configure(
+      this::getPose,
+      this::setEstimatorPose,
+      this::getRobotRelativeChassisSpeeds,
+      (speeds, feedForwards) -> drivePathPlanner(speeds),
+      new PPHolonomicDriveController(
         DriveMap.PathingTranslationPid.toPIDConstants(),
-        DriveMap.PathingRotationPid.toPIDConstants(),
-        DriveMap.MaxSpeedMetersPerSecond,
-        DriveMap.MaxAccelerationMetersPerSecondSquared,
-        new ReplanningConfig(true, true)
+        DriveMap.PathingRotationPid.toPIDConstants()
       ),
-      Robot::onRedAlliance, // BooleanSupplier to tell PathPlanner whether or not to flip the path over the Y midline of the field
-      this // Reference to this subsystem to set requirements
-    );
+      config,
+      () -> {
+        // Boolean supplier that controls when the path will be mirrored for the red alliance
+        var alliance = DriverStation.getAlliance();
 
-    // Allows path planner to override the path rotation target with the snap-to setpoint, if enabled
-    PPHolonomicDriveController.setRotationTargetOverride(this::getRotationTargetOverride);
+        return alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red;
+      },
+      this
+    );
+    // Example of overriding PathPlanner's rotation feedback
+    // PPHolonomicDriveController.overrideRotationFeedback(() -> m_inputs.SnapCorrectionRadiansPerSecond);
   }
 
   //#region Control methods
@@ -213,14 +139,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
   }
 
   /**
-   * Gets the snap-to gyro setpoint if snap-to is enabled, otherwise returns an empty optional
-   * @return
-   */
-  private Optional<Rotation2d> getRotationTargetOverride() {
-    return m_outputs.SnapEnabled ? Optional.of(m_outputs.SnapSetpoint) : Optional.empty();
-  }
-
-  /**
    * Gets the current pose of the drivetrain from odometry
    */
   private Pose2d getPose() {
@@ -240,13 +158,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
    */
   private double getHeadingDegrees() {
     return m_inputs.GyroAngle.getDegrees();
-  }
-
-  /**
-   * Gets the module positions as an array in order FL, FR, RL, RR
-   */
-  private SwerveModulePosition[] getModulePositions() {
-    return m_inputs.ModulePositions;
   }
 
   /**
