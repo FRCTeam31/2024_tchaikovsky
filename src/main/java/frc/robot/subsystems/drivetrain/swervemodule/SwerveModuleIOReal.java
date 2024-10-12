@@ -14,7 +14,6 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import frc.robot.subsystems.drivetrain.DriveMap;
 import prime.control.PrimePIDConstants;
@@ -52,17 +51,16 @@ public class SwerveModuleIOReal implements ISwerveModuleIO {
       DriveMap.DriveWheelCircumferenceMeters,
       DriveMap.DriveGearRatio
     );
+    var distanceMeters = CTREConverter.rotationsToMeters(
+      m_driveMotor.getPosition().getValueAsDouble(),
+      DriveMap.DriveWheelCircumferenceMeters,
+      DriveMap.DriveGearRatio
+    );
 
-    m_inputs.ModuleState = new SwerveModuleState(speedMps, rotation);
-    m_inputs.ModulePosition =
-      new SwerveModulePosition(
-        CTREConverter.rotationsToMeters(
-          m_driveMotor.getPosition().getValueAsDouble(),
-          DriveMap.DriveWheelCircumferenceMeters,
-          DriveMap.DriveGearRatio
-        ),
-        rotation
-      );
+    m_inputs.ModuleState.angle = rotation;
+    m_inputs.ModuleState.speedMetersPerSecond = speedMps;
+    m_inputs.ModulePosition.angle = rotation;
+    m_inputs.ModulePosition.distanceMeters = distanceMeters;
 
     return m_inputs;
   }

@@ -103,6 +103,9 @@ public class DrivetrainIOReal implements IDrivetrainIO {
     m_rearRightModule.setOutputs(m_rearRightOutputs);
   }
 
+  /**
+   * Resets the gyro to 0 or 180 degrees based on the alliance
+   */
   @Override
   public void resetGyro() {
     m_gyro.setYaw(Robot.onBlueAlliance() ? 180 : 0);
@@ -110,11 +113,17 @@ public class DrivetrainIOReal implements IDrivetrainIO {
     m_poseEstimator.resetPosition(m_gyro.getRotation2d(), getModulePositions(), m_poseEstimator.getEstimatedPosition());
   }
 
+  /**
+   * Explicitly sets the pose estimator's pose (used when autonomous begins)
+   */
   @Override
   public void setEstimatorPose(Pose2d pose) {
     m_poseEstimator.resetPosition(m_gyro.getRotation2d(), getModulePositions(), pose);
   }
 
+  /**
+   * Adds a vision measurement to the pose estimator
+   */
   @Override
   public void addPoseEstimatorVisionMeasurement(Pose2d pose, double timestamp, Matrix<N3, N1> stdDeviations) {
     m_poseEstimator.addVisionMeasurement(pose, timestamp, stdDeviations);
